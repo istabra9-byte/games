@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, GameLog, Player } from '../types/game';
-import { MessageSquare, ScrollText, Send } from 'lucide-react';
+import { MessageSquare, ScrollText, Send, X } from 'lucide-react';
 import { sound } from '../services/sound';
 
 interface ChatAndLogsProps {
@@ -8,21 +8,30 @@ interface ChatAndLogsProps {
   logs: GameLog[];
   currentPlayer: Player;
   onSendMessage: (text: string) => void;
+  onClose?: () => void;
 }
 
 export const ChatAndLogs: React.FC<ChatAndLogsProps> = ({
   chat,
   logs,
   currentPlayer,
-  onSendMessage
+  onSendMessage,
+  onClose
 }) => {
   const [activeTab, setActiveTab] = useState<'chat' | 'logs'>('chat');
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chat, logs, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      setTimeout(() => inputRef.current?.focus(), 60);
+    }
+  }, [activeTab]);
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,32 +42,44 @@ export const ChatAndLogs: React.FC<ChatAndLogsProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#171126] border border-purple-900/40 rounded-2xl overflow-hidden shadow-xl text-white">
-      {/* Tab Switcher */}
-      <div className="flex items-center border-b border-purple-900/60 bg-[#120d1e]">
-        <button
-          onClick={() => setActiveTab('chat')}
-          className={`flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all border-b-2 ${
-            activeTab === 'chat'
-              ? 'border-purple-500 text-white bg-purple-950/30'
-              : 'border-transparent text-gray-400 hover:text-gray-200'
-          }`}
-        >
-          <MessageSquare className="w-3.5 h-3.5" />
-          <span>Chat ({chat.length})</span>
-        </button>
+    <div className="flex flex-col h-full bg-[#171126] border border-purple-900/60 rounded-2xl overflow-hidden shadow-2xl text-white backdrop-blur-md">
+      {/* Header with Tab Switcher & Close Button */}
+      <div className="flex items-center justify-between border-b border-purple-900/60 bg-[#120d1e] px-2 py-1">
+        <div className="flex items-center flex-1 gap-1">
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 transition-all border-b-2 rounded-t-lg ${
+              activeTab === 'chat'
+                ? 'border-purple-500 text-white bg-purple-950/40'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Chat ({chat.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('logs')}
-          className={`flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all border-b-2 ${
-            activeTab === 'logs'
-              ? 'border-purple-500 text-white bg-purple-950/30'
-              : 'border-transparent text-gray-400 hover:text-gray-200'
-          }`}
-        >
-          <ScrollText className="w-3.5 h-3.5" />
-          <span>Game Log ({logs.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5 transition-all border-b-2 rounded-t-lg ${
+              activeTab === 'logs'
+                ? 'border-purple-500 text-white bg-purple-950/40'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <ScrollText className="w-3.5 h-3.5" />
+            <span>Log ({logs.length})</span>
+          </button>
+        </div>
+
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1.5 ml-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            title="Close Chat (Esc)"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Message List */}
@@ -66,7 +87,7 @@ export const ChatAndLogs: React.FC<ChatAndLogsProps> = ({
         {activeTab === 'chat' ? (
           <>
             {chat.map((msg) => (
-              <div key={msg.id} className="flex flex-col leading-tight">
+              <div key={msg.id} className="flex flex-col leading-tight bg-[#1c152e]/50 p-1.5 rounded-lg border border-purple-950">
                 <div className="flex items-center gap-1.5">
                   <span
                     className="font-bold text-[11px]"
@@ -108,10 +129,11 @@ export const ChatAndLogs: React.FC<ChatAndLogsProps> = ({
       {activeTab === 'chat' && (
         <form onSubmit={handleSend} className="p-2 bg-[#120d1e] border-t border-purple-900/60 flex items-center gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Type a message..."
+            placeholder="Type a message (Enter to send)..."
             maxLength={140}
             className="flex-1 bg-[#201833] text-xs text-white px-3 py-2 rounded-xl outline-none border border-purple-800/40 focus:border-purple-500"
           />

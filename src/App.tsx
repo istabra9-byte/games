@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { GameRoom, Player, Tile, TradeOffer } from './types/game';
+import React, { useState, useEffect, useRef } from 'react';
+import { GameRoom, Player, Tile, TradeOffer, ChatMessage } from './types/game';
 import { 
   createInitialRoom, 
   startGame, 
@@ -81,6 +81,9 @@ export const App: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [droppedMessages, setDroppedMessages] = useState<ChatMessage[]>([]);
+  const lastMessageCountRef = useRef<number>(0);
 
   // Sync window.location.hash
   useEffect(() => {
@@ -106,7 +109,7 @@ export const App: React.FC = () => {
   }, [roomId]);
 
 
-  // Shortcut 'T' to open and focus chat like standard gaming
+  // Shortcut 'T' to open chat and Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -114,24 +117,39 @@ export const App: React.FC = () => {
 
       if ((e.key === 't' || e.key === 'T') && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        setMobileTab('chat');
-        setTimeout(() => {
-          const chatInput = document.querySelector<HTMLInputElement>('input[placeholder*="Type a message"]');
-          if (chatInput) {
-            chatInput.focus();
-          }
-        }, 50);
-      } else if (e.key === 'Escape' && isInput) {
-        (target as HTMLElement).blur();
-        if (mobileTab === 'chat') {
-          setMobileTab('board');
-        }
+        setIsChatOpen(true);
+        setDroppedMessages([]);
+      } else if (e.key === 'Escape') {
+        if (isInput) (target as HTMLElement).blur();
+        setIsChatOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileTab]);
+  }, []);
+
+  // Track incoming dropped messages when chat is closed
+  useEffect(() => {
+    const currentChat = room?.chat || [];
+    if (currentChat.length > lastMessageCountRef.current) {
+      if (!isChatOpen && lastMessageCountRef.current > 0) {
+        const newArrivals = currentChat.slice(lastMessageCountRef.current);
+        setDroppedMessages(prev => [...prev, ...newArrivals].slice(-3));
+      }
+      lastMessageCountRef.current = currentChat.length;
+    }
+  }, [room?.chat, isChatOpen]);
+
+  // Auto-expire dropped messages after 5 seconds
+  useEffect(() => {
+    if (droppedMessages.length > 0) {
+      const timer = setTimeout(() => {
+        setDroppedMessages(prev => prev.slice(1));
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [droppedMessages]);
 
   // Save current player info locally
   useEffect(() => {
@@ -538,9 +556,9 @@ export const App: React.FC = () => {
         {/* Mobile Navigation Pills */}
         <div className="flex items-center gap-1.5 lg:hidden">
           <button
-            onClick={() => setMobileTab(mobileTab === 'chat' ? 'board' : 'chat')}
+            onClick={() => setIsChatOpen(!isChatOpen)}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-colors ${
-              mobileTab === 'chat'
+              isChatOpen
                 ? 'bg-[#6647e0] text-white border-purple-400'
                 : 'bg-[#21163b] text-purple-200 border-purple-800/60'
             }`}
@@ -564,6 +582,21 @@ export const App: React.FC = () => {
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Chat toggle button */}
+          <button
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            title="Chat (Press T)"
+            className={`px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              isChatOpen 
+                ? 'bg-purple-600 text-white border-purple-400 shadow-md' 
+                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200 hover:text-white'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Chat</span>
+            <kbd className="hidden sm:inline px-1 bg-black/40 rounded text-[9px] font-mono text-purple-300">T</kbd>
+          </button>
+
           {/* Propose Trade button */}
           <button
             onClick={() => setShowTradeModal(true)}
@@ -603,22 +636,8 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main 3-Pane Screen: Left Utility/Chat | Center Board | Right Leaderboard */}
+      {/* Main Screen: Center Board & Right Leaderboard */}
       <div className="flex-1 w-full max-w-[1550px] mx-auto p-2 sm:p-3 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 overflow-hidden relative">
-        {/* Left Pane: Chat & Activity Logs */}
-        <div className={`w-full lg:w-64 h-full flex-col flex-shrink-0 ${
-          mobileTab === 'chat'
-            ? 'fixed inset-0 top-12 z-40 bg-[#130f1d] p-3 flex'
-            : 'hidden lg:flex'
-        }`}>
-          <ChatAndLogs
-            chat={room.chat || []}
-            logs={room.logs || []}
-            currentPlayer={currentPlayer}
-            onSendMessage={handleSendMessage}
-          />
-        </div>
-
         {/* Center Hero: The Board with Embedded Center Controls */}
         <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
           <Board
@@ -653,6 +672,66 @@ export const App: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Slide-In Floating Chat Drawer (Opens on 'T' or Chat button) */}
+      {isChatOpen && (
+        <div className="fixed top-12 bottom-3 left-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200">
+          <ChatAndLogs
+            chat={room.chat || []}
+            logs={room.logs || []}
+            currentPlayer={currentPlayer}
+            onSendMessage={handleSendMessage}
+            onClose={() => setIsChatOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Floating Incoming Messages & Mini 'T' Pill when Chat is Closed */}
+      {!isChatOpen && (
+        <div className="fixed bottom-4 left-4 z-40 flex flex-col gap-2 max-w-xs sm:max-w-sm pointer-events-none">
+          {/* Incoming Dropped Message Toasts */}
+          {droppedMessages.map((msg) => (
+            <div
+              key={msg.id}
+              onClick={() => {
+                setIsChatOpen(true);
+                setDroppedMessages([]);
+              }}
+              className="pointer-events-auto cursor-pointer p-2.5 bg-[#171126]/95 border border-purple-500/60 rounded-xl shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in slide-in-from-bottom-2 fade-in duration-200 hover:scale-102 transition-transform"
+            >
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs text-white flex-shrink-0 shadow"
+                style={{ backgroundColor: msg.senderColor || '#ff4081' }}
+              >
+                {msg.senderName[0]}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs" style={{ color: msg.senderColor || '#ff4081' }}>
+                    {msg.senderName}
+                  </span>
+                  <span className="text-[9px] text-gray-500">just now</span>
+                </div>
+                <p className="text-xs text-gray-200 break-words leading-tight mt-0.5">
+                  {msg.text}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {/* Mini 'T' Chat Pill */}
+          <button
+            onClick={() => {
+              setIsChatOpen(true);
+              setDroppedMessages([]);
+            }}
+            className="pointer-events-auto self-start px-3 py-1.5 bg-[#171126]/90 hover:bg-[#251b3d] border border-purple-800/60 rounded-xl text-xs font-bold text-purple-200 hover:text-white flex items-center gap-2 shadow-lg backdrop-blur-sm transition-all cursor-pointer group active:scale-95"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300" />
+            <span>Press <kbd className="px-1.5 py-0.5 bg-purple-950 border border-purple-700/60 rounded font-mono text-[10px] text-purple-300">T</kbd> to chat</span>
+          </button>
+        </div>
+      )}
 
       {(showTradeModal || room.activeTrade) && (
         <TradeModal
