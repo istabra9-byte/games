@@ -5,6 +5,7 @@ import { ArrowLeftRight, Check, X, DollarSign } from 'lucide-react';
 interface TradeModalProps {
   room: GameRoom;
   currentPlayerId: string;
+  initialPartnerId?: string;
   onSendTrade: (trade: TradeOffer) => void;
   onAcceptTrade: () => void;
   onDeclineTrade: () => void;
@@ -14,6 +15,7 @@ interface TradeModalProps {
 export const TradeModal: React.FC<TradeModalProps> = ({
   room,
   currentPlayerId,
+  initialPartnerId,
   onSendTrade,
   onAcceptTrade,
   onDeclineTrade,
@@ -27,7 +29,9 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   );
 
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>(
-    otherPlayers[0]?.id || ''
+    initialPartnerId && room.players[initialPartnerId]
+      ? initialPartnerId
+      : otherPlayers[0]?.id || ''
   );
   const [offeredTileIndices, setOfferedTileIndices] = useState<number[]>([]);
   const [requestedTileIndices, setRequestedTileIndices] = useState<number[]>([]);

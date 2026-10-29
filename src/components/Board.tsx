@@ -80,12 +80,12 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
   return (
     <div
-      className="relative aspect-square max-h-full max-w-full bg-[#171226] rounded-2xl p-1 sm:p-1.5 shadow-[0_12px_45px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center"
+      className="relative aspect-square max-h-full max-w-full bg-[#171226] rounded-2xl p-1 sm:p-2 shadow-[0_15px_50px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center"
       style={{
         height: '100%',
         width: 'auto',
-        maxHeight: 'min(100%, 740px)',
-        maxWidth: 'min(100%, 740px)',
+        maxHeight: 'min(100%, calc(100vh - 4.25rem), 860px)',
+        maxWidth: 'min(100%, calc(100vh - 4.25rem), 860px)',
         aspectRatio: '1 / 1'
       }}
     >
@@ -253,19 +253,31 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               {/* Owner Indicator Strip (Corner Ribbon) */}
               {owner && (
                 <div
-                  className="absolute top-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-bl shadow-md z-10"
+                  className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl shadow-md z-10"
                   style={{ backgroundColor: owner.color }}
                   title={`Owned by ${owner.name}`}
                 />
               )}
 
-              {/* Tile Content: Name & Price stacked cleanly */}
+              {/* Tile Content: Flag, Name & Price stacked cleanly */}
               <div className={`flex-1 flex flex-col justify-between items-center text-center p-0.5 sm:p-1 overflow-hidden ${
                 side === 'bottom' ? 'flex-col-reverse' : 'flex-col'
               }`}>
-                {/* Tile Label */}
-                <div className="flex-1 flex items-center justify-center">
-                  <span className="text-[7px] sm:text-[8px] md:text-[8.5px] font-bold leading-[1.05] text-gray-100 line-clamp-2">
+                {/* Tile Flag & Label */}
+                <div className="flex-1 flex flex-col items-center justify-center min-w-0">
+                  {tile.countryCode ? (
+                    <img
+                      src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
+                      alt={tile.name}
+                      className="w-3.5 h-2.5 sm:w-4 sm:h-3 rounded-[1px] shadow-sm object-cover select-none pointer-events-none mb-0.5"
+                      loading="lazy"
+                    />
+                  ) : tile.flag ? (
+                    <span className="text-[9px] sm:text-[11px] leading-none mb-0.5 select-none">
+                      {tile.flag}
+                    </span>
+                  ) : null}
+                  <span className="text-[7px] sm:text-[8px] md:text-[8.5px] font-bold leading-[1.05] text-gray-100 line-clamp-2 px-0.5">
                     {tile.name}
                   </span>
                 </div>
@@ -295,7 +307,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                       key={p.id}
                       className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[11px] font-black border-2 border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.8)] transform hover:scale-125 transition-transform"
                       style={{ backgroundColor: p.color }}
-                      title={`${p.name} (${p.cash})`}
+                      title={`${p.name} ($${p.cash})`}
                     >
                       {p.avatar || p.name[0]}
                     </div>

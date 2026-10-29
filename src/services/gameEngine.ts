@@ -184,7 +184,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   if (tile.type === 'start') {
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'property' || tile.type === 'railroad' || tile.type === 'utility') {
-    if (tile.ownerId === null) {
+    if (!tile.ownerId) {
       // Unowned: player can buy or trigger auction
       newRoom.turnPhase = 'action';
     } else if (tile.ownerId === player.id) {
@@ -278,7 +278,7 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[player.position];
 
-  if (!tile || tile.ownerId !== null || player.cash < tile.price) return room;
+  if (!tile || Boolean(tile.ownerId) || player.cash < tile.price) return room;
 
   player.cash -= tile.price;
   tile.ownerId = playerId;
@@ -301,7 +301,7 @@ export function startAuctionForCurrentTile(room: GameRoom, playerId: string): Ga
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[player.position];
 
-  if (!tile || tile.ownerId !== null) return room;
+  if (!tile || Boolean(tile.ownerId)) return room;
 
   const auction: AuctionState = {
     tileIndex: tile.index,
@@ -561,4 +561,37 @@ function updateNetWorths(room: GameRoom) {
     });
     player.netWorth = net;
   });
+}
+
+export function sellPropertyToBank(room: GameRoom, playerId: string, tileIndex: number): GameRoom {
+  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+  const player = newRoom.players[playerId];
+  const tile = newRoom.tiles[tileIndex];
+
+  if (!tile || tile.ownerId !== playerId) return room;
+
+  // Cannot sell if there are houses on any property in the group
+  if (tile.group) {
+    const groupTiles = newRoom.tiles.filter(t => t.group === tile.group);
+    const hasHousesInGroup = groupTiles.some(t => t.houses > 0);
+    if (hasHousesInGroup) return room;
+  }
+
+  // Calculate sell price: 70% of base purchase price, or mortgage value if mortgaged
+  const sellPrice = tile.isMortgaged ? tile.mortgageValue : Math.floor(tile.price * 0.7);
+  player.cash += sellPrice;
+  tile.ownerId = null;
+  tile.houses = 0;
+  tile.isMortgaged = false;
+
+  newRoom.logs.push({
+    id: `sell_prop_${Date.now()}`,
+    text: `🏛️ ${player.name} sold ${tile.flag || ''} ${tile.name} to the Bank for $${sellPrice}!`,
+    timestamp: Date.now(),
+    type: 'buy'
+  });
+
+  sound.playCash();
+  updateNetWorths(newRoom);
+  return newRoom;
 }

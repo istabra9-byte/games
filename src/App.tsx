@@ -8,6 +8,7 @@ import {
   startAuctionForCurrentTile, 
   placeAuctionBid, 
   finishAuction, 
+  sellPropertyToBank, 
   endTurn 
 } from './services/gameEngine';
 import { multiplayer } from './services/firebase';
@@ -73,6 +74,7 @@ export const App: React.FC = () => {
   const [room, setRoom] = useState<GameRoom | null>(null);
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
   const [showTradeModal, setShowTradeModal] = useState<boolean>(false);
+  const [selectedTradePartnerId, setSelectedTradePartnerId] = useState<string>('');
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
@@ -100,6 +102,34 @@ export const App: React.FC = () => {
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, [roomId]);
+
+
+  // Shortcut 'T' to open and focus chat like standard gaming
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      if ((e.key === 't' || e.key === 'T') && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setMobileTab('chat');
+        setTimeout(() => {
+          const chatInput = document.querySelector<HTMLInputElement>('input[placeholder*="Type a message"]');
+          if (chatInput) {
+            chatInput.focus();
+          }
+        }, 50);
+      } else if (e.key === 'Escape' && isInput) {
+        (target as HTMLElement).blur();
+        if (mobileTab === 'chat') {
+          setMobileTab('board');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileTab]);
 
   // Save current player info locally
   useEffect(() => {
@@ -204,6 +234,9 @@ export const App: React.FC = () => {
     const currentTurnId = room.playerOrder[room.currentTurnPlayerIndex];
     const turnPlayer = room.players[currentTurnId];
 
+    // Only host executes AI bot turns to prevent duplicate/racing updates
+    if (room.hostId !== currentPlayer.id) return;
+
     if (turnPlayer && turnPlayer.isBot && !turnPlayer.isBankrupt) {
       const botTimer = setTimeout(() => {
         if (room.turnPhase === 'roll') {
@@ -211,7 +244,7 @@ export const App: React.FC = () => {
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'action') {
           const landed = room.tiles[turnPlayer.position];
-          if (landed && landed.ownerId === null && turnPlayer.cash >= landed.price + 100) {
+          if (landed && !landed.ownerId && turnPlayer.cash >= landed.price + 100) {
             const nextRoom = buyCurrentProperty(room, turnPlayer.id);
             multiplayer.updateRoom(nextRoom);
           } else {
@@ -527,6 +560,15 @@ export const App: React.FC = () => {
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Propose Trade button */}
+          <button
+            onClick={() => setShowTradeModal(true)}
+            title="Propose Trade with Player"
+            className="px-2.5 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <span className="hidden sm:inline">Trade</span>
+          </button>
+
           {/* Restart match button */}
           <button
             onClick={handleRestartRoom}
@@ -602,7 +644,7 @@ export const App: React.FC = () => {
           <Leaderboard
             room={room}
             currentPlayerId={currentPlayer.id}
-            onInitiateTrade={(targetId) => setShowTradeModal(true)}
+            onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
           />
         </div>
       </div>
@@ -635,6 +677,7 @@ export const App: React.FC = () => {
         <TradeModal
           room={room}
           currentPlayerId={currentPlayer.id}
+          initialPartnerId={selectedTradePartnerId}
           onSendTrade={handleSendTrade}
           onAcceptTrade={handleAcceptTrade}
           onDeclineTrade={handleDeclineTrade}
@@ -648,6 +691,16 @@ export const App: React.FC = () => {
           room={room}
           currentPlayerId={currentPlayer.id}
           onClose={() => setSelectedTile(null)}
+          onBuyProperty={(idx) => {
+            const updated = buyCurrentProperty(room, currentPlayer.id);
+            multiplayer.updateRoom(updated);
+            setSelectedTile(updated.tiles[idx]);
+          }}
+          onSellProperty={(idx) => {
+            const updated = sellPropertyToBank(room, currentPlayer.id, idx);
+            multiplayer.updateRoom(updated);
+            setSelectedTile(updated.tiles[idx]);
+          }}
           onBuildHouse={(idx) => {
             const updated: GameRoom = JSON.parse(JSON.stringify(room));
             const t = updated.tiles[idx];

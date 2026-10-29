@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tile, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Home, X, DollarSign, Building } from 'lucide-react';
+import { Home, X, DollarSign, Building, AlertCircle } from 'lucide-react';
 
 interface PropertyDetailModalProps {
   tile: Tile | null;
@@ -12,6 +12,8 @@ interface PropertyDetailModalProps {
   onSellHouse: (tileIndex: number) => void;
   onMortgage: (tileIndex: number) => void;
   onUnmortgage: (tileIndex: number) => void;
+  onSellProperty: (tileIndex: number) => void;
+  onBuyProperty?: (tileIndex: number) => void;
 }
 
 export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
@@ -22,7 +24,9 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   onBuildHouse,
   onSellHouse,
   onMortgage,
-  onUnmortgage
+  onUnmortgage,
+  onSellProperty,
+  onBuyProperty
 }) => {
   if (!tile) return null;
 
@@ -40,6 +44,12 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   const canMortgage = isOwner && !tile.isMortgaged && tile.houses === 0;
   const canUnmortgage = isOwner && tile.isMortgaged && myPlayer && myPlayer.cash >= Math.floor(tile.mortgageValue * 1.1);
 
+  const isCurrentTurnPlayer = room.playerOrder[room.currentTurnPlayerIndex] === currentPlayerId;
+  const isLandedHere = myPlayer && myPlayer.position === tile.index;
+  const canBuyNow = !tile.ownerId && isCurrentTurnPlayer && isLandedHere && room.turnPhase === 'action' && myPlayer.cash >= tile.price;
+
+  const sellToBankPrice = tile.isMortgaged ? tile.mortgageValue : Math.floor(tile.price * 0.7);
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl text-white relative">
@@ -50,14 +60,26 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
         >
           <button
             onClick={onClose}
-            className="absolute top-2 right-2 text-white/80 hover:text-white p-1 rounded-full bg-black/20"
+            className="absolute top-2 right-2 text-white/80 hover:text-white p-1 rounded-full bg-black/20 hover:bg-black/40 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
-          <h2 className="text-xl font-black tracking-wide drop-shadow text-white">
-            {tile.name}
-          </h2>
-          <span className="text-xs uppercase font-bold text-white/90 tracking-widest">
+          
+          <div className="flex items-center justify-center gap-2">
+            {tile.countryCode ? (
+              <img
+                src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
+                alt={tile.name}
+                className="w-6 h-4 rounded shadow object-cover"
+              />
+            ) : tile.flag ? (
+              <span className="text-2xl drop-shadow">{tile.flag}</span>
+            ) : null}
+            <h2 className="text-xl font-black tracking-wide drop-shadow text-white">
+              {tile.name}
+            </h2>
+          </div>
+          <span className="text-xs uppercase font-bold text-white/90 tracking-widest mt-0.5 block">
             {groupMeta ? groupMeta.name : tile.type.toUpperCase()}
           </span>
         </div>
@@ -78,6 +100,20 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               )}
             </span>
           </div>
+
+          {/* Quick Buy button if landed here */}
+          {canBuyNow && onBuyProperty && (
+            <button
+              onClick={() => {
+                onBuyProperty(tile.index);
+                onClose();
+              }}
+              className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm rounded-xl flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer border border-emerald-400/40"
+            >
+              <DollarSign className="w-4 h-4" />
+              <span>Buy {tile.name} for ${tile.price}</span>
+            </button>
+          )}
 
           {/* Rent Schedule for properties */}
           {tile.type === 'property' && tile.rent.length >= 6 && (
@@ -121,7 +157,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             <span className="font-mono font-bold text-gray-200">${tile.mortgageValue}</span>
           </div>
 
-          {/* Owner Actions */}
+          {/* Owner Actions: Build, Sell House, Mortgage, Sell to Bank */}
           {isOwner && (
             <div className="pt-2 space-y-2 border-t border-purple-800/40">
               {/* Build / Sell house buttons */}
@@ -130,7 +166,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   <button
                     onClick={() => onBuildHouse(tile.index)}
                     disabled={!canBuildHouse}
-                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1"
+                    className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
                   >
                     <Home className="w-3.5 h-3.5" />
                     <span>Build (${tile.houseCost})</span>
@@ -139,32 +175,46 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   <button
                     onClick={() => onSellHouse(tile.index)}
                     disabled={!canSellHouse}
-                    className="flex-1 py-1.5 bg-amber-600/80 hover:bg-amber-600 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1"
+                    className="flex-1 py-1.5 bg-amber-600/80 hover:bg-amber-600 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 cursor-pointer transition-colors"
                   >
-                    <span>Sell (+${Math.floor((tile.houseCost || 0) / 2)})</span>
+                    <span>Sell House (+${Math.floor((tile.houseCost || 0) / 2)})</span>
                   </button>
                 </div>
               )}
 
               {/* Mortgage toggle */}
-              <div>
+              <div className="flex items-center gap-2">
                 {!tile.isMortgaged ? (
                   <button
                     onClick={() => onMortgage(tile.index)}
                     disabled={!canMortgage}
-                    className="w-full py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-gray-200 font-bold text-xs rounded-lg"
+                    className="flex-1 py-1.5 bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-gray-200 font-bold text-xs rounded-lg cursor-pointer transition-colors"
                   >
-                    Mortgage for ${tile.mortgageValue}
+                    Mortgage (${tile.mortgageValue})
                   </button>
                 ) : (
                   <button
                     onClick={() => onUnmortgage(tile.index)}
                     disabled={!canUnmortgage}
-                    className="w-full py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white font-bold text-xs rounded-lg"
+                    className="flex-1 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white font-bold text-xs rounded-lg cursor-pointer transition-colors"
                   >
-                    Unmortgage for ${Math.floor(tile.mortgageValue * 1.1)}
+                    Unmortgage (${Math.floor(tile.mortgageValue * 1.1)})
                   </button>
                 )}
+
+                {/* Sell Property to Bank */}
+                <button
+                  onClick={() => {
+                    onSellProperty(tile.index);
+                    onClose();
+                  }}
+                  disabled={tile.houses > 0}
+                  className="flex-1 py-1.5 bg-rose-700 hover:bg-rose-600 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 shadow cursor-pointer transition-colors"
+                  title={tile.houses > 0 ? "Sell all houses first" : "Sell property to the bank"}
+                >
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Sell Prop (+${sellToBankPrice})</span>
+                </button>
               </div>
             </div>
           )}

@@ -25,6 +25,8 @@ export type PropertyGroup =
 export interface Tile {
   index: number;
   name: string;
+  flag?: string;
+  countryCode?: string;
   type: TileType;
   group?: PropertyGroup;
   price: number;

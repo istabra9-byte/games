@@ -124,7 +124,18 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
               className="py-1 px-3 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-between"
               style={{ backgroundColor: groupMeta ? groupMeta.color : '#4f46e5' }}
             >
-              <span>{landedTile.name}</span>
+              <div className="flex items-center gap-1.5">
+                {landedTile.countryCode ? (
+                  <img
+                    src={`https://flagcdn.com/w40/${landedTile.countryCode}.png`}
+                    alt={landedTile.name}
+                    className="w-5 h-3.5 rounded-[2px] shadow object-cover"
+                  />
+                ) : landedTile.flag ? (
+                  <span className="text-base leading-none">{landedTile.flag}</span>
+                ) : null}
+                <span>{landedTile.name}</span>
+              </div>
               <span className="font-mono">${landedTile.price}</span>
             </div>
 
