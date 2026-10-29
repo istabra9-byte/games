@@ -2,6 +2,25 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getDatabase, ref, set, onValue, Database, off, runTransaction } from 'firebase/database';
 import { GameRoom, ChatMessage, GameLog } from '../types/game';
 import { firebaseConfig as staticConfig } from '../firebaseConfig';
+import { INITIAL_BOARD_TILES } from '../data/boardTiles';
+
+export function sanitizeRoom(room: GameRoom): GameRoom {
+  if (!room) return room;
+  if (Array.isArray(room.tiles)) {
+    room.tiles = INITIAL_BOARD_TILES.map((canonical, idx) => {
+      const saved = room.tiles[idx] || {};
+      return {
+        ...canonical,
+        ownerId: saved.ownerId || null,
+        houses: typeof saved.houses === 'number' ? saved.houses : 0,
+        isMortgaged: Boolean(saved.isMortgaged)
+      };
+    });
+  } else {
+    room.tiles = JSON.parse(JSON.stringify(INITIAL_BOARD_TILES));
+  }
+  return room;
+}
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -50,7 +69,7 @@ class MultiplayerService {
     if (this.broadcast) {
       this.broadcast.onmessage = (event) => {
         if (event.data?.type === 'ROOM_UPDATE' && event.data.room) {
-          const room: GameRoom = event.data.room;
+          const room: GameRoom = sanitizeRoom(event.data.room);
           this.memoryRooms[room.id] = room;
           this.notifySubscribers(room.id, room);
         }
@@ -96,7 +115,7 @@ class MultiplayerService {
       const unsubscribe = onValue(roomRef, (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          callback(val as GameRoom);
+          callback(sanitizeRoom(val as GameRoom));
         }
       });
       return () => off(roomRef, 'value', unsubscribe);
@@ -108,14 +127,15 @@ class MultiplayerService {
       this.activeRoomSubscribers[roomId].push(callback);
 
       if (this.memoryRooms[roomId]) {
-        callback(this.memoryRooms[roomId]);
+        callback(sanitizeRoom(this.memoryRooms[roomId]));
       } else {
         const stored = localStorage.getItem(`room_${roomId}`);
         if (stored) {
           try {
             const parsed = JSON.parse(stored);
-            this.memoryRooms[roomId] = parsed;
-            callback(parsed);
+            const sanitized = sanitizeRoom(parsed);
+            this.memoryRooms[roomId] = sanitized;
+            callback(sanitized);
           } catch (e) {}
         }
       }
@@ -133,20 +153,21 @@ class MultiplayerService {
   }
 
   public async updateRoom(room: GameRoom): Promise<void> {
-    room.lastUpdated = Date.now();
+    const cleanRoom = sanitizeRoom(room);
+    cleanRoom.lastUpdated = Date.now();
 
     if (this.isFirebaseReady && this.db) {
-      const roomRef = ref(this.db, `rooms/${room.id}`);
-      await set(roomRef, room);
+      const roomRef = ref(this.db, `rooms/${cleanRoom.id}`);
+      await set(roomRef, cleanRoom);
     } else {
-      this.memoryRooms[room.id] = room;
+      this.memoryRooms[cleanRoom.id] = cleanRoom;
       try {
-        localStorage.setItem(`room_${room.id}`, JSON.stringify(room));
+        localStorage.setItem(`room_${cleanRoom.id}`, JSON.stringify(cleanRoom));
       } catch (e) {}
       if (this.broadcast) {
-        this.broadcast.postMessage({ type: 'ROOM_UPDATE', room });
+        this.broadcast.postMessage({ type: 'ROOM_UPDATE', room: cleanRoom });
       }
-      this.notifySubscribers(room.id, room);
+      this.notifySubscribers(cleanRoom.id, cleanRoom);
     }
   }
 
