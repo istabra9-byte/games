@@ -3,6 +3,8 @@ import { Tile, Player, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent } from 'lucide-react';
 import { sound } from '../services/sound';
+import stegLogo from '../assets/steg.png';
+import sonedeLogo from '../assets/sonede.svg';
 
 interface BoardProps {
   room: GameRoom;
@@ -264,7 +266,23 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                   }`} />
                 )}
                 {tile.type === 'utility' && (
-                  tile.name.includes('Water') ? (
+                  tile.name.toUpperCase().includes('STEG') ? (
+                    <img
+                      src={stegLogo}
+                      alt="STEG"
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 object-contain drop-shadow ${
+                        isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                      }`}
+                    />
+                  ) : tile.name.toUpperCase().includes('SONEDE') ? (
+                    <img
+                      src={sonedeLogo}
+                      alt="SONEDE"
+                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 object-contain drop-shadow ${
+                        isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                      }`}
+                    />
+                  ) : tile.name.includes('Water') ? (
                     <Droplets className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-cyan-400 drop-shadow ${
                       isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                     }`} />

@@ -177,10 +177,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 65
   },
-  // 12: Power Company
+  // 12: STEG (Tunisia Electricity)
   {
     index: 12,
-    name: 'Power Company',
+    name: 'STEG',
+    country: 'Tunisia',
+    countryCode: 'tn',
     flag: '⚡',
     type: 'utility',
     group: 'utility',
@@ -408,11 +410,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 130
   },
-  // 27: Water Company
+  // 27: SONEDE (Tunisia Water)
   {
     index: 27,
-    name: 'Water Company',
-    flag: '🚰',
+    name: 'SONEDE',
+    country: 'Tunisia',
+    countryCode: 'tn',
+    flag: '💧',
     type: 'utility',
     group: 'utility',
     price: 150,

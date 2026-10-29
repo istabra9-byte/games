@@ -2,6 +2,8 @@ import React from 'react';
 import { Tile, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Home, X, DollarSign, AlertCircle, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
+import stegLogo from '../assets/steg.png';
+import sonedeLogo from '../assets/sonede.svg';
 
 interface PropertyDetailModalProps {
   tile: Tile | null;
@@ -80,7 +82,15 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
           </button>
           
           <div className="flex items-center justify-center gap-2">
-            {tile.countryCode ? (
+            {tile.name.toUpperCase().includes('STEG') ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/40 shadow p-1 bg-black/40 flex items-center justify-center">
+                <img src={stegLogo} alt="STEG" className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : tile.name.toUpperCase().includes('SONEDE') ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/40 shadow p-1 bg-black/40 flex items-center justify-center">
+                <img src={sonedeLogo} alt="SONEDE" className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : tile.countryCode ? (
               <div className="w-6 h-6 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black/30">
                 <img
                   src={`https://flagcdn.com/w40/${tile.countryCode}.png`}

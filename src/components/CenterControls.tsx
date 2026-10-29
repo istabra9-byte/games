@@ -4,6 +4,8 @@ import { DiceView } from './DiceView';
 import { TurnClock } from './TurnClock';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Dices, DollarSign, Palmtree, X, Home, ArrowRight, ShieldAlert } from 'lucide-react';
+import stegLogo from '../assets/steg.png';
+import sonedeLogo from '../assets/sonede.svg';
 
 interface CenterControlsProps {
   room: GameRoom;
@@ -139,7 +141,11 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
               }}
             >
               <div className="flex items-center gap-1.5">
-                {landedTile.countryCode ? (
+                {landedTile.name.toUpperCase().includes('STEG') ? (
+                  <img src={stegLogo} alt="STEG" className="w-5 h-4 object-contain rounded-[2px]" />
+                ) : landedTile.name.toUpperCase().includes('SONEDE') ? (
+                  <img src={sonedeLogo} alt="SONEDE" className="w-5 h-4 object-contain rounded-[2px]" />
+                ) : landedTile.countryCode ? (
                   <img
                     src={`https://flagcdn.com/w40/${landedTile.countryCode}.png`}
                     alt={landedTile.name}
