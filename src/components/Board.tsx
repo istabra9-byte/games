@@ -174,12 +174,17 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
           // Edge Tiles (Top, Right, Bottom, Left)
           const isHorizontal = side === 'left' || side === 'right';
+          const isOwned = Boolean(owner);
 
           return (
             <div
               key={tile.index}
               onClick={() => onTileClick && onTileClick(tile)}
-              className={`relative rounded-md flex overflow-hidden cursor-pointer transition-all duration-150 border border-[#221a38] bg-gradient-to-br from-[#201934] to-[#171226] hover:from-[#2a2145] hover:to-[#201934] hover:border-purple-500/70 ${
+              className={`relative rounded-md flex overflow-hidden cursor-pointer transition-all duration-200 ${
+                isOwned
+                  ? 'border-2 shadow-lg'
+                  : 'border border-[#281f3d] bg-gradient-to-br from-[#1d162d] to-[#140f21] hover:from-[#261d3b] hover:to-[#1b142c] hover:border-purple-500/60'
+              } ${
                 isHorizontal
                   ? side === 'left'
                     ? 'flex-row' // Outer price on left, flag on right
@@ -188,16 +193,37 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                     ? 'flex-col' // Outer price on top, flag on bottom
                     : 'flex-col-reverse' // Outer price on bottom, flag on top
               }`}
-              style={{ gridRowStart: row, gridColumnStart: col }}
+              style={{
+                gridRowStart: row,
+                gridColumnStart: col,
+                ...(isOwned && owner
+                  ? {
+                      background: `linear-gradient(135deg, ${owner.color}3d 0%, ${owner.color}1f 50%, #130e1f 100%)`,
+                      borderColor: owner.color,
+                      boxShadow: `0 0 10px ${owner.color}45, inset 0 0 6px ${owner.color}20`
+                    }
+                  : {})
+              }}
             >
               {/* Outer Price / Special Icon Pill */}
               <div className={`flex items-center justify-center flex-shrink-0 p-0.5 z-10 ${
                 isHorizontal ? (side === 'left' ? 'pl-0.5 sm:pl-1' : 'pr-0.5 sm:pr-1') : (side === 'top' ? 'pt-0.5 sm:pt-1' : 'pb-0.5 sm:pb-1')
               }`}>
                 {tile.price > 0 ? (
-                  <div className={`px-0.5 sm:px-1.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[6px] sm:text-[7.5px] md:text-[9px] font-mono font-bold text-white shadow-sm leading-none flex items-center justify-center ${
-                    side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
-                  }`}>
+                  <div
+                    className={`px-0.5 sm:px-1.5 py-0.5 rounded-full text-[6px] sm:text-[7.5px] md:text-[9px] font-mono font-bold shadow-sm leading-none flex items-center justify-center transition-all ${
+                      isOwned && owner
+                        ? 'text-white border border-white/50 font-black'
+                        : 'bg-white/10 border border-white/15 text-white'
+                    } ${
+                      side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                    }`}
+                    style={
+                      isOwned && owner
+                        ? { backgroundColor: owner.color, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }
+                        : undefined
+                    }
+                  >
                     {tile.price}$
                   </div>
                 ) : tile.type === 'tax' ? (
@@ -210,41 +236,49 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               </div>
 
               {/* Middle Section: City Name & Special Center Graphics */}
-              <div className="flex-1 flex flex-col justify-center items-center text-center z-10 relative overflow-visible min-w-0 px-0.5">
+              <div className={`flex-1 flex justify-center items-center text-center z-10 relative overflow-visible min-w-0 px-0.5 ${
+                isHorizontal
+                  ? side === 'left'
+                    ? 'flex-row gap-0.5 sm:gap-1'
+                    : 'flex-row-reverse gap-0.5 sm:gap-1'
+                  : 'flex-col gap-0.5'
+              }`}>
                 {/* Special Icons */}
                 {tile.type === 'chest' && (
-                  <div className={`text-xs sm:text-base md:text-xl drop-shadow mb-0.5 ${
+                  <div className={`drop-shadow flex items-center justify-center ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`}>
-                    📦
+                    <span className="text-xs sm:text-base md:text-lg">🎁</span>
                   </div>
                 )}
                 {tile.type === 'chance' && (
-                  <div className={`text-xs sm:text-base md:text-xl drop-shadow text-pink-400 font-black mb-0.5 ${
+                  <div className={`drop-shadow font-black text-pink-400 flex items-center justify-center ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`}>
-                    ❓
+                    <span className="text-xs sm:text-base md:text-lg text-[#ff4b8b] drop-shadow-[0_0_8px_rgba(255,75,139,0.7)] font-black">?</span>
                   </div>
                 )}
                 {tile.type === 'railroad' && (
-                  <Plane className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-300 drop-shadow mb-0.5 ${
+                  <Plane className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-sky-200 drop-shadow ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`} />
                 )}
                 {tile.type === 'utility' && (
                   tile.name.includes('Water') ? (
-                    <div className="text-xs sm:text-base md:text-xl drop-shadow mb-0.5">🚰</div>
+                    <Droplets className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-cyan-400 drop-shadow ${
+                      isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                    }`} />
                   ) : (
-                    <Zap className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5 ${
+                    <Zap className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-amber-400 drop-shadow fill-amber-400 ${
                       isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                     }`} />
                   )
                 )}
                 {tile.type === 'tax' && (
                   tile.name.includes('Earnings') ? (
-                    <Percent className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300 mb-0.5" />
+                    <Percent className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300" />
                   ) : (
-                    <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-300 mb-0.5" />
+                    <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-300" />
                   )
                 )}
 
@@ -260,9 +294,9 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                       ? {
                           writingMode: 'vertical-rl',
                           transform: side === 'left' ? 'rotate(180deg)' : undefined,
-                          fontSize: tile.name.length > 11 ? '6.5px' : '7.5px',
-                          maxHeight: '44px',
-                          display: 'inline-block'
+                          fontSize: tile.name.length > 12 ? '6.5px' : tile.name.length > 9 ? '7.5px' : '8.5px',
+                          display: 'inline-block',
+                          whiteSpace: 'nowrap'
                         }
                       : undefined
                   }
@@ -317,13 +351,18 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 </div>
               )}
 
-              {/* Owner Indicator Strip (Corner Ribbon with player color) */}
+              {/* Owner Indicator Strip & Badge */}
               {owner && (
                 <div
-                  className="absolute top-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-bl shadow-md z-15"
-                  style={{ backgroundColor: owner.color }}
+                  className="absolute top-0 right-0 z-20 flex items-center justify-center rounded-bl font-black text-[6.5px] sm:text-[8px] text-white px-1 py-0.5 shadow-md border-b border-l border-white/30"
+                  style={{
+                    backgroundColor: owner.color,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)'
+                  }}
                   title={`Owned by ${owner.name}`}
-                />
+                >
+                  <span>{owner.avatar || owner.name[0]}</span>
+                </div>
               )}
 
               {/* Mortgaged Overlay */}

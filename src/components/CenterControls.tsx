@@ -132,7 +132,11 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             {/* Deed Header */}
             <div
               className="py-1 px-3 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-between"
-              style={{ backgroundColor: groupMeta ? groupMeta.color : '#4f46e5' }}
+              style={{
+                backgroundColor: landedTile.ownerId && room.players[landedTile.ownerId]
+                  ? room.players[landedTile.ownerId].color
+                  : '#2a1e45'
+              }}
             >
               <div className="flex items-center gap-1.5">
                 {landedTile.countryCode ? (

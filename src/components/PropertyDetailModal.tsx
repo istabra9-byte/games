@@ -70,7 +70,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
         {/* Title & Group Color Strip */}
         <div
           className="p-4 text-center relative"
-          style={{ backgroundColor: groupMeta ? groupMeta.color : '#2e214a' }}
+          style={{ backgroundColor: owner ? owner.color : '#251b3a' }}
         >
           <button
             onClick={onClose}
