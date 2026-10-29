@@ -574,7 +574,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full flex items-center justify-center overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
           <Board
             room={room}
             onTileClick={(tile) => setSelectedTile(tile)}
