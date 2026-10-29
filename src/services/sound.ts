@@ -63,6 +63,15 @@ class SoundService {
     this.playWarmTone(523.25, time, 0.06, 0.18, 'sine'); // C5
   }
 
+  // Quick UI Select Click sound
+  public playSelect() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    this.playWarmTone(659.25, this.ctx.currentTime, 0.08, 0.22, 'sine');
+  }
+
   // 2. Gentle Wooden Dice Roll (soft, muted clicks)
   public playDiceRoll() {
     if (!this.enabled) return;

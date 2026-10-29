@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameRoom, Player, GameSettings } from '../types/game';
-import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders } from 'lucide-react';
+import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, ShoppingBag, Lock } from 'lucide-react';
 import { sound } from '../services/sound';
-import { PlayerAvatar, PLAYER_APPEARANCES, EXTRA_COLORS } from './PlayerAvatar';
+import { PlayerAvatar, PLAYER_COLORS, ALL_APPEARANCES, BASE_APPEARANCES } from './PlayerAvatar';
+import { ShopModal } from './ShopModal';
 
 interface LobbyProps {
   room: GameRoom;
@@ -29,14 +30,55 @@ export const Lobby: React.FC<LobbyProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showShopModal, setShowShopModal] = useState(false);
   const [name, setName] = useState(currentPlayer.name);
   const isHost = room.hostId === currentPlayer.id;
 
+  // Unlocked appearance styles from localStorage
+  const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => {
+    const saved = localStorage.getItem('richup_unlocked_avatars');
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr)) return arr;
+      } catch (e) {}
+    }
+    return ['navy'];
+  });
+
+  const refreshUnlocked = () => {
+    const saved = localStorage.getItem('richup_unlocked_avatars');
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr)) setUnlockedAvatars(arr);
+      } catch (e) {}
+    }
+  };
+
+  const playersList = Object.values(room.players);
+  const otherPlayers = playersList.filter(p => p.id !== currentPlayer.id);
+  const takenColors = new Set(otherPlayers.map(p => p.color.toLowerCase()));
+
+  // Auto-reassign if current player's color is already taken by someone else
+  useEffect(() => {
+    if (takenColors.has(currentPlayer.color.toLowerCase())) {
+      const freeColor = PLAYER_COLORS.find(c => !takenColors.has(c.hex.toLowerCase()));
+      if (freeColor) {
+        onUpdatePlayer(name, currentPlayer.avatar || 'navy', freeColor.hex);
+      }
+    }
+  }, [room.players, currentPlayer.id, currentPlayer.color]);
+
   const handleRandomize = () => {
     const randomName = `${RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)]}_${Math.floor(Math.random() * 900 + 100)}`;
-    const randomApp = PLAYER_APPEARANCES[Math.floor(Math.random() * PLAYER_APPEARANCES.length)];
+    const freeColors = PLAYER_COLORS.filter(c => !takenColors.has(c.hex.toLowerCase()));
+    const chosenColor = freeColors.length > 0 
+      ? freeColors[Math.floor(Math.random() * freeColors.length)].hex 
+      : PLAYER_COLORS[0].hex;
+
     setName(randomName);
-    onUpdatePlayer(randomName, randomApp.style, randomApp.color);
+    onUpdatePlayer(randomName, 'navy', chosenColor);
     sound.playDiceRoll();
   };
 
@@ -48,8 +90,6 @@ export const Lobby: React.FC<LobbyProps> = ({
       setTimeout(() => setCopied(false), 2000);
     });
   };
-
-  const playersList = Object.values(room.players);
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 max-w-xl mx-auto w-full text-white relative select-none">
@@ -111,59 +151,112 @@ export const Lobby: React.FC<LobbyProps> = ({
             placeholder="Enter your nickname"
           />
 
-          {/* Player Appearance Selection (Matching Richup Googly-Eyed Characters & Styles) */}
+          {/* Player Appearance Selection (Navy by default, more in Shop) */}
           <div className="flex flex-col gap-2 pt-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">
                 Player Appearance
               </span>
-              <span className="text-[11px] text-purple-400 font-semibold capitalize">
-                {PLAYER_APPEARANCES.find(a => a.style === currentPlayer.avatar)?.name || 'Custom'}
-              </span>
+              <button
+                onClick={() => setShowShopModal(true)}
+                className="px-2.5 py-1 bg-gradient-to-r from-amber-500/20 via-purple-600/30 to-pink-500/20 hover:from-amber-500/30 hover:to-pink-500/30 border border-amber-400/50 rounded-xl text-xs font-bold text-amber-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Shop</span>
+                <span className="text-[10px] bg-amber-400/25 px-1 py-0.2 rounded font-mono">🪙</span>
+              </button>
             </div>
 
-            {/* Grid of Character Cards with Cartoon Googly Eyes */}
-            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
-              {PLAYER_APPEARANCES.map((app) => {
-                const isSelected = currentPlayer.avatar === app.style;
+            {/* Available Appearances (Navy + Any purchased from Shop) */}
+            <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
+              {ALL_APPEARANCES.filter(a => unlockedAvatars.includes(a.style) || a.style === 'navy').map((app) => {
+                const isSelected = (currentPlayer.avatar || 'navy') === app.style;
                 return (
                   <button
                     key={app.id}
-                    onClick={() => onUpdatePlayer(name, app.style, app.color)}
-                    className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                    onClick={() => {
+                      onUpdatePlayer(name, app.style, currentPlayer.color);
+                      sound.playSelect();
+                    }}
+                    className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border min-w-[72px] sm:min-w-[80px] ${
                       isSelected
-                        ? 'bg-purple-950/70 border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-102 ring-1 ring-purple-400'
+                        ? 'bg-purple-950/80 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.5)] scale-102 ring-1 ring-purple-400'
                         : 'bg-[#181126] border-purple-900/30 hover:border-purple-700/60 hover:bg-[#201633] opacity-80 hover:opacity-100'
                     }`}
                   >
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
-                      <PlayerAvatar avatar={app.style} color={app.color} size={42} />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
+                      <PlayerAvatar avatar={app.style} color={currentPlayer.color} size={36} />
                     </div>
-                    <span className="text-[10px] sm:text-[11px] font-bold text-gray-200 truncate max-w-full">
+                    <span className="text-[10px] font-bold text-gray-200 truncate max-w-full">
                       {app.name}
                     </span>
                   </button>
                 );
               })}
+
+              {/* Shop Prompt Card to Browse More Characters */}
+              <button
+                onClick={() => setShowShopModal(true)}
+                className="p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border border-dashed border-purple-700/60 bg-[#160f25]/50 hover:bg-[#201633] hover:border-purple-500 min-w-[72px] sm:min-w-[80px] opacity-75 hover:opacity-100"
+                title="Browse Character Shop"
+              >
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-900/40 flex items-center justify-center text-purple-300">
+                  <Plus className="w-5 h-5 text-amber-400" />
+                </div>
+                <span className="text-[9.5px] font-bold text-amber-300">
+                  More
+                </span>
+              </button>
             </div>
 
-            {/* Choose / Fine-Tune Player Color */}
-            <div className="flex flex-col gap-1.5 mt-1">
-              <span className="text-[11px] text-gray-400 font-semibold">Choose Player Color:</span>
-              <div className="flex items-center gap-2 flex-wrap">
-                {EXTRA_COLORS.map((col) => (
-                  <button
-                    key={col}
-                    onClick={() => onUpdatePlayer(name, currentPlayer.avatar || 'navy', col)}
-                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full transition-transform cursor-pointer shadow ${
-                      currentPlayer.color === col
-                        ? 'scale-115 ring-2 ring-white shadow-lg'
-                        : 'hover:scale-110 opacity-70 hover:opacity-100'
-                    }`}
-                    style={{ backgroundColor: col }}
-                    title={col}
-                  />
-                ))}
+            {/* Choose Player Color (8 Unique Colors, Only One Player Per Color) */}
+            <div className="flex flex-col gap-1.5 mt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-gray-400 font-semibold">
+                  Choose Player Color (8 Unique Colors):
+                </span>
+                <span className="text-[10px] text-purple-400 font-mono font-bold">
+                  {PLAYER_COLORS.find(c => c.hex.toLowerCase() === currentPlayer.color.toLowerCase())?.name || 'Selected'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-8 gap-2 bg-[#120c1d] p-2 rounded-xl border border-purple-950">
+                {PLAYER_COLORS.map((col) => {
+                  const isTaken = takenColors.has(col.hex.toLowerCase());
+                  const isSelected = currentPlayer.color.toLowerCase() === col.hex.toLowerCase();
+                  const owner = otherPlayers.find(p => p.color.toLowerCase() === col.hex.toLowerCase());
+
+                  return (
+                    <button
+                      key={col.id}
+                      disabled={isTaken}
+                      onClick={() => {
+                        if (!isTaken) {
+                          onUpdatePlayer(name, currentPlayer.avatar || 'navy', col.hex);
+                          sound.playSelect();
+                        }
+                      }}
+                      className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'scale-110 ring-3 ring-white shadow-[0_0_14px_rgba(255,255,255,0.7)] z-10'
+                          : isTaken
+                          ? 'opacity-30 cursor-not-allowed filter grayscale-[40%]'
+                          : 'hover:scale-105 opacity-85 hover:opacity-100 cursor-pointer shadow'
+                      }`}
+                      style={{ backgroundColor: col.hex }}
+                      title={isTaken ? `Taken by ${owner?.name || 'another player'}` : col.name}
+                    >
+                      {isSelected && (
+                        <Check className="w-4 h-4 text-white stroke-[3] drop-shadow" />
+                      )}
+                      {isTaken && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-full h-0.5 bg-white/70 rotate-45 transform" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -333,6 +426,21 @@ export const Lobby: React.FC<LobbyProps> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Character Shop Modal */}
+      {showShopModal && (
+        <ShopModal
+          currentAvatar={currentPlayer.avatar || 'navy'}
+          onSelectAvatar={(style) => {
+            onUpdatePlayer(name, style, currentPlayer.color);
+            refreshUnlocked();
+          }}
+          onClose={() => {
+            setShowShopModal(false);
+            refreshUnlocked();
+          }}
+        />
       )}
     </div>
   );

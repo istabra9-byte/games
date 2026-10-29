@@ -26,7 +26,7 @@ import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
-import { PlayerAvatar } from './components/PlayerAvatar';
+import { PlayerAvatar, PLAYER_COLORS, COLOR_HEXES } from './components/PlayerAvatar';
 import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -45,14 +45,22 @@ export const App: React.FC = () => {
   const [currentPlayer, setCurrentPlayer] = useState<Player>(() => {
     const saved = localStorage.getItem('richup_player');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const p = JSON.parse(saved);
+        if (p.avatar === 'red_wine') p.avatar = 'navy';
+        // Ensure color is one of the 8 canonical distinct colors
+        if (!COLOR_HEXES.map(c => c.toLowerCase()).includes((p.color || '').toLowerCase())) {
+          p.color = COLOR_HEXES[0];
+        }
+        return p;
+      } catch (e) {}
     }
     const newId = `p_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     return {
       id: newId,
       name: `Player_${Math.floor(Math.random() * 900 + 100)}`,
       avatar: 'navy',
-      color: '#2945b5',
+      color: '#2563eb', // Royal Blue (from the 8 distinct colors)
       cash: 1500,
       position: 0,
       inJail: false,
@@ -195,8 +203,19 @@ export const App: React.FC = () => {
       // Auto-register peer player in lobby if not already in room
       if (updatedRoom.status === 'lobby' && !updatedRoom.players[currentPlayer.id]) {
         const isFirst = Object.keys(updatedRoom.players).length === 0;
+
+        // Ensure player color is unique among the 8 colors
+        const takenColors = new Set(Object.values(updatedRoom.players).map(p => p.color.toLowerCase()));
+        let uniqueColor = currentPlayer.color;
+        if (takenColors.has(uniqueColor.toLowerCase())) {
+          uniqueColor = PLAYER_COLORS.find(c => !takenColors.has(c.hex.toLowerCase()))?.hex || PLAYER_COLORS[0].hex;
+          setCurrentPlayer(prev => ({ ...prev, color: uniqueColor }));
+        }
+
         const playerToAdd: Player = {
           ...currentPlayer,
+          color: uniqueColor,
+          avatar: currentPlayer.avatar === 'red_wine' ? 'navy' : currentPlayer.avatar,
           isHost: isFirst || updatedRoom.hostId === currentPlayer.id
         };
         const nextRoom = { ...updatedRoom };
@@ -372,25 +391,20 @@ export const App: React.FC = () => {
     if (!room) return;
     const botNum = Object.keys(room.players).length + 1;
     const botId = `bot_${Date.now()}`;
-    const botStyles = [
-      { avatar: 'fire', color: '#ff4500' },
-      { avatar: 'alien', color: '#10b981' },
-      { avatar: 'bomb', color: '#3c3836' },
-      { avatar: 'strawberry', color: '#e11d48' },
-      { avatar: 'lemon', color: '#facc15' },
-      { avatar: 'ghost', color: '#00d2d3' },
-      { avatar: 'cat', color: '#4f46e5' },
-      { avatar: 'cloud', color: '#e2e8f0' },
-      { avatar: 'donut', color: '#ec4899' },
-      { avatar: 'red_wine', color: '#6b2824' }
-    ];
-    const chosenBot = botStyles[(botNum - 2 + botStyles.length) % botStyles.length];
+    
+    // Pick an unused color from the 8 canonical colors so each player has a unique color
+    const takenColors = new Set(Object.values(room.players).map(p => p.color.toLowerCase()));
+    const availableColor = PLAYER_COLORS.find(c => !takenColors.has(c.hex.toLowerCase()))?.hex || PLAYER_COLORS[botNum % PLAYER_COLORS.length].hex;
+
+    // Pick cute googly-eyed avatar from shop appearances (never red_wine)
+    const botAvatars = ['fire', 'alien', 'bomb', 'strawberry', 'lemon', 'ghost', 'cat', 'cloud', 'donut', 'apple', 'star', 'heart'];
+    const chosenAvatar = botAvatars[(botNum - 2 + botAvatars.length) % botAvatars.length];
 
     const newBot: Player = {
       id: botId,
       name: `AI_Bot_${botNum}`,
-      avatar: chosenBot.avatar,
-      color: chosenBot.color,
+      avatar: chosenAvatar,
+      color: availableColor,
       cash: room.settings.startingCash,
       position: 0,
       inJail: false,

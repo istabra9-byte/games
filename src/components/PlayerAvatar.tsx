@@ -5,45 +5,61 @@ export interface AppearanceOption {
   name: string;
   color: string;
   style: string;
+  price: number;
+  description?: string;
 }
 
-export const PLAYER_APPEARANCES: AppearanceOption[] = [
-  { id: 'navy', name: 'Navy', color: '#2945b5', style: 'navy' },
-  { id: 'red_wine', name: 'Red Wine', color: '#6b2824', style: 'red_wine' },
-  { id: 'cloud', name: 'Cloud', color: '#e2e8f0', style: 'cloud' },
-  { id: 'lilac', name: 'Lilac', color: '#c48df5', style: 'lilac' },
-  { id: 'bomb', name: 'Bomb', color: '#3c3836', style: 'bomb' },
-  { id: 'apple', name: 'Apple', color: '#48bb35', style: 'apple' },
-  { id: 'poop', name: 'Poop', color: '#7c441c', style: 'poop' },
-  { id: 'strawberry', name: 'Strawberry', color: '#e11d48', style: 'strawberry' },
-  { id: 'fire', name: 'Fire', color: '#ff4500', style: 'fire' },
-  { id: 'lemon', name: 'Lemon', color: '#facc15', style: 'lemon' },
-  { id: 'ghost', name: 'Ghost', color: '#00d2d3', style: 'ghost' },
-  { id: 'heart', name: 'Heart', color: '#f43f5e', style: 'heart' },
-  { id: 'star', name: 'Star', color: '#f59e0b', style: 'star' },
-  { id: 'cat', name: 'Cat', color: '#4f46e5', style: 'cat' },
-  { id: 'alien', name: 'Alien', color: '#10b981', style: 'alien' },
-  { id: 'donut', name: 'Donut', color: '#ec4899', style: 'donut' },
+// Default free appearances available in lobby
+export const BASE_APPEARANCES: AppearanceOption[] = [
+  { id: 'navy', name: 'Navy', color: '#2563eb', style: 'navy', price: 0 }
 ];
 
-export const EXTRA_COLORS = [
-  '#2945b5', // Navy
-  '#6b2824', // Red Wine
-  '#ff253a', // Crimson Red
-  '#07bc0c', // Grass Green
-  '#f1c40f', // Bright Yellow
-  '#9b51e0', // Royal Purple
-  '#ff6b22', // Flame Orange
-  '#00d2d3', // Neon Cyan
-  '#fd79a8', // Bubblegum Pink
-  '#10b981', // Emerald
-  '#6366f1', // Indigo
-  '#14b8a6', // Teal
-  '#f43f5e', // Rose Red
-  '#c48df5', // Soft Lilac
-  '#3c3836', // Charcoal
-  '#e2e8f0', // Cloud Silver
+// Appearances available exclusively in the Shop for coins
+export const SHOP_APPEARANCES: AppearanceOption[] = [
+  { id: 'cloud', name: 'Cloud', color: '#e2e8f0', style: 'cloud', price: 80, description: 'Fluffy & dreamy cloud' },
+  { id: 'lilac', name: 'Lilac', color: '#c48df5', style: 'lilac', price: 80, description: 'Charming pastel blossom' },
+  { id: 'bomb', name: 'Bomb', color: '#3c3836', style: 'bomb', price: 90, description: 'Sparks ready to detonate' },
+  { id: 'apple', name: 'Apple', color: '#48bb35', style: 'apple', price: 90, description: 'Fresh & crunchy green apple' },
+  { id: 'poop', name: 'Poop', color: '#7c441c', style: 'poop', price: 90, description: 'Cheeky & funny swirl' },
+  { id: 'strawberry', name: 'Strawberry', color: '#e11d48', style: 'strawberry', price: 100, description: 'Sweet dotted berry' },
+  { id: 'fire', name: 'Fire', color: '#ff4500', style: 'fire', price: 130, description: 'Blazing hot flame' },
+  { id: 'lemon', name: 'Lemon', color: '#facc15', style: 'lemon', price: 180, description: 'Sour & zesty citrus' },
+  { id: 'ghost', name: 'Ghost', color: '#00d2d3', style: 'ghost', price: 200, description: 'Spooky neon phantom' },
+  { id: 'heart', name: 'Heart', color: '#f43f5e', style: 'heart', price: 200, description: 'Romantic ruby heart' },
+  { id: 'star', name: 'Star', color: '#f59e0b', style: 'star', price: 220, description: 'Shining celestial star' },
+  { id: 'cat', name: 'Cat', color: '#4f46e5', style: 'cat', price: 250, description: 'Curious feline with whiskers' },
+  { id: 'alien', name: 'Alien', color: '#10b981', style: 'alien', price: 280, description: 'Visitor from deep space' },
+  { id: 'donut', name: 'Donut', color: '#ec4899', style: 'donut', price: 300, description: 'Glazed with colorful sprinkles' },
 ];
+
+export const ALL_APPEARANCES: AppearanceOption[] = [
+  ...BASE_APPEARANCES,
+  ...SHOP_APPEARANCES
+];
+
+// For lobby selection: only base appearances unless unlocked
+export const PLAYER_APPEARANCES: AppearanceOption[] = BASE_APPEARANCES;
+
+export interface PlayerColorOption {
+  id: string;
+  name: string;
+  hex: string;
+}
+
+// Exactly 8 distinct, high-contrast, non-black player colors
+export const PLAYER_COLORS: PlayerColorOption[] = [
+  { id: 'blue', name: 'Royal Blue', hex: '#2563eb' },
+  { id: 'red', name: 'Crimson Red', hex: '#dc2626' },
+  { id: 'green', name: 'Emerald Green', hex: '#16a34a' },
+  { id: 'yellow', name: 'Golden Yellow', hex: '#eab308' },
+  { id: 'purple', name: 'Electric Purple', hex: '#9333ea' },
+  { id: 'cyan', name: 'Turquoise Cyan', hex: '#06b6d4' },
+  { id: 'pink', name: 'Hot Pink', hex: '#ec4899' },
+  { id: 'orange', name: 'Tangerine Orange', hex: '#ea580c' },
+];
+
+export const COLOR_HEXES = PLAYER_COLORS.map(c => c.hex);
+export const EXTRA_COLORS = COLOR_HEXES;
 
 // Reusable Googly Eyes component with signature cartoon look
 interface GooglyEyesProps {
@@ -105,14 +121,6 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
 
   const renderShape = () => {
     switch (styleId) {
-      case 'red_wine':
-        return (
-          <>
-            <circle cx="50" cy="50" r="42" fill={color || '#6b2824'} stroke="rgba(0,0,0,0.25)" strokeWidth="2" />
-            <GooglyEyes x1={39} y1={62} x2={61} y2={62} r={9.5} pupilR={4.6} look="left" />
-          </>
-        );
-
       case 'cloud':
         return (
           <>
