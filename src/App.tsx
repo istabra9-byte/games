@@ -5,9 +5,12 @@ import {
   startGame, 
   rollDice, 
   buyCurrentProperty, 
-  startAuctionForCurrentTile, 
-  placeAuctionBid, 
-  finishAuction, 
+  skipCurrentProperty,
+  canBuildHouse,
+  buildHouse,
+  sellHouse,
+  mortgageProperty,
+  unmortgageProperty,
   sellPropertyToBank, 
   endTurn 
 } from './services/gameEngine';
@@ -19,7 +22,6 @@ import { CenterControls } from './components/CenterControls';
 import { Lobby } from './components/Lobby';
 import { Leaderboard } from './components/Leaderboard';
 import { ChatAndLogs } from './components/ChatAndLogs';
-import { AuctionModal } from './components/AuctionModal';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
@@ -213,11 +215,7 @@ export const App: React.FC = () => {
           if (room.turnPhase === 'roll') {
             handleRoll();
           } else if (room.turnPhase === 'action') {
-            if (room.settings.auction) {
-              handleAuction();
-            } else {
-              handleEndTurn();
-            }
+            handleSkip();
           } else {
             handleEndTurn();
           }
@@ -244,15 +242,21 @@ export const App: React.FC = () => {
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'action') {
           const landed = room.tiles[turnPlayer.position];
-          if (landed && !landed.ownerId && turnPlayer.cash >= landed.price + 100) {
+          if (landed && !landed.ownerId && turnPlayer.cash >= landed.price + 50) {
             const nextRoom = buyCurrentProperty(room, turnPlayer.id);
             multiplayer.updateRoom(nextRoom);
           } else {
-            const nextRoom = startAuctionForCurrentTile(room, turnPlayer.id);
+            const nextRoom = skipCurrentProperty(room, turnPlayer.id);
             multiplayer.updateRoom(nextRoom);
           }
         } else if (room.turnPhase === 'end') {
-          const nextRoom = endTurn(room);
+          // AI can build houses if it owns a monopoly
+          let roomWithUpgrades = room;
+          const monopolyTiles = room.tiles.filter((_, idx) => canBuildHouse(room, turnPlayer.id, idx));
+          if (monopolyTiles.length > 0 && turnPlayer.cash >= 300) {
+            roomWithUpgrades = buildHouse(room, turnPlayer.id, monopolyTiles[0].index);
+          }
+          const nextRoom = endTurn(roomWithUpgrades);
           multiplayer.updateRoom(nextRoom);
         }
       }, 1500);
@@ -274,9 +278,9 @@ export const App: React.FC = () => {
     multiplayer.updateRoom(updated);
   };
 
-  const handleAuction = () => {
+  const handleSkip = () => {
     if (!room) return;
-    const updated = startAuctionForCurrentTile(room, currentPlayer.id);
+    const updated = skipCurrentProperty(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
@@ -626,10 +630,11 @@ export const App: React.FC = () => {
                 currentPlayerId={currentPlayer.id}
                 onRoll={handleRoll}
                 onBuy={handleBuy}
-                onAuction={handleAuction}
+                onSkip={handleSkip}
                 onEndTurn={handleEndTurn}
                 onPayBail={handlePayBail}
                 onRequestTime={handleRequestTime}
+                onTileClick={(tile) => setSelectedTile(tile)}
               />
             }
           />
@@ -648,30 +653,6 @@ export const App: React.FC = () => {
           />
         </div>
       </div>
-
-      {/* Modals */}
-      {room.auction && (
-        <AuctionModal
-          room={room}
-          currentPlayerId={currentPlayer.id}
-          onBid={(amount) => {
-            const updated = placeAuctionBid(room, currentPlayer.id, amount);
-            multiplayer.updateRoom(updated);
-          }}
-          onPass={() => {
-            const updated = JSON.parse(JSON.stringify(room));
-            if (updated.auction) {
-              updated.auction.passedPlayerIds.push(currentPlayer.id);
-              if (updated.auction.passedPlayerIds.length >= Object.keys(updated.players).length) {
-                const finished = finishAuction(updated);
-                multiplayer.updateRoom(finished);
-                return;
-              }
-              multiplayer.updateRoom(updated);
-            }
-          }}
-        />
-      )}
 
       {(showTradeModal || room.activeTrade) && (
         <TradeModal
@@ -696,91 +677,31 @@ export const App: React.FC = () => {
             multiplayer.updateRoom(updated);
             setSelectedTile(updated.tiles[idx]);
           }}
+          onSkipProperty={handleSkip}
           onSellProperty={(idx) => {
             const updated = sellPropertyToBank(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
             setSelectedTile(updated.tiles[idx]);
           }}
           onBuildHouse={(idx) => {
-            const updated: GameRoom = JSON.parse(JSON.stringify(room));
-            const t = updated.tiles[idx];
-            const p = updated.players[currentPlayer.id];
-            if (!t || !p || !t.houseCost || p.cash < t.houseCost || t.houses >= 5 || t.isMortgaged) return;
-
-            // Check full monopoly
-            if (t.group) {
-              const groupTiles = updated.tiles.filter(tile => tile.group === t.group);
-              const ownsAll = groupTiles.every(tile => tile.ownerId === currentPlayer.id && !tile.isMortgaged);
-              if (!ownsAll) return;
-            }
-
-            p.cash -= t.houseCost;
-            t.houses += 1;
-            updated.logs.push({
-              id: `build_${Date.now()}`,
-              text: `${p.name} built a ${t.houses === 5 ? 'Hotel' : 'House'} on ${t.name}!`,
-              timestamp: Date.now(),
-              type: 'buy'
-            });
-            sound.playBuy();
+            const updated = buildHouse(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
-            setSelectedTile(t);
+            setSelectedTile(updated.tiles[idx]);
           }}
           onSellHouse={(idx) => {
-            const updated: GameRoom = JSON.parse(JSON.stringify(room));
-            const t = updated.tiles[idx];
-            const p = updated.players[currentPlayer.id];
-            if (!t || !p || !t.houseCost || t.houses <= 0) return;
-
-            const refund = Math.floor(t.houseCost / 2);
-            p.cash += refund;
-            t.houses -= 1;
-            updated.logs.push({
-              id: `sell_${Date.now()}`,
-              text: `${p.name} sold a ${t.houses === 4 ? 'Hotel' : 'House'} on ${t.name} for $${refund}!`,
-              timestamp: Date.now(),
-              type: 'system'
-            });
-            sound.playCash();
+            const updated = sellHouse(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
-            setSelectedTile(t);
+            setSelectedTile(updated.tiles[idx]);
           }}
           onMortgage={(idx) => {
-            const updated: GameRoom = JSON.parse(JSON.stringify(room));
-            const t = updated.tiles[idx];
-            const p = updated.players[currentPlayer.id];
-            if (!t || !p || t.isMortgaged || t.houses > 0 || t.ownerId !== currentPlayer.id) return;
-
-            t.isMortgaged = true;
-            p.cash += t.mortgageValue;
-            updated.logs.push({
-              id: `mort_${Date.now()}`,
-              text: `${p.name} mortgaged ${t.name} for $${t.mortgageValue}!`,
-              timestamp: Date.now(),
-              type: 'system'
-            });
-            sound.playCash();
+            const updated = mortgageProperty(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
-            setSelectedTile(t);
+            setSelectedTile(updated.tiles[idx]);
           }}
           onUnmortgage={(idx) => {
-            const updated: GameRoom = JSON.parse(JSON.stringify(room));
-            const t = updated.tiles[idx];
-            const p = updated.players[currentPlayer.id];
-            const cost = Math.floor(t.mortgageValue * 1.1);
-            if (!t || !p || !t.isMortgaged || p.cash < cost || t.ownerId !== currentPlayer.id) return;
-
-            p.cash -= cost;
-            t.isMortgaged = false;
-            updated.logs.push({
-              id: `unmort_${Date.now()}`,
-              text: `${p.name} unmortgaged ${t.name} for $${cost}!`,
-              timestamp: Date.now(),
-              type: 'buy'
-            });
-            sound.playBuy();
+            const updated = unmortgageProperty(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
-            setSelectedTile(t);
+            setSelectedTile(updated.tiles[idx]);
           }}
         />
       )}

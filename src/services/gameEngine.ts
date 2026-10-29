@@ -285,10 +285,25 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
 
   newRoom.logs.push({
     id: `buy_${Date.now()}`,
-    text: `${player.name} bought ${tile.name} for $${tile.price}!`,
+    text: `${player.name} bought ${tile.name} (${tile.country || ''}) for $${tile.price}!`,
     timestamp: Date.now(),
     type: 'buy'
   });
+
+  // Check if player just completed a country monopoly!
+  if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
+    const groupTiles = newRoom.tiles.filter(t => t.group === tile.group);
+    const ownsAll = groupTiles.every(t => t.ownerId === playerId);
+    if (ownsAll) {
+      const countryName = tile.country || PROPERTY_GROUPS[tile.group]?.name || tile.group;
+      newRoom.logs.push({
+        id: `monopoly_${Date.now()}`,
+        text: `🎉 ${player.name} owns all states in ${countryName}! You can now upgrade houses!`,
+        timestamp: Date.now(),
+        type: 'buy'
+      });
+    }
+  }
 
   sound.playBuy();
   newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
@@ -296,91 +311,169 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   return newRoom;
 }
 
-export function startAuctionForCurrentTile(room: GameRoom, playerId: string): GameRoom {
+export function skipCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[player.position];
 
-  if (!tile || Boolean(tile.ownerId)) return room;
-
-  const auction: AuctionState = {
-    tileIndex: tile.index,
-    currentBid: 10,
-    highestBidderId: null,
-    highestBidderName: null,
-    passedPlayerIds: [playerId],
-    expiresAt: Date.now() + 25000
-  };
-
-  newRoom.auction = auction;
-  newRoom.turnPhase = 'auction';
-
   newRoom.logs.push({
-    id: `auction_start_${Date.now()}`,
-    text: `Auction started for ${tile.name}! Starting bid: $10.`,
+    id: `skip_${Date.now()}`,
+    text: `${player.name} passed on buying ${tile.name}.`,
     timestamp: Date.now(),
-    type: 'auction'
+    type: 'system'
   });
 
-  sound.playBid();
+  newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
   return newRoom;
 }
 
-export function placeAuctionBid(room: GameRoom, bidderId: string, amount: number): GameRoom {
+export function canBuildHouse(room: GameRoom, playerId: string, tileIndex: number): boolean {
+  const player = room.players[playerId];
+  const tile = room.tiles[tileIndex];
+  if (!player || !tile || tile.ownerId !== playerId || tile.type !== 'property' || !tile.group) return false;
+  if (tile.houses >= 5 || tile.isMortgaged || (tile.houseCost || 0) > player.cash) return false;
+
+  const groupTiles = room.tiles.filter(t => t.group === tile.group);
+  const ownsAll = groupTiles.every(t => t.ownerId === playerId && !t.isMortgaged);
+  if (!ownsAll) return false;
+
+  // Even building rule: cannot build on this tile if any other tile in group has fewer houses
+  const minHouses = Math.min(...groupTiles.map(t => t.houses));
+  return tile.houses === minHouses;
+}
+
+export function buildHouse(room: GameRoom, playerId: string, tileIndex: number): GameRoom {
+  if (!canBuildHouse(room, playerId, tileIndex)) return room;
   const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
-  if (!newRoom.auction) return room;
-  const bidder = newRoom.players[bidderId];
-  if (!bidder || bidder.cash < amount || amount <= newRoom.auction.currentBid) return room;
+  const player = newRoom.players[playerId];
+  const tile = newRoom.tiles[tileIndex];
 
-  newRoom.auction.currentBid = amount;
-  newRoom.auction.highestBidderId = bidderId;
-  newRoom.auction.highestBidderName = bidder.name;
-  newRoom.auction.expiresAt = Date.now() + 15000; // extend by 15s
+  player.cash -= tile.houseCost!;
+  tile.houses += 1;
 
+  const isHotel = tile.houses === 5;
   newRoom.logs.push({
-    id: `auction_bid_${Date.now()}`,
-    text: `${bidder.name} bid $${amount} on ${newRoom.tiles[newRoom.auction.tileIndex].name}!`,
+    id: `build_${Date.now()}`,
+    text: `🏠 ${player.name} upgraded ${tile.name} to ${isHotel ? 'a HOTEL 🏨' : `House ${tile.houses} 🏡`}!`,
     timestamp: Date.now(),
-    type: 'auction'
+    type: 'buy'
   });
 
-  sound.playBid();
+  sound.playBuy();
+  updateNetWorths(newRoom);
   return newRoom;
+}
+
+export function canSellHouse(room: GameRoom, playerId: string, tileIndex: number): boolean {
+  const player = room.players[playerId];
+  const tile = room.tiles[tileIndex];
+  if (!player || !tile || tile.ownerId !== playerId || tile.type !== 'property' || !tile.group) return false;
+  if (tile.houses <= 0) return false;
+
+  const groupTiles = room.tiles.filter(t => t.group === tile.group);
+  // Even selling rule: cannot sell from this tile if any other tile in group has more houses
+  const maxHouses = Math.max(...groupTiles.map(t => t.houses));
+  return tile.houses === maxHouses;
+}
+
+export function sellHouse(room: GameRoom, playerId: string, tileIndex: number): GameRoom {
+  if (!canSellHouse(room, playerId, tileIndex)) return room;
+  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+  const player = newRoom.players[playerId];
+  const tile = newRoom.tiles[tileIndex];
+
+  const refund = Math.floor((tile.houseCost || 0) / 2);
+  player.cash += refund;
+  tile.houses -= 1;
+
+  newRoom.logs.push({
+    id: `sell_house_${Date.now()}`,
+    text: `🏚️ ${player.name} sold a house on ${tile.name} for $${refund}.`,
+    timestamp: Date.now(),
+    type: 'system'
+  });
+
+  sound.playCash();
+  updateNetWorths(newRoom);
+  return newRoom;
+}
+
+export function canMortgageProperty(room: GameRoom, playerId: string, tileIndex: number): boolean {
+  const player = room.players[playerId];
+  const tile = room.tiles[tileIndex];
+  if (!player || !tile || tile.ownerId !== playerId || tile.isMortgaged) return false;
+
+  // Cannot mortgage if there are any houses on any property in that group!
+  if (tile.group) {
+    const groupTiles = room.tiles.filter(t => t.group === tile.group);
+    if (groupTiles.some(t => t.houses > 0)) return false;
+  }
+
+  return true;
+}
+
+export function mortgageProperty(room: GameRoom, playerId: string, tileIndex: number): GameRoom {
+  if (!canMortgageProperty(room, playerId, tileIndex)) return room;
+  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+  const player = newRoom.players[playerId];
+  const tile = newRoom.tiles[tileIndex];
+
+  tile.isMortgaged = true;
+  player.cash += tile.mortgageValue;
+
+  newRoom.logs.push({
+    id: `mortgage_${Date.now()}`,
+    text: `📜 ${player.name} mortgaged ${tile.name} for $${tile.mortgageValue}!`,
+    timestamp: Date.now(),
+    type: 'system'
+  });
+
+  sound.playCash();
+  updateNetWorths(newRoom);
+  return newRoom;
+}
+
+export function canUnmortgageProperty(room: GameRoom, playerId: string, tileIndex: number): boolean {
+  const player = room.players[playerId];
+  const tile = room.tiles[tileIndex];
+  if (!player || !tile || tile.ownerId !== playerId || !tile.isMortgaged) return false;
+  const cost = Math.floor(tile.mortgageValue * 1.1);
+  return player.cash >= cost;
+}
+
+export function unmortgageProperty(room: GameRoom, playerId: string, tileIndex: number): GameRoom {
+  if (!canUnmortgageProperty(room, playerId, tileIndex)) return room;
+  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+  const player = newRoom.players[playerId];
+  const tile = newRoom.tiles[tileIndex];
+
+  const cost = Math.floor(tile.mortgageValue * 1.1);
+  player.cash -= cost;
+  tile.isMortgaged = false;
+
+  newRoom.logs.push({
+    id: `unmortgage_${Date.now()}`,
+    text: `🏛️ ${player.name} unmortgaged ${tile.name} for $${cost}!`,
+    timestamp: Date.now(),
+    type: 'system'
+  });
+
+  sound.playBuy();
+  updateNetWorths(newRoom);
+  return newRoom;
+}
+
+// Deprecated auction stubs for backwards compatibility
+export function startAuctionForCurrentTile(room: GameRoom, playerId: string): GameRoom {
+  return skipCurrentProperty(room, playerId);
+}
+
+export function placeAuctionBid(room: GameRoom, _bidderId: string, _amount: number): GameRoom {
+  return room;
 }
 
 export function finishAuction(room: GameRoom): GameRoom {
-  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
-  if (!newRoom.auction) return room;
-
-  const { tileIndex, highestBidderId, currentBid } = newRoom.auction;
-  const tile = newRoom.tiles[tileIndex];
-
-  if (highestBidderId && newRoom.players[highestBidderId]) {
-    const winner = newRoom.players[highestBidderId];
-    winner.cash -= currentBid;
-    tile.ownerId = highestBidderId;
-
-    newRoom.logs.push({
-      id: `auction_win_${Date.now()}`,
-      text: `Auction won by ${winner.name} for ${tile.name} at $${currentBid}!`,
-      timestamp: Date.now(),
-      type: 'auction'
-    });
-
-    sound.playBuy();
-  } else {
-    newRoom.logs.push({
-      id: `auction_pass_${Date.now()}`,
-      text: `No bids placed for ${tile.name}. It remains unowned.`,
-      timestamp: Date.now(),
-      type: 'auction'
-    });
-  }
-
-  newRoom.auction = null;
-  newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
-  updateNetWorths(newRoom);
-  return newRoom;
+  return room;
 }
 
 export function endTurn(room: GameRoom): GameRoom {

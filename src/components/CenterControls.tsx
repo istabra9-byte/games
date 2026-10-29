@@ -1,19 +1,20 @@
 import React from 'react';
-import { GameRoom, Player } from '../types/game';
+import { GameRoom, Tile } from '../types/game';
 import { DiceView } from './DiceView';
 import { TurnClock } from './TurnClock';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Dices, Check, X, ShieldAlert, ArrowRight, DollarSign, Palmtree, Gavel } from 'lucide-react';
+import { Dices, DollarSign, Palmtree, X, Home, ArrowRight, ShieldAlert } from 'lucide-react';
 
 interface CenterControlsProps {
   room: GameRoom;
   currentPlayerId: string;
   onRoll: () => void;
   onBuy: () => void;
-  onAuction: () => void;
+  onSkip: () => void;
   onEndTurn: () => void;
   onPayBail: () => void;
   onRequestTime: () => void;
+  onTileClick?: (tile: Tile) => void;
 }
 
 export const CenterControls: React.FC<CenterControlsProps> = ({
@@ -21,10 +22,11 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   currentPlayerId,
   onRoll,
   onBuy,
-  onAuction,
+  onSkip,
   onEndTurn,
   onPayBail,
-  onRequestTime
+  onRequestTime,
+  onTileClick
 }) => {
   const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
   const turnPlayer = room.players[turnPlayerId];
@@ -36,6 +38,14 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   if (!turnPlayer) return null;
 
   const groupMeta = landedTile && landedTile.group ? PROPERTY_GROUPS[landedTile.group] : null;
+
+  // Find if current player owns any completed country monopoly that can be upgraded
+  const upgradableTiles = room.tiles.filter((t) => {
+    if (!t.group || t.group === 'station' || t.group === 'utility' || t.ownerId !== currentPlayerId) return false;
+    const groupTiles = room.tiles.filter(tile => tile.group === t.group);
+    const ownsAll = groupTiles.every(tile => tile.ownerId === currentPlayerId && !tile.isMortgaged);
+    return ownsAll && t.houses < 5;
+  });
 
   return (
     <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-2 py-1 select-none">
@@ -116,7 +126,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
           </div>
         )}
 
-        {/* Phase 2: UNOWNED PROPERTY DECISION (BUY OR AUCTION) */}
+        {/* Phase 2: UNOWNED PROPERTY DECISION (BUY OR SKIP) */}
         {room.turnPhase === 'action' && landedTile && (
           <div className="w-full max-w-[280px] bg-[#1a1228] border-2 border-purple-500/60 rounded-xl overflow-hidden shadow-2xl flex flex-col text-center">
             {/* Deed Header */}
@@ -153,7 +163,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
               )}
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons: BUY vs SKIP */}
             {isMyTurn ? (
               <div className="p-2 bg-[#1a1228] border-t border-purple-900/60 flex items-center gap-2">
                 <button
@@ -166,16 +176,16 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                 </button>
 
                 <button
-                  onClick={onAuction}
-                  className="flex-1 py-1.5 px-2 bg-amber-600/80 hover:bg-amber-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 transition-all shadow cursor-pointer border border-amber-500/40"
+                  onClick={onSkip}
+                  className="flex-1 py-1.5 px-2 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 transition-all shadow cursor-pointer border border-gray-500/40"
                 >
-                  <Gavel className="w-3.5 h-3.5" />
-                  <span>Auction</span>
+                  <X className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Skip</span>
                 </button>
               </div>
             ) : (
               <div className="p-2 text-xs text-gray-400 italic">
-                {turnPlayer.name} is deciding to buy or auction...
+                {turnPlayer.name} is deciding to buy or skip...
               </div>
             )}
           </div>
@@ -202,17 +212,15 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
           </div>
         )}
 
-        {/* Phase 4: AUCTION IN PROGRESS */}
-        {room.turnPhase === 'auction' && room.auction && (
-          <div className="flex flex-col items-center gap-2 p-2 bg-purple-950/60 border border-purple-500/50 rounded-xl text-center">
-            <Gavel className="w-5 h-5 text-amber-400 animate-bounce" />
-            <span className="text-xs font-bold text-white">
-              Auction for {room.tiles[room.auction.tileIndex].name}
-            </span>
-            <span className="text-xs text-emerald-400 font-mono font-black">
-              Current Bid: ${room.auction.currentBid} ({room.auction.highestBidderName || 'None'})
-            </span>
-          </div>
+        {/* Monopoly House Upgrade Shortcut */}
+        {isMyTurn && upgradableTiles.length > 0 && onTileClick && (
+          <button
+            onClick={() => onTileClick(upgradableTiles[0])}
+            className="mt-3 px-3 py-1.5 bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-600 hover:from-amber-400 hover:to-emerald-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-lg border border-amber-300/40 cursor-pointer animate-pulse"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Upgrade Houses 🏠 ({upgradableTiles.length} available)</span>
+          </button>
         )}
       </div>
 

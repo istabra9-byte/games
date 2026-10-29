@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tile, Player, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight } from 'lucide-react';
+import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent } from 'lucide-react';
 import { sound } from '../services/sound';
 
 interface BoardProps {
@@ -80,17 +80,17 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
   return (
     <div
-      className="relative aspect-square max-h-full max-w-full bg-[#171226] rounded-2xl p-1 sm:p-2 shadow-[0_15px_50px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center"
+      className="relative aspect-square max-h-full max-w-full bg-[#120d1f] rounded-2xl p-1 sm:p-2 shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-[#2b1f45] select-none flex flex-col justify-center"
       style={{
         height: '100%',
         width: 'auto',
-        maxHeight: 'min(100%, calc(100vh - 4.25rem), 860px)',
-        maxWidth: 'min(100%, calc(100vh - 4.25rem), 860px)',
+        maxHeight: 'min(100%, calc(100vh - 4.25rem), 880px)',
+        maxWidth: 'min(100%, calc(100vh - 4.25rem), 880px)',
         aspectRatio: '1 / 1'
       }}
     >
       <div
-        className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#100c1b] rounded-xl p-0.5 sm:p-1 relative"
+        className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#0c0816] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
           gridTemplateColumns: '1.45fr repeat(9, 1fr) 1.45fr',
@@ -103,7 +103,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
           const owner = tile.ownerId ? players[tile.ownerId] : null;
           const playersHere = playersOnTile[tile.index] || [];
 
-          // Corner Tiles
+          // Corner Tiles (Richup Exact Corners)
           if (isCorner) {
             return (
               <div
@@ -112,58 +112,63 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-gradient-to-br from-[#241c38] to-[#1c152d] border border-purple-800/40 p-1 shadow-inner hover:border-purple-500/70 transition-all"
                 style={{ gridRowStart: row, gridColumnStart: col }}
               >
+                {/* 0: START */}
                 {cornerType === 'start' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center">
-                    <span className="text-[7.5px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
+                    <span className="text-[14px] sm:text-base font-black tracking-widest text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.6)]">
+                      START
+                    </span>
+                    <div className="text-2xl sm:text-3xl animate-bounce">
+                      👾
+                    </div>
+                    <span className="text-[8px] sm:text-[9.5px] font-mono font-bold text-gray-400">
                       Collect $200
                     </span>
-                    <div className="flex items-center justify-center gap-1 text-emerald-400">
-                      <span className="text-[12px] sm:text-sm font-black tracking-widest font-heading">START</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                    <span className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-300">
-                      +$200
-                    </span>
                   </div>
                 )}
 
+                {/* 10: PASSING BY / IN PRISON */}
                 {cornerType === 'jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center relative">
-                    <span className="text-[7.5px] sm:text-[8.5px] font-bold text-gray-400 uppercase">Just</span>
-                    <div className="w-4/5 h-3/5 bg-[#2d3748] rounded border border-orange-500/50 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
-                      <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#fff_4px,#fff_6px)]" />
-                      <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400 z-10" />
-                      <span className="text-[7.5px] sm:text-[8.5px] font-bold text-orange-300 uppercase z-10 leading-none">
-                        In Jail
+                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center relative">
+                    <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-tight">
+                      Passing by
+                    </span>
+                    <div className="w-4/5 h-3/5 bg-[#252a38] rounded-md border border-orange-500/40 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
+                      {/* Prison Bars Overlay */}
+                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#94a3b8_4px,#94a3b8_6px)]" />
+                      <span className="text-[8px] sm:text-[9px] font-black text-orange-300 uppercase z-10">
+                        In Prison
                       </span>
                     </div>
-                    <span className="text-[7.5px] sm:text-[8.5px] font-bold text-gray-400 uppercase">Visiting</span>
+                    <div className="h-1" />
                   </div>
                 )}
 
+                {/* 20: VACATION */}
                 {cornerType === 'vacation' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center">
-                    <span className="text-[7.5px] sm:text-[8.5px] font-bold text-emerald-300 uppercase">Rest</span>
-                    <Palmtree className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
-                    <span className="text-[9px] sm:text-[11px] font-black text-emerald-300 uppercase font-heading">
+                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
+                    <div className="text-2xl sm:text-3xl drop-shadow">
+                      🏝️
+                    </div>
+                    <span className="text-[10px] sm:text-xs font-black text-emerald-300 uppercase tracking-wider font-heading drop-shadow">
                       Vacation
                     </span>
                   </div>
                 )}
 
+                {/* 30: GO TO PRISON */}
                 {cornerType === 'go_to_jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center">
-                    <span className="text-[7.5px] sm:text-[8.5px] font-bold text-red-400 uppercase">Police</span>
-                    <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 animate-pulse" />
-                    <span className="text-[8.5px] sm:text-[10px] font-black text-red-400 uppercase font-heading leading-tight">
-                      Go To Jail
+                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
+                    <Skull className="w-6 h-6 sm:w-7 sm:h-7 text-gray-200 drop-shadow mt-1" />
+                    <span className="text-[9px] sm:text-[10.5px] font-black text-gray-200 uppercase font-heading leading-tight tracking-wider">
+                      Go to prison
                     </span>
                   </div>
                 )}
 
-                {/* Tokens on corner */}
+                {/* Player Tokens On Corner */}
                 {playersHere.length > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none">
+                  <div className="absolute bottom-1 inset-x-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none">
                     {playersHere.map((p) => (
                       <div
                         key={p.id}
@@ -180,119 +185,153 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
             );
           }
 
-          // Normal Edge Tiles: Left, Right, Top, Bottom
+          // Edge Tiles (Top, Right, Bottom, Left)
           const isHorizontal = side === 'left' || side === 'right';
 
           return (
             <div
               key={tile.index}
               onClick={() => onTileClick && onTileClick(tile)}
-              className={`relative rounded-md flex overflow-hidden cursor-pointer transition-all duration-150 border bg-gradient-to-br from-[#262a4c] to-[#1f223f] hover:from-[#2e3359] hover:to-[#262a4c] border-[#1d203b] hover:border-purple-500/70 ${
+              className={`relative rounded-md flex overflow-hidden cursor-pointer transition-all duration-150 border border-[#221a38] bg-gradient-to-br from-[#201934] to-[#171226] hover:from-[#2a2145] hover:to-[#201934] hover:border-purple-500/70 ${
                 isHorizontal
                   ? side === 'left'
-                    ? 'flex-row'
-                    : 'flex-row-reverse'
+                    ? 'flex-row' // Outer price on left, flag on right
+                    : 'flex-row-reverse' // Outer price on right, flag on left
                   : side === 'top'
-                    ? 'flex-col'
-                    : 'flex-col-reverse'
+                    ? 'flex-col' // Outer price on top, flag on bottom
+                    : 'flex-col-reverse' // Outer price on bottom, flag on top
               }`}
               style={{ gridRowStart: row, gridColumnStart: col }}
             >
-              {/* Outer Property Color Banner */}
-              {groupMeta ? (
-                <div
-                  className={`flex items-center justify-center flex-shrink-0 ${
-                    isHorizontal
-                      ? 'w-2 sm:w-2.5 h-full'
-                      : 'w-full h-2 sm:h-2.5'
-                  }`}
-                  style={{ backgroundColor: groupMeta.color }}
-                >
-                  {/* Houses */}
-                  {tile.houses > 0 && tile.houses < 5 && (
-                    <div className={`flex gap-0.5 items-center justify-center ${isHorizontal ? 'flex-col' : 'flex-row'}`}>
-                      {Array.from({ length: tile.houses }).map((_, hIdx) => (
-                        <div
-                          key={hIdx}
-                          className="w-1.5 h-1.5 bg-emerald-300 rounded-[1px] shadow-sm border border-emerald-950"
-                          title={`${tile.houses} Houses`}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {tile.houses === 5 && (
+              {/* Outer Price / Special Icon Pill */}
+              <div className={`flex items-center justify-center flex-shrink-0 p-0.5 z-10 ${
+                isHorizontal ? (side === 'left' ? 'pl-0.5 sm:pl-1' : 'pr-0.5 sm:pr-1') : (side === 'top' ? 'pt-0.5 sm:pt-1' : 'pb-0.5 sm:pb-1')
+              }`}>
+                {tile.price > 0 ? (
+                  <div className={`px-1 sm:px-1.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[7px] sm:text-[8px] md:text-[9px] font-mono font-bold text-white shadow-sm leading-none flex items-center justify-center ${
+                    side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                  }`}>
+                    {tile.price}$
+                  </div>
+                ) : tile.type === 'tax' ? (
+                  <div className={`px-1 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-[7px] sm:text-[8px] font-mono font-bold text-amber-300 shadow-sm leading-none ${
+                    side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                  }`}>
+                    {tile.name.includes('Earnings') ? '%10' : '$75'}
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Middle Section: City Name & Special Center Graphics */}
+              <div className="flex-1 flex flex-col justify-center items-center text-center px-0.5 min-w-0 z-10 overflow-hidden">
+                {/* Special Icons */}
+                {tile.type === 'chest' && (
+                  <div className="text-xl sm:text-2xl drop-shadow mb-0.5">
+                    📦
+                  </div>
+                )}
+                {tile.type === 'chance' && (
+                  <div className="text-xl sm:text-2xl drop-shadow text-pink-400 font-black mb-0.5">
+                    ❓
+                  </div>
+                )}
+                {tile.type === 'railroad' && (
+                  <Plane className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-300 drop-shadow mb-0.5 ${
+                    side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                  }`} />
+                )}
+                {tile.type === 'utility' && (
+                  tile.name.includes('Water') ? (
+                    <div className="text-lg sm:text-xl drop-shadow mb-0.5">🚰</div>
+                  ) : (
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5" />
+                  )
+                )}
+                {tile.type === 'tax' && (
+                  tile.name.includes('Earnings') ? (
+                    <Percent className="w-3.5 h-3.5 text-amber-300 mb-0.5" />
+                  ) : (
+                    <Gem className="w-3.5 h-3.5 text-sky-300 mb-0.5" />
+                  )
+                )}
+
+                {/* Tile Name */}
+                <span className={`font-black leading-tight text-white drop-shadow whitespace-nowrap ${
+                  isHorizontal
+                    ? side === 'left'
+                      ? 'text-[8.5px] sm:text-[9.5px] md:text-[10.5px] rotate-90 origin-center'
+                      : 'text-[8.5px] sm:text-[9.5px] md:text-[10.5px] -rotate-90 origin-center'
+                    : 'text-[7.5px] sm:text-[8.5px] md:text-[9.5px]'
+                }`}>
+                  {tile.name}
+                </span>
+
+                {/* Subtitle for taxes / utilities on top/bottom */}
+                {!isHorizontal && tile.type === 'tax' && (
+                  <span className="text-[6.5px] sm:text-[7.5px] text-gray-400 font-semibold leading-none mt-0.5">
+                    {tile.name.includes('Earnings') ? 'Earnings Tax' : 'Premium Tax'}
+                  </span>
+                )}
+              </div>
+
+              {/* Inner Edge: Round Circular Country Flag */}
+              <div className={`flex items-center justify-center flex-shrink-0 p-0.5 z-10 ${
+                isHorizontal ? (side === 'left' ? 'pr-0.5 sm:pr-1' : 'pl-0.5 sm:pl-1') : (side === 'top' ? 'pb-0.5 sm:pb-1' : 'pt-0.5 sm:pt-1')
+              }`}>
+                {tile.countryCode ? (
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full overflow-hidden border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center bg-black/40">
+                    <img
+                      src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
+                      alt={tile.name}
+                      className="w-full h-full object-cover select-none pointer-events-none scale-125"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : tile.flag && tile.type === 'property' ? (
+                  <span className="text-xs sm:text-sm drop-shadow">{tile.flag}</span>
+                ) : null}
+              </div>
+
+              {/* House Indicators on Tile (Richup Green Houses / Red Hotel) */}
+              {tile.houses > 0 && (
+                <div className={`absolute z-20 flex gap-0.5 items-center justify-center pointer-events-none ${
+                  isHorizontal
+                    ? 'top-1 bottom-1 flex-col justify-center ' + (side === 'left' ? 'left-1' : 'right-1')
+                    : 'left-1 right-1 flex-row justify-center ' + (side === 'top' ? 'top-1' : 'bottom-1')
+                }`}>
+                  {tile.houses < 5 ? (
+                    Array.from({ length: tile.houses }).map((_, hIdx) => (
+                      <div
+                        key={hIdx}
+                        className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-400 rounded-sm shadow-md border border-emerald-950 flex items-center justify-center text-[6px] font-black text-emerald-950"
+                        title={`${tile.houses} Houses`}
+                      >
+                        ▲
+                      </div>
+                    ))
+                  ) : (
                     <div
-                      className="w-2.5 h-2 bg-red-600 rounded-[1px] flex items-center justify-center text-[6px] font-black text-white shadow-sm border border-red-950"
+                      className="px-1 py-0.5 bg-rose-600 rounded-sm shadow-lg border border-red-950 text-[7px] font-black text-white flex items-center gap-0.5"
                       title="Hotel"
                     >
-                      H
+                      🏨 H
                     </div>
                   )}
-                </div>
-              ) : (
-                /* Non-property icons */
-                <div className={`flex items-center justify-center flex-shrink-0 ${
-                  isHorizontal
-                    ? 'w-4 h-full'
-                    : side === 'top' ? 'w-full pt-1' : 'w-full pb-1'
-                }`}>
-                  {tile.type === 'railroad' && <Plane className="w-3.5 h-3.5 text-sky-300" />}
-                  {tile.type === 'utility' && (
-                    tile.name.includes('Water') ? (
-                      <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                    ) : (
-                      <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                    )
-                  )}
-                  {tile.type === 'chance' && <HelpCircle className="w-3.5 h-3.5 text-amber-400" />}
-                  {tile.type === 'chest' && <Gift className="w-3.5 h-3.5 text-sky-400" />}
-                  {tile.type === 'tax' && <span className="text-[7.5px] font-mono font-bold text-amber-400">TAX</span>}
                 </div>
               )}
 
-              {/* Owner Indicator Strip (Corner Ribbon) */}
+              {/* Owner Indicator Strip (Corner Ribbon with player color) */}
               {owner && (
                 <div
-                  className="absolute top-0 right-0 w-2.5 h-2.5 rounded-bl shadow-md z-10"
+                  className="absolute top-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-bl shadow-md z-15"
                   style={{ backgroundColor: owner.color }}
                   title={`Owned by ${owner.name}`}
                 />
               )}
 
-              {/* Tile Content: Flag, Name & Price stacked cleanly */}
-              <div className={`flex-1 flex flex-col justify-between items-center text-center p-0.5 sm:p-1 overflow-hidden ${
-                side === 'bottom' ? 'flex-col-reverse' : 'flex-col'
-              }`}>
-                {/* Tile Flag & Label */}
-                <div className="flex-1 flex flex-col items-center justify-center min-w-0">
-                  {tile.countryCode ? (
-                    <img
-                      src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
-                      alt={tile.name}
-                      className="w-3.5 h-2.5 sm:w-4 sm:h-3 rounded-[1px] shadow-sm object-cover select-none pointer-events-none mb-0.5"
-                      loading="lazy"
-                    />
-                  ) : tile.flag ? (
-                    <span className="text-[9px] sm:text-[11px] leading-none mb-0.5 select-none">
-                      {tile.flag}
-                    </span>
-                  ) : null}
-                  <span className="text-[7px] sm:text-[8px] md:text-[8.5px] font-bold leading-[1.05] text-gray-100 line-clamp-2 px-0.5">
-                    {tile.name}
-                  </span>
-                </div>
-
-                {/* Price Tag */}
-                {tile.price > 0 && (
-                  <span className="text-[7px] sm:text-[8.5px] font-mono font-bold text-emerald-400 leading-none">
-                    ${tile.price}
-                  </span>
-                )}
-              </div>
-
               {/* Mortgaged Overlay */}
               {tile.isMortgaged && (
-                <div className="absolute inset-0 bg-black/85 backdrop-blur-[1px] flex items-center justify-center z-20">
+                <div className="absolute inset-0 bg-black/85 backdrop-blur-[1px] flex items-center justify-center z-25">
                   <span className="text-[7px] sm:text-[8px] font-black text-red-400 uppercase -rotate-12 border border-red-500/80 px-1 py-0.5 rounded bg-red-950/90 shadow">
                     MORTGAGED
                   </span>

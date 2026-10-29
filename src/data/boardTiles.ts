@@ -13,12 +13,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 1: Greece
+  // 1: Salvador (Brazil)
   {
     index: 1,
-    name: 'Greece',
-    countryCode: 'gr',
-    flag: '🇬🇷',
+    name: 'Salvador',
+    country: 'Brazil',
+    countryCode: 'br',
+    flag: '🇧🇷',
     type: 'property',
     group: 'brown',
     price: 60,
@@ -29,10 +30,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 30
   },
-  // 2: Community Chest
+  // 2: Treasure (Chest)
   {
     index: 2,
-    name: 'Community Chest',
+    name: 'Treasure',
     type: 'chest',
     price: 0,
     rent: [0],
@@ -41,12 +42,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 3: Cyprus
+  // 3: Rio (Brazil)
   {
     index: 3,
-    name: 'Cyprus',
-    countryCode: 'cy',
-    flag: '🇨🇾',
+    name: 'Rio',
+    country: 'Brazil',
+    countryCode: 'br',
+    flag: '🇧🇷',
     type: 'property',
     group: 'brown',
     price: 60,
@@ -57,10 +59,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 30
   },
-  // 4: Income Tax
+  // 4: Earnings Tax
   {
     index: 4,
-    name: 'Income Tax',
+    name: 'Earnings Tax',
     type: 'tax',
     price: 200,
     rent: [200],
@@ -69,10 +71,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 5: Heathrow Airport
+  // 5: TLV Airport
   {
     index: 5,
-    name: 'Heathrow Airport',
+    name: 'TLV Airport',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -83,12 +85,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 6: Italy
+  // 6: Tel Aviv (Israel)
   {
     index: 6,
-    name: 'Italy',
-    countryCode: 'it',
-    flag: '🇮🇹',
+    name: 'Tel Aviv',
+    country: 'Israel',
+    countryCode: 'il',
+    flag: '🇮🇱',
     type: 'property',
     group: 'light_blue',
     price: 100,
@@ -99,10 +102,27 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 50
   },
-  // 7: Chance
+  // 7: Haifa (Israel)
   {
     index: 7,
-    name: 'Chance',
+    name: 'Haifa',
+    country: 'Israel',
+    countryCode: 'il',
+    flag: '🇮🇱',
+    type: 'property',
+    group: 'light_blue',
+    price: 110,
+    rent: [6, 30, 90, 270, 400, 550],
+    houseCost: 50,
+    ownerId: null,
+    houses: 0,
+    isMortgaged: false,
+    mortgageValue: 55
+  },
+  // 8: Surprise (Chance)
+  {
+    index: 8,
+    name: 'Surprise',
     type: 'chance',
     price: 0,
     rent: [0],
@@ -111,28 +131,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 8: Spain
-  {
-    index: 8,
-    name: 'Spain',
-    countryCode: 'es',
-    flag: '🇪🇸',
-    type: 'property',
-    group: 'light_blue',
-    price: 100,
-    rent: [6, 30, 90, 270, 400, 550],
-    houseCost: 50,
-    ownerId: null,
-    houses: 0,
-    isMortgaged: false,
-    mortgageValue: 50
-  },
-  // 9: Portugal
+  // 9: Jerusalem (Israel)
   {
     index: 9,
-    name: 'Portugal',
-    countryCode: 'pt',
-    flag: '🇵🇹',
+    name: 'Jerusalem',
+    country: 'Israel',
+    countryCode: 'il',
+    flag: '🇮🇱',
     type: 'property',
     group: 'light_blue',
     price: 120,
@@ -143,10 +148,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 60
   },
-  // 10: JAIL
+  // 10: In Prison (Visiting / Jail)
   {
     index: 10,
-    name: 'In Jail / Visiting',
+    name: 'In Prison',
     type: 'jail',
     price: 0,
     rent: [0],
@@ -155,26 +160,27 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 11: Mexico
+  // 11: Venice (Italy)
   {
     index: 11,
-    name: 'Mexico',
-    countryCode: 'mx',
-    flag: '🇲🇽',
+    name: 'Venice',
+    country: 'Italy',
+    countryCode: 'it',
+    flag: '🇮🇹',
     type: 'property',
     group: 'pink',
-    price: 140,
+    price: 130,
     rent: [10, 50, 150, 450, 625, 750],
     houseCost: 100,
     ownerId: null,
     houses: 0,
     isMortgaged: false,
-    mortgageValue: 70
+    mortgageValue: 65
   },
-  // 12: Clean Energy
+  // 12: Power Company
   {
     index: 12,
-    name: 'Clean Energy',
+    name: 'Power Company',
     flag: '⚡',
     type: 'utility',
     group: 'utility',
@@ -185,12 +191,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 75
   },
-  // 13: Argentina
+  // 13: Milan (Italy)
   {
     index: 13,
-    name: 'Argentina',
-    countryCode: 'ar',
-    flag: '🇦🇷',
+    name: 'Milan',
+    country: 'Italy',
+    countryCode: 'it',
+    flag: '🇮🇹',
     type: 'property',
     group: 'pink',
     price: 140,
@@ -201,12 +208,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 70
   },
-  // 14: Brazil
+  // 14: Rome (Italy)
   {
     index: 14,
-    name: 'Brazil',
-    countryCode: 'br',
-    flag: '🇧🇷',
+    name: 'Rome',
+    country: 'Italy',
+    countryCode: 'it',
+    flag: '🇮🇹',
     type: 'property',
     group: 'pink',
     price: 160,
@@ -217,10 +225,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 80
   },
-  // 15: Tokyo Haneda Airport
+  // 15: MUC Airport
   {
     index: 15,
-    name: 'Tokyo Haneda',
+    name: 'MUC Airport',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -231,12 +239,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 16: Netherlands
+  // 16: Frankfurt (Germany)
   {
     index: 16,
-    name: 'Netherlands',
-    countryCode: 'nl',
-    flag: '🇳🇱',
+    name: 'Frankfurt',
+    country: 'Germany',
+    countryCode: 'de',
+    flag: '🇩🇪',
     type: 'property',
     group: 'orange',
     price: 180,
@@ -247,10 +256,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 90
   },
-  // 17: Community Chest
+  // 17: Treasure
   {
     index: 17,
-    name: 'Community Chest',
+    name: 'Treasure',
     type: 'chest',
     price: 0,
     rent: [0],
@@ -259,26 +268,28 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 18: Belgium
+  // 18: Munich (Germany)
   {
     index: 18,
-    name: 'Belgium',
-    countryCode: 'be',
-    flag: '🇧🇪',
+    name: 'Munich',
+    country: 'Germany',
+    countryCode: 'de',
+    flag: '🇩🇪',
     type: 'property',
     group: 'orange',
-    price: 180,
+    price: 190,
     rent: [14, 70, 200, 550, 750, 950],
     houseCost: 100,
     ownerId: null,
     houses: 0,
     isMortgaged: false,
-    mortgageValue: 90
+    mortgageValue: 95
   },
-  // 19: Germany
+  // 19: Berlin (Germany)
   {
     index: 19,
-    name: 'Germany',
+    name: 'Berlin',
+    country: 'Germany',
     countryCode: 'de',
     flag: '🇩🇪',
     type: 'property',
@@ -291,7 +302,7 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 20: VACATION
+  // 20: Vacation
   {
     index: 20,
     name: 'Vacation',
@@ -303,26 +314,27 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 21: Switzerland
+  // 21: Shenzhen (China)
   {
     index: 21,
-    name: 'Switzerland',
-    countryCode: 'ch',
-    flag: '🇨🇭',
+    name: 'Shenzhen',
+    country: 'China',
+    countryCode: 'cn',
+    flag: '🇨🇳',
     type: 'property',
     group: 'red',
-    price: 220,
+    price: 210,
     rent: [18, 90, 250, 700, 875, 1050],
     houseCost: 150,
     ownerId: null,
     houses: 0,
     isMortgaged: false,
-    mortgageValue: 110
+    mortgageValue: 105
   },
-  // 22: Chance
+  // 22: Surprise
   {
     index: 22,
-    name: 'Chance',
+    name: 'Surprise',
     type: 'chance',
     price: 0,
     rent: [0],
@@ -331,12 +343,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 23: Austria
+  // 23: Beijing (China)
   {
     index: 23,
-    name: 'Austria',
-    countryCode: 'at',
-    flag: '🇦🇹',
+    name: 'Beijing',
+    country: 'China',
+    countryCode: 'cn',
+    flag: '🇨🇳',
     type: 'property',
     group: 'red',
     price: 220,
@@ -347,12 +360,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 110
   },
-  // 24: France
+  // 24: Shanghai (China)
   {
     index: 24,
-    name: 'France',
-    countryCode: 'fr',
-    flag: '🇫🇷',
+    name: 'Shanghai',
+    country: 'China',
+    countryCode: 'cn',
+    flag: '🇨🇳',
     type: 'property',
     group: 'red',
     price: 240,
@@ -363,10 +377,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 120
   },
-  // 25: Paris CDG Airport
+  // 25: CDG Airport
   {
     index: 25,
-    name: 'Paris CDG',
+    name: 'CDG Airport',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -377,12 +391,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 26: Sweden
+  // 26: Lyon (France)
   {
     index: 26,
-    name: 'Sweden',
-    countryCode: 'se',
-    flag: '🇸🇪',
+    name: 'Lyon',
+    country: 'France',
+    countryCode: 'fr',
+    flag: '🇫🇷',
     type: 'property',
     group: 'yellow',
     price: 260,
@@ -393,27 +408,11 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 130
   },
-  // 27: Norway
+  // 27: Water Company
   {
     index: 27,
-    name: 'Norway',
-    countryCode: 'no',
-    flag: '🇳🇴',
-    type: 'property',
-    group: 'yellow',
-    price: 260,
-    rent: [22, 110, 330, 800, 975, 1150],
-    houseCost: 150,
-    ownerId: null,
-    houses: 0,
-    isMortgaged: false,
-    mortgageValue: 130
-  },
-  // 28: Water Supply
-  {
-    index: 28,
-    name: 'Water Supply',
-    flag: '💧',
+    name: 'Water Company',
+    flag: '🚰',
     type: 'utility',
     group: 'utility',
     price: 150,
@@ -423,12 +422,30 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 75
   },
-  // 29: Denmark
+  // 28: Toulouse (France)
+  {
+    index: 28,
+    name: 'Toulouse',
+    country: 'France',
+    countryCode: 'fr',
+    flag: '🇫🇷',
+    type: 'property',
+    group: 'yellow',
+    price: 270,
+    rent: [22, 110, 330, 800, 975, 1150],
+    houseCost: 150,
+    ownerId: null,
+    houses: 0,
+    isMortgaged: false,
+    mortgageValue: 135
+  },
+  // 29: Paris (France)
   {
     index: 29,
-    name: 'Denmark',
-    countryCode: 'dk',
-    flag: '🇩🇰',
+    name: 'Paris',
+    country: 'France',
+    countryCode: 'fr',
+    flag: '🇫🇷',
     type: 'property',
     group: 'yellow',
     price: 280,
@@ -439,10 +456,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 140
   },
-  // 30: GO TO JAIL
+  // 30: Go to prison
   {
     index: 30,
-    name: 'Go to Jail',
+    name: 'Go to prison',
     type: 'go_to_jail',
     price: 0,
     rent: [0],
@@ -451,28 +468,30 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 31: Japan
+  // 31: Liverpool (UK)
   {
     index: 31,
-    name: 'Japan',
-    countryCode: 'jp',
-    flag: '🇯🇵',
+    name: 'Liverpool',
+    country: 'United Kingdom',
+    countryCode: 'gb',
+    flag: '🇬🇧',
     type: 'property',
     group: 'green',
-    price: 300,
+    price: 290,
     rent: [26, 130, 390, 900, 1100, 1275],
     houseCost: 200,
     ownerId: null,
     houses: 0,
     isMortgaged: false,
-    mortgageValue: 150
+    mortgageValue: 145
   },
-  // 32: South Korea
+  // 32: Manchester (UK)
   {
     index: 32,
-    name: 'South Korea',
-    countryCode: 'kr',
-    flag: '🇰🇷',
+    name: 'Manchester',
+    country: 'United Kingdom',
+    countryCode: 'gb',
+    flag: '🇬🇧',
     type: 'property',
     group: 'green',
     price: 300,
@@ -483,10 +502,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 150
   },
-  // 33: Community Chest
+  // 33: Treasure
   {
     index: 33,
-    name: 'Community Chest',
+    name: 'Treasure',
     type: 'chest',
     price: 0,
     rent: [0],
@@ -495,12 +514,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 34: China
+  // 34: London (UK)
   {
     index: 34,
-    name: 'China',
-    countryCode: 'cn',
-    flag: '🇨🇳',
+    name: 'London',
+    country: 'United Kingdom',
+    countryCode: 'gb',
+    flag: '🇬🇧',
     type: 'property',
     group: 'green',
     price: 320,
@@ -511,10 +531,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 160
   },
-  // 35: JFK New York Airport
+  // 35: JFK Airport
   {
     index: 35,
-    name: 'JFK New York',
+    name: 'JFK Airport',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -525,10 +545,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 36: Chance
+  // 36: Surprise
   {
     index: 36,
-    name: 'Chance',
+    name: 'Surprise',
     type: 'chance',
     price: 0,
     rent: [0],
@@ -537,38 +557,40 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 37: United Kingdom
+  // 37: San Francisco (USA)
   {
     index: 37,
-    name: 'United Kingdom',
-    countryCode: 'gb',
-    flag: '🇬🇧',
+    name: 'San Francisco',
+    country: 'United States',
+    countryCode: 'us',
+    flag: '🇺🇸',
     type: 'property',
     group: 'dark_blue',
-    price: 350,
+    price: 360,
     rent: [35, 175, 500, 1100, 1300, 1500],
     houseCost: 200,
     ownerId: null,
     houses: 0,
     isMortgaged: false,
-    mortgageValue: 175
+    mortgageValue: 180
   },
-  // 38: Luxury Tax
+  // 38: Premium Tax
   {
     index: 38,
-    name: 'Luxury Tax',
+    name: 'Premium Tax',
     type: 'tax',
-    price: 100,
-    rent: [100],
+    price: 75,
+    rent: [75],
     ownerId: null,
     houses: 0,
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 39: United States
+  // 39: New York (USA)
   {
     index: 39,
-    name: 'United States',
+    name: 'New York',
+    country: 'United States',
     countryCode: 'us',
     flag: '🇺🇸',
     type: 'property',
@@ -583,15 +605,15 @@ export const INITIAL_BOARD_TILES: Tile[] = [
   }
 ];
 
-export const PROPERTY_GROUPS: Record<string, { name: string; color: string; count: number }> = {
-  brown: { name: 'Brown', color: '#8B5A2B', count: 2 },
-  light_blue: { name: 'Sky Blue', color: '#38bdf8', count: 3 },
-  pink: { name: 'Pink', color: '#ec4899', count: 3 },
-  orange: { name: 'Orange', color: '#f97316', count: 3 },
-  red: { name: 'Red', color: '#ef4444', count: 3 },
-  yellow: { name: 'Yellow', color: '#eab308', count: 3 },
-  green: { name: 'Green', color: '#22c55e', count: 3 },
-  dark_blue: { name: 'Royal Blue', color: '#2563eb', count: 2 },
-  station: { name: 'Airport', color: '#64748b', count: 4 },
-  utility: { name: 'Utility', color: '#94a3b8', count: 2 }
+export const PROPERTY_GROUPS: Record<string, { name: string; country: string; color: string; count: number }> = {
+  brown: { name: 'Brazil', country: 'Brazil', color: '#45322E', count: 2 },
+  light_blue: { name: 'Israel', country: 'Israel', color: '#2B4B77', count: 3 },
+  pink: { name: 'Italy', country: 'Italy', color: '#1B6B60', count: 3 },
+  orange: { name: 'Germany', country: 'Germany', color: '#882233', count: 3 },
+  red: { name: 'China', country: 'China', color: '#6A2576', count: 3 },
+  yellow: { name: 'France', country: 'France', color: '#205493', count: 3 },
+  green: { name: 'United Kingdom', country: 'United Kingdom', color: '#8A2060', count: 3 },
+  dark_blue: { name: 'United States', country: 'United States', color: '#3A1E68', count: 2 },
+  station: { name: 'Airports', country: 'Airports', color: '#334155', count: 4 },
+  utility: { name: 'Utilities', country: 'Utilities', color: '#0F766E', count: 2 }
 };
