@@ -20,18 +20,22 @@ export const DiceView: React.FC<DiceProps> = ({ values, isRolling }) => {
     return (
       <div
         key={idx}
-        className={`w-9 h-9 sm:w-11 sm:h-11 md:w-14 md:h-14 bg-gradient-to-br from-white to-gray-200 rounded-lg sm:rounded-xl shadow-lg border sm:border-2 border-gray-300 relative transition-transform duration-300 ${
+        className={`w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-white via-[#f8fafc] to-[#e2e8f0] rounded-xl sm:rounded-2xl border-2 border-white/90 relative transition-transform duration-300 ${
           isRolling ? 'animate-bounce rotate-12 scale-110' : 'hover:scale-105'
         }`}
         style={{
-          boxShadow: '0 4px 12px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.8)'
+          boxShadow: '0 8px 20px -3px rgba(0,0,0,0.6), inset 0 3px 6px rgba(255,255,255,0.9), inset 0 -3px 6px rgba(0,0,0,0.15)'
         }}
       >
         {dots.map(([left, top], dIdx) => (
           <div
             key={dIdx}
-            className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-2.5 md:h-2.5 bg-red-600 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-inner"
-            style={{ left: `${left}%`, top: `${top}%` }}
+            className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-gradient-to-br from-red-500 to-rose-700 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-inner"
+            style={{
+              left: `${left}%`,
+              top: `${top}%`,
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.6), 0 0.5px 1px rgba(255,255,255,0.4)'
+            }}
           />
         ))}
       </div>
@@ -39,7 +43,7 @@ export const DiceView: React.FC<DiceProps> = ({ values, isRolling }) => {
   };
 
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2.5 md:gap-3">
+    <div className="flex items-center gap-2.5 sm:gap-4 md:gap-5">
       {renderDie(values[0], 0)}
       {renderDie(values[1], 1)}
     </div>

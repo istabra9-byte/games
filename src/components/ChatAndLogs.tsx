@@ -74,10 +74,11 @@ export const ChatAndLogs: React.FC<ChatAndLogsProps> = ({
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1.5 ml-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-            title="Close Chat (Esc)"
+            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-gray-200 hover:text-white rounded-lg bg-red-500/20 hover:bg-red-500/40 border border-red-500/40 transition-all cursor-pointer shadow-sm ml-2"
+            title="Close Chat (or press Esc)"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5 text-red-400" />
+            <span>Close</span>
           </button>
         )}
       </div>

@@ -207,11 +207,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
           owner.cash += rentAmount;
           newRoom.logs.push({
             id: `rent_${Date.now()}`,
-            text: `${player.name} landed on ${tile.name} and paid $${rentAmount} rent to ${owner.name}!`,
+            text: `💸 ${player.name} paid $${rentAmount} rent to ${owner.name}!`,
             timestamp: Date.now(),
-            type: 'rent'
+            type: 'rent',
+            playerId: player.id
           });
-          sound.playCash();
+          sound.playRent();
 
           if (player.cash < 0) {
             handleBankruptcy(newRoom, player.id, owner.id);
@@ -234,10 +235,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     newRoom.pot += taxAmount;
     newRoom.logs.push({
       id: `tax_${Date.now()}`,
-      text: `${player.name} paid $${taxAmount} in ${tile.name}${tile.name.toLowerCase().includes('earnings') ? ' (10% of cash)' : ''} (added to Vacation Pot)!`,
+      text: `💰 ${player.name} paid $${taxAmount} in ${tile.name}!`,
       timestamp: Date.now(),
-      type: 'rent'
+      type: 'rent',
+      playerId: player.id
     });
+    sound.playTax();
     if (player.cash < 0) {
       handleBankruptcy(newRoom, player.id, null);
     }
@@ -249,11 +252,21 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       newRoom.pot = 0;
       newRoom.logs.push({
         id: `pot_${Date.now()}`,
-        text: `🌴 ${player.name} landed on VACATION and won the $${potCash} pot!`,
+        text: `🌴 ${player.name} won the $${potCash} Vacation Pot!`,
         timestamp: Date.now(),
-        type: 'system'
+        type: 'rent',
+        playerId: player.id
       });
-      sound.playCash();
+      sound.playVacation();
+    } else {
+      newRoom.logs.push({
+        id: `vacation_${Date.now()}`,
+        text: `🌴 ${player.name} is resting on Vacation!`,
+        timestamp: Date.now(),
+        type: 'system',
+        playerId: player.id
+      });
+      sound.playVacation();
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'go_to_jail') {
@@ -268,7 +281,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       timestamp: Date.now(),
       type: 'jail'
     });
-    sound.playJail();
+    sound.playPrison();
   } else if (tile.type === 'chance' || tile.type === 'chest') {
     const cardDeck = tile.type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
     const card = cardDeck[Math.floor(Math.random() * cardDeck.length)];
@@ -294,27 +307,34 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
 
   newRoom.logs.push({
     id: `buy_${Date.now()}`,
-    text: `${player.name} bought ${tile.name} (${tile.country || ''}) for $${tile.price}!`,
+    text: `🏠 ${player.name} bought ${tile.name}${tile.country ? ` (${tile.country})` : ''} for $${tile.price}!`,
     timestamp: Date.now(),
-    type: 'buy'
+    type: 'buy',
+    playerId: player.id
   });
 
   // Check if player just completed a country monopoly!
+  let completedMonopoly = false;
   if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
     const groupTiles = newRoom.tiles.filter(t => t.group === tile.group);
     const ownsAll = groupTiles.every(t => t.ownerId === playerId);
     if (ownsAll) {
+      completedMonopoly = true;
       const countryName = tile.country || PROPERTY_GROUPS[tile.group]?.name || tile.group;
       newRoom.logs.push({
         id: `monopoly_${Date.now()}`,
-        text: `🎉 ${player.name} owns all states in ${countryName}! You can now upgrade houses!`,
+        text: `🎉 ${player.name} owns all states in ${countryName}! Upgrades unlocked!`,
         timestamp: Date.now(),
-        type: 'buy'
+        type: 'buy',
+        playerId: player.id
       });
+      sound.playMonopoly();
     }
   }
 
-  sound.playBuy();
+  if (!completedMonopoly) {
+    sound.playBuy();
+  }
   newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
   updateNetWorths(newRoom);
   return newRoom;
@@ -365,10 +385,11 @@ export function buildHouse(room: GameRoom, playerId: string, tileIndex: number):
     id: `build_${Date.now()}`,
     text: `🏠 ${player.name} upgraded ${tile.name} to ${isHotel ? 'a HOTEL 🏨' : `House ${tile.houses} 🏡`}!`,
     timestamp: Date.now(),
-    type: 'buy'
+    type: 'buy',
+    playerId: player.id
   });
 
-  sound.playBuy();
+  sound.playUpgrade();
   updateNetWorths(newRoom);
   return newRoom;
 }

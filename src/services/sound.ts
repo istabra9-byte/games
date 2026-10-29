@@ -1,7 +1,7 @@
 class SoundService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
-  private volume: number = 0.5;
+  private volume: number = 0.45;
 
   private initContext() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -32,76 +32,174 @@ class SoundService {
     return !this.enabled;
   }
 
+  // Helper to create a smooth, warm sine tone with gentle attack and release
+  private playWarmTone(freq: number, startTime: number, duration: number, gainPeak: number, type: OscillatorType = 'sine') {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+
+    // Soft attack to prevent click, smooth exponential decay for relaxing acoustic feel
+    gain.gain.setValueAtTime(0.001, startTime);
+    gain.gain.linearRampToValueAtTime(gainPeak * this.volume, startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.05);
+  }
+
+  // 1. Soft Kalimba Step sound (very relaxing tap as pieces move)
   public playStep() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+
     const time = this.ctx.currentTime;
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(320, time);
-    osc.frequency.exponentialRampToValueAtTime(160, time + 0.04);
-    gain.gain.setValueAtTime(this.volume * 0.25, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(time);
-    osc.stop(time + 0.04);
+    this.playWarmTone(523.25, time, 0.06, 0.18, 'sine'); // C5
   }
 
+  // 2. Gentle Wooden Dice Roll (soft, muted clicks)
   public playDiceRoll() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
 
-    // Simulate dice rattle with 3 rapid clicks
-    for (let i = 0; i < 4; i++) {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const time = this.ctx.currentTime + i * 0.08;
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(140 + Math.random() * 80, time);
-      osc.frequency.exponentialRampToValueAtTime(40, time + 0.05);
-
-      gain.gain.setValueAtTime(this.volume * 0.6, time);
-      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(time);
-      osc.stop(time + 0.06);
-    }
+    const pitches = [180, 240, 160, 210];
+    pitches.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.07;
+      this.playWarmTone(freq, time, 0.05, 0.35, 'triangle');
+    });
   }
 
+  // 3. Relaxing Turn Chime (clear gentle airport / meditation chime)
   public playTurnChime() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
 
-    const notes = [587.33, 880]; // D5, A5
+    const notes = [659.25, 987.77]; // E5, B5 (relaxing fifth interval)
     notes.forEach((freq, idx) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const time = this.ctx.currentTime + idx * 0.12;
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, time);
-
-      gain.gain.setValueAtTime(this.volume * 0.4, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(time);
-      osc.stop(time + 0.4);
+      const time = this.ctx!.currentTime + idx * 0.14;
+      this.playWarmTone(freq, time, 0.45, 0.32, 'sine');
     });
   }
 
+  // 4. Relaxing Buy Property (gentle acoustic harp arpeggio)
+  public playBuy() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.07;
+      this.playWarmTone(freq, time, 0.4, 0.3, 'sine');
+    });
+  }
+
+  // 5. Monopoly Completion (Triumphant yet gentle brass/bell chord)
+  public playMonopoly() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // Major 9th celebration chord
+    const notes = [392.00, 493.88, 587.33, 739.99, 987.77]; // G4, B4, D5, F#5, B5
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.09;
+      this.playWarmTone(freq, time, 0.65, 0.38, 'sine');
+    });
+  }
+
+  // 6. House / Hotel Upgrade (Delicate glockenspiel sparkle)
+  public playUpgrade() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const notes = [783.99, 1046.50, 1318.51, 1567.98]; // G5, C6, E6, G6
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.06;
+      this.playWarmTone(freq, time, 0.5, 0.28, 'sine');
+    });
+  }
+
+  // 7. Tropical Vacation Island Oasis (Peaceful ocean breeze wind chimes & Major 7th chord)
+  public playVacation() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    // F# Major 7th harp arpeggio: F#4, A#4, C#5, F5, G#5, C#6
+    const notes = [369.99, 466.16, 554.37, 698.46, 830.61, 1108.73];
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.1;
+      this.playWarmTone(freq, time, 0.8, 0.35, 'sine');
+    });
+  }
+
+  // 8. Prison / Jail (Somber, deep acoustic cello / resonant gong tone)
+  public playPrison() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const time = this.ctx.currentTime;
+    // Deep resonant gong (110Hz -> 82Hz) with subtle harmonic overtone
+    this.playWarmTone(110, time, 0.85, 0.45, 'triangle');
+    this.playWarmTone(82.41, time + 0.05, 1.1, 0.4, 'sine');
+  }
+
+  // Backward compatibility alias for playJail
+  public playJail() {
+    this.playPrison();
+  }
+
+  // 9. Rent Payment (Gentle double coin tap)
+  public playRent() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const notes = [587.33, 440]; // D5 -> A4
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.08;
+      this.playWarmTone(freq, time, 0.3, 0.25, 'sine');
+    });
+  }
+
+  // 10. Tax Payment (Muted mellow descending chime)
+  public playTax() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const notes = [493.88, 392.00]; // B4 -> G4
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.1;
+      this.playWarmTone(freq, time, 0.4, 0.28, 'sine');
+    });
+  }
+
+  // 11. Friendly Trade Handshake (Warm marimba triad)
+  public playTrade() {
+    if (!this.enabled) return;
+    this.initContext();
+    if (!this.ctx) return;
+
+    const notes = [349.23, 440, 523.25, 698.46]; // F4, A4, C5, F5
+    notes.forEach((freq, idx) => {
+      const time = this.ctx!.currentTime + idx * 0.08;
+      this.playWarmTone(freq, time, 0.45, 0.3, 'sine');
+    });
+  }
+
+  // 12. Cash / Salary Collection
   public playCash() {
     if (!this.enabled) return;
     this.initContext();
@@ -109,143 +207,41 @@ class SoundService {
 
     const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
     notes.forEach((freq, idx) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const time = this.ctx.currentTime + idx * 0.05;
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
-
-      gain.gain.setValueAtTime(this.volume * 0.35, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(time);
-      osc.stop(time + 0.3);
+      const time = this.ctx!.currentTime + idx * 0.05;
+      this.playWarmTone(freq, time, 0.32, 0.28, 'sine');
     });
   }
 
-  public playBuy() {
-    if (!this.enabled) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    const notes = [440, 554.37, 659.25]; // A4, C#5, E5
-    notes.forEach((freq, idx) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const time = this.ctx.currentTime + idx * 0.06;
-
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, time);
-
-      gain.gain.setValueAtTime(this.volume * 0.4, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(time);
-      osc.stop(time + 0.35);
-    });
-  }
-
+  // 13. Auction Bid
   public playBid() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
 
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
     const time = this.ctx.currentTime;
-
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(260, time);
-    osc.frequency.exponentialRampToValueAtTime(80, time + 0.07);
-
-    gain.gain.setValueAtTime(this.volume * 0.4, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + 0.08);
+    this.playWarmTone(440, time, 0.12, 0.25, 'sine');
   }
 
-  public playJail() {
-    if (!this.enabled) return;
-    this.initContext();
-    if (!this.ctx) return;
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    const time = this.ctx.currentTime;
-
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(120, time);
-    osc.frequency.linearRampToValueAtTime(60, time + 0.4);
-
-    gain.gain.setValueAtTime(this.volume * 0.5, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + 0.45);
-  }
-
+  // 14. Chat Message Pop (Soft delicate water droplet)
   public playChatPop() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
 
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
     const time = this.ctx.currentTime;
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, time);
-    osc.frequency.exponentialRampToValueAtTime(400, time + 0.06);
-
-    gain.gain.setValueAtTime(this.volume * 0.25, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.06);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + 0.07);
+    this.playWarmTone(880, time, 0.07, 0.22, 'sine');
   }
 
+  // 15. Victory Fanfare (Gentle, warm melodic bells)
   public playWinFanfare() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
 
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
     notes.forEach((freq, idx) => {
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const time = this.ctx.currentTime + idx * 0.1;
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
-
-      gain.gain.setValueAtTime(this.volume * 0.45, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.6);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start(time);
-      osc.stop(time + 0.65);
+      const time = this.ctx!.currentTime + idx * 0.12;
+      this.playWarmTone(freq, time, 0.8, 0.35, 'sine');
     });
   }
 }

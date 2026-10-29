@@ -15,60 +15,59 @@ export const TurnClock: React.FC<TurnClockProps> = ({
   onRequestTime
 }) => {
   const fraction = Math.max(0, Math.min(1, remainingSec / Math.max(1, totalSec)));
-  const radius = 18;
+  const radius = 12;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - fraction);
   const isUrgent = remainingSec <= 10;
 
   return (
-    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full backdrop-blur-md border transition-all duration-300 ${
+    <div className={`flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 rounded-full backdrop-blur-md border transition-all duration-300 ${
       isUrgent 
         ? 'bg-red-950/80 border-red-500/50 text-red-200 animate-pulse' 
         : 'bg-[#1b152b]/90 border-purple-500/30 text-purple-200'
     }`}>
-      {/* Radial Ring */}
-      <div className="relative w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
-        <svg className="w-6 h-6 sm:w-8 sm:h-8 -rotate-90" viewBox="0 0 44 44">
+      {/* Compact Radial Ring */}
+      <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+        <svg className="w-5 h-5 -rotate-90" viewBox="0 0 32 32">
           <circle
-            cx="22"
-            cy="22"
+            cx="16"
+            cy="16"
             r={radius}
             fill="none"
             stroke="currentColor"
-            strokeWidth="4"
+            strokeWidth="3"
             className="opacity-20"
           />
           <circle
-            cx="22"
-            cy="22"
+            cx="16"
+            cy="16"
             r={radius}
             fill="none"
             stroke={isUrgent ? '#ff3b30' : '#a855f7'}
-            strokeWidth="4"
+            strokeWidth="3"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             className="transition-all duration-500"
           />
         </svg>
-        <Clock className={`w-3 h-3 sm:w-3.5 sm:h-3.5 absolute ${isUrgent ? 'text-red-400' : 'text-purple-400'}`} />
+        <Clock className={`w-2.5 h-2.5 absolute ${isUrgent ? 'text-red-400' : 'text-purple-400'}`} />
       </div>
 
-      <div className="flex flex-col">
-        <span className="text-[10px] sm:text-xs font-mono font-bold leading-none">
+      <div className="flex flex-col leading-none">
+        <span className="text-[9px] sm:text-[10px] font-mono font-bold leading-tight">
           {remainingSec}s
         </span>
-        <span className="text-[8px] sm:text-[10px] text-gray-400 font-medium">Turn limit</span>
+        <span className="text-[6.5px] sm:text-[7.5px] text-gray-400 font-medium leading-none">Turn limit</span>
       </div>
 
       {isMyTurn && onRequestTime && (
         <button
           onClick={onRequestTime}
           title="Ask for +15s extra time"
-          className="ml-0.5 sm:ml-1 p-0.5 sm:p-1 bg-purple-600/40 hover:bg-purple-600/70 border border-purple-500/40 rounded-full transition-colors flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-white px-1.5 sm:px-2 cursor-pointer"
+          className="ml-0.5 py-0.5 px-1.5 bg-purple-600/50 hover:bg-purple-600/80 border border-purple-400/50 rounded-full transition-colors flex items-center justify-center text-[8px] sm:text-[9px] font-bold text-white cursor-pointer shadow-sm active:scale-95 leading-none"
         >
-          <Plus className="w-2.5 h-2.5" />
-          <span>15s</span>
+          <span>+ 15s</span>
         </button>
       )}
     </div>

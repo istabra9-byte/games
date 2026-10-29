@@ -2,6 +2,7 @@ import React from 'react';
 import { GameRoom, Player } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot, X } from 'lucide-react';
+import { PlayerAvatar } from './PlayerAvatar';
 
 interface LeaderboardProps {
   room: GameRoom;
@@ -77,11 +78,8 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   <span className="text-[10px] font-mono font-bold text-gray-500 w-3">
                     #{rank + 1}
                   </span>
-                  <div
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm text-white border-2 border-white/70 shadow relative flex-shrink-0"
-                    style={{ backgroundColor: player.color }}
-                  >
-                    {player.avatar || player.name[0]}
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center relative flex-shrink-0">
+                    <PlayerAvatar avatar={player.avatar} color={player.color} size={30} />
                     {player.isHost && (
                       <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1.5 -right-1.5 drop-shadow" />
                     )}

@@ -69,7 +69,7 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
 
         {/* Brand Title */}
         <h1 className="text-6xl sm:text-7xl font-black font-heading tracking-widest text-white leading-none">
-          RICHUP<span className="text-[#8c47e0]">.IO</span>
+          MONOPOLY<span className="text-[#8c47e0]">.IO</span>
         </h1>
         <p className="text-sm font-semibold tracking-wider text-purple-300/80 mt-1 uppercase">
           Rule the economy

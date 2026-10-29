@@ -104,6 +104,7 @@ export interface GameLog {
   text: string;
   timestamp: number;
   type: 'roll' | 'buy' | 'rent' | 'jail' | 'card' | 'auction' | 'trade' | 'bankrupt' | 'system';
+  playerId?: string;
 }
 
 export type TurnPhase = 'roll' | 'action' | 'trade' | 'auction' | 'end';

@@ -26,6 +26,7 @@ import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
+import { PlayerAvatar } from './components/PlayerAvatar';
 import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -50,8 +51,8 @@ export const App: React.FC = () => {
     return {
       id: newId,
       name: `Player_${Math.floor(Math.random() * 900 + 100)}`,
-      avatar: '🎩',
-      color: '#ff253a',
+      avatar: 'navy',
+      color: '#2945b5',
       cash: 1500,
       position: 0,
       inJail: false,
@@ -371,14 +372,25 @@ export const App: React.FC = () => {
     if (!room) return;
     const botNum = Object.keys(room.players).length + 1;
     const botId = `bot_${Date.now()}`;
-    const botColors = ['#00d2d3', '#5f27cd', '#ff9f43', '#10ac84', '#ee5253'];
-    const botAvatars = ['🤖', '👾', '🦾', '🧠', '⚙️'];
+    const botStyles = [
+      { avatar: 'fire', color: '#ff4500' },
+      { avatar: 'alien', color: '#10b981' },
+      { avatar: 'bomb', color: '#3c3836' },
+      { avatar: 'strawberry', color: '#e11d48' },
+      { avatar: 'lemon', color: '#facc15' },
+      { avatar: 'ghost', color: '#00d2d3' },
+      { avatar: 'cat', color: '#4f46e5' },
+      { avatar: 'cloud', color: '#e2e8f0' },
+      { avatar: 'donut', color: '#ec4899' },
+      { avatar: 'red_wine', color: '#6b2824' }
+    ];
+    const chosenBot = botStyles[(botNum - 2 + botStyles.length) % botStyles.length];
 
     const newBot: Player = {
       id: botId,
       name: `AI_Bot_${botNum}`,
-      avatar: botAvatars[(botNum - 1) % botAvatars.length],
-      color: botColors[(botNum - 1) % botColors.length],
+      avatar: chosenBot.avatar,
+      color: chosenBot.color,
       cash: room.settings.startingCash,
       position: 0,
       inJail: false,
@@ -469,7 +481,7 @@ export const App: React.FC = () => {
       timestamp: Date.now(),
       type: 'trade'
     });
-    sound.playCash();
+    sound.playTrade();
     newRoom.activeTrade = null;
     multiplayer.updateRoom(newRoom);
   };
@@ -509,7 +521,7 @@ export const App: React.FC = () => {
       <div className="w-screen h-screen bg-[#130f1d] flex flex-col items-center justify-center text-white select-none">
         <div className="w-10 h-10 border-4 border-[#6647e0] border-t-transparent rounded-full animate-spin mb-3" />
         <span className="text-xl font-bold font-heading tracking-widest text-purple-200">
-          Entering Richup Room {roomId}...
+          Entering Room {roomId}...
         </span>
       </div>
     );
@@ -566,7 +578,7 @@ export const App: React.FC = () => {
             onClick={() => setRoomId('')}
             className="text-xl sm:text-2xl md:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400 hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
           >
-            RICHUP
+            MONOPOLY
           </button>
           <span className="text-[10px] sm:text-[11px] text-purple-300 font-mono bg-[#21163b] px-1.5 sm:px-2 py-0.5 rounded-md border border-purple-800/60 truncate">
             {room.id}
@@ -660,10 +672,10 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Screen Area: Guaranteed Centered Square Board & Responsive Sidebar */}
-      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto p-1 sm:p-2 md:p-3 flex items-center justify-center gap-3 overflow-hidden relative">
+      {/* Main Screen Area: Guaranteed Square Board & Responsive Sidebar */}
+      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto px-1 sm:px-2 md:px-3 py-1 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden relative">
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center lg:justify-end overflow-hidden">
           <Board
             room={room}
             onTileClick={(tile) => setSelectedTile(tile)}
@@ -684,7 +696,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Desktop Sidebar: Players Leaderboard */}
-        <div className="hidden lg:flex w-64 h-full flex-col flex-shrink-0">
+        <div className="hidden lg:flex w-52 h-full flex-col flex-shrink-0">
           <Leaderboard
             room={room}
             currentPlayerId={currentPlayer.id}
@@ -693,14 +705,14 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Slide-In Chat Drawer (With Backdrop on Mobile/Tablet) */}
+      {/* Slide-In Chat Drawer (With Backdrop on all screens to click anywhere to quick close) */}
       {isChatOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-45 cursor-pointer"
             onClick={() => setIsChatOpen(false)}
           />
-          <div className="fixed top-12 bottom-3 left-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
+          <div className="fixed top-12 bottom-3 left-3 z-50 w-[260px] sm:w-[275px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
             <ChatAndLogs
               chat={room.chat || []}
               logs={room.logs || []}
@@ -730,10 +742,9 @@ export const App: React.FC = () => {
         </>
       )}
 
-      {/* Floating Incoming Messages & Mini 'T' Pill when Chat is Closed */}
-      {!isChatOpen && (
+      {/* Floating Incoming Messages when Chat is Closed (auto-dismissed, no persistent pill) */}
+      {!isChatOpen && droppedMessages.length > 0 && (
         <div className="fixed bottom-4 left-4 z-40 flex flex-col gap-2 max-w-xs sm:max-w-sm pointer-events-none">
-          {/* Incoming Dropped Message Toasts */}
           {droppedMessages.map((msg) => (
             <div
               key={msg.id}
@@ -743,11 +754,8 @@ export const App: React.FC = () => {
               }}
               className="pointer-events-auto cursor-pointer p-2.5 bg-[#171126]/95 border border-purple-500/60 rounded-xl shadow-2xl backdrop-blur-md flex items-start gap-2.5 animate-in slide-in-from-bottom-2 fade-in duration-200 hover:scale-102 transition-transform"
             >
-              <div
-                className="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs text-white flex-shrink-0 shadow"
-                style={{ backgroundColor: msg.senderColor || '#ff4081' }}
-              >
-                {msg.senderName[0]}
+              <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                <PlayerAvatar color={msg.senderColor || '#ff4081'} size={24} />
               </div>
               <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -762,18 +770,6 @@ export const App: React.FC = () => {
               </div>
             </div>
           ))}
-
-          {/* Mini 'T' Chat Pill (Desktop only) */}
-          <button
-            onClick={() => {
-              setIsChatOpen(true);
-              setDroppedMessages([]);
-            }}
-            className="pointer-events-auto self-start hidden md:flex px-3 py-1.5 bg-[#171126]/90 hover:bg-[#251b3d] border border-purple-800/60 rounded-xl text-xs font-bold text-purple-200 hover:text-white items-center gap-2 shadow-lg backdrop-blur-sm transition-all cursor-pointer group active:scale-95"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300" />
-            <span>Press <kbd className="px-1.5 py-0.5 bg-purple-950 border border-purple-700/60 rounded font-mono text-[10px] text-purple-300">T</kbd> to chat</span>
-          </button>
         </div>
       )}
 

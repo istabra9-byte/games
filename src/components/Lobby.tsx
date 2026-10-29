@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GameRoom, Player, GameSettings } from '../types/game';
 import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders } from 'lucide-react';
 import { sound } from '../services/sound';
+import { PlayerAvatar, PLAYER_APPEARANCES, EXTRA_COLORS } from './PlayerAvatar';
 
 interface LobbyProps {
   room: GameRoom;
@@ -13,25 +14,6 @@ interface LobbyProps {
   onOpenFirebaseConfig: () => void;
   isFirebaseActive: boolean;
 }
-
-// Exact emoji tokens matching Richup.io
-const AVATAR_OPTIONS = [
-  '🎩', '🚗', '🚀', '✈️', '🚂', '🚢', '🎮', '🎭', '🎨', 
-  '🍕', '🍔', '🌮', '🍣', '🍦', '🎂', '🍓', '🥑', '🌶️', 
-  '🔑', '⚙️', '⚔️', '🛡️', '👑', '💎', '⚡', '🏆', '🎉'
-];
-
-// Richup 8 player colors
-const COLOR_OPTIONS = [
-  '#ff253a', // Red
-  '#007aff', // Blue
-  '#07bc0c', // Green
-  '#f1c40f', // Yellow
-  '#9b51e0', // Purple
-  '#ff6b22', // Orange
-  '#00d2d3', // Cyan
-  '#fd79a8'  // Pink
-];
 
 const RANDOM_NAMES = ['Investor', 'Tycoon', 'Broker', 'Mogul', 'Banker', 'Baron', 'Trader', 'Capitalist', 'Wolf', 'Whale'];
 
@@ -52,10 +34,9 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   const handleRandomize = () => {
     const randomName = `${RANDOM_NAMES[Math.floor(Math.random() * RANDOM_NAMES.length)]}_${Math.floor(Math.random() * 900 + 100)}`;
-    const randomAvatar = AVATAR_OPTIONS[Math.floor(Math.random() * AVATAR_OPTIONS.length)];
-    const randomColor = COLOR_OPTIONS[Math.floor(Math.random() * COLOR_OPTIONS.length)];
+    const randomApp = PLAYER_APPEARANCES[Math.floor(Math.random() * PLAYER_APPEARANCES.length)];
     setName(randomName);
-    onUpdatePlayer(randomName, randomAvatar, randomColor);
+    onUpdatePlayer(randomName, randomApp.style, randomApp.color);
     sound.playDiceRoll();
   };
 
@@ -75,7 +56,7 @@ export const Lobby: React.FC<LobbyProps> = ({
       {/* Brand Header */}
       <div className="text-center mb-5">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 leading-none">
-          RICHUP
+          MONOPOLY
         </h1>
         <h2 className="text-xs sm:text-sm font-semibold tracking-wider uppercase text-purple-300/80 mt-1">
           Rule the economy
@@ -130,40 +111,60 @@ export const Lobby: React.FC<LobbyProps> = ({
             placeholder="Enter your nickname"
           />
 
-          {/* Token Pickers */}
-          <div className="flex flex-col gap-1.5 pt-1">
-            <span className="text-[11px] text-gray-400 font-semibold">Choose Your Token:</span>
-            <div className="flex items-center gap-1.5 flex-wrap max-h-24 overflow-y-auto p-1 bg-[#120c1d] rounded-xl border border-purple-950">
-              {AVATAR_OPTIONS.map((av) => (
-                <button
-                  key={av}
-                  onClick={() => onUpdatePlayer(name, av, currentPlayer.color)}
-                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-sm transition-transform cursor-pointer ${
-                    currentPlayer.avatar === av
-                      ? 'scale-110 bg-purple-600 shadow-md ring-2 ring-white'
-                      : 'bg-[#1a1228] hover:scale-105'
-                  }`}
-                >
-                  {av}
-                </button>
-              ))}
+          {/* Player Appearance Selection (Matching Richup Googly-Eyed Characters & Styles) */}
+          <div className="flex flex-col gap-2 pt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">
+                Player Appearance
+              </span>
+              <span className="text-[11px] text-purple-400 font-semibold capitalize">
+                {PLAYER_APPEARANCES.find(a => a.style === currentPlayer.avatar)?.name || 'Custom'}
+              </span>
             </div>
 
-            {/* Color Pickers */}
-            <span className="text-[11px] text-gray-400 font-semibold mt-1">Choose Player Color:</span>
-            <div className="flex items-center gap-2 flex-wrap">
-              {COLOR_OPTIONS.map((col) => (
-                <button
-                  key={col}
-                  onClick={() => onUpdatePlayer(name, currentPlayer.avatar, col)}
-                  className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full transition-transform cursor-pointer shadow ${
-                    currentPlayer.color === col
-                      ? 'scale-115 ring-2 ring-white shadow-lg'
-                      : 'hover:scale-110 opacity-70 hover:opacity-100'
-                  }`}
-                  style={{ backgroundColor: col }}
-                />
-              ))}
+            {/* Grid of Character Cards with Cartoon Googly Eyes */}
+            <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 max-h-52 overflow-y-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
+              {PLAYER_APPEARANCES.map((app) => {
+                const isSelected = currentPlayer.avatar === app.style;
+                return (
+                  <button
+                    key={app.id}
+                    onClick={() => onUpdatePlayer(name, app.style, app.color)}
+                    className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                      isSelected
+                        ? 'bg-purple-950/70 border-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-102 ring-1 ring-purple-400'
+                        : 'bg-[#181126] border-purple-900/30 hover:border-purple-700/60 hover:bg-[#201633] opacity-80 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
+                      <PlayerAvatar avatar={app.style} color={app.color} size={42} />
+                    </div>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-gray-200 truncate max-w-full">
+                      {app.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Choose / Fine-Tune Player Color */}
+            <div className="flex flex-col gap-1.5 mt-1">
+              <span className="text-[11px] text-gray-400 font-semibold">Choose Player Color:</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {EXTRA_COLORS.map((col) => (
+                  <button
+                    key={col}
+                    onClick={() => onUpdatePlayer(name, currentPlayer.avatar || 'navy', col)}
+                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full transition-transform cursor-pointer shadow ${
+                      currentPlayer.color === col
+                        ? 'scale-115 ring-2 ring-white shadow-lg'
+                        : 'hover:scale-110 opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ backgroundColor: col }}
+                    title={col}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -193,11 +194,8 @@ export const Lobby: React.FC<LobbyProps> = ({
                 key={p.id}
                 className="bg-[#120c1d] p-2.5 rounded-xl border border-purple-950 flex items-center gap-2.5"
               >
-                <div
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold text-white border-2 border-white/70 shadow relative flex-shrink-0"
-                  style={{ backgroundColor: p.color }}
-                >
-                  {p.avatar || p.name[0]}
+                <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center relative flex-shrink-0">
+                  <PlayerAvatar avatar={p.avatar} color={p.color} size={32} />
                   {p.isHost && <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1 -right-1 drop-shadow" />}
                 </div>
 

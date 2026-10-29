@@ -42,17 +42,20 @@
 
 /* Perfect Square Responsive Board Across All Screens (Phones, Tablets, PCs) */
 .responsive-board-wrapper {
-  width: min(calc(100vw - 12px), calc(100vh - 4.25rem), 860px);
-  height: min(calc(100vw - 12px), calc(100vh - 4.25rem), 860px);
-  max-width: 860px;
-  max-height: 860px;
+  width: min(calc(100vw - 8px), calc(100vh - 3.25rem), 980px);
+  height: min(calc(100vw - 8px), calc(100vh - 3.25rem), 980px);
+  max-width: 980px;
+  max-height: 980px;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 19rem), calc(100vh - 4.25rem), 860px);
-    height: min(calc(100vw - 19rem), calc(100vh - 4.25rem), 860px);
+    width: min(calc(100vw - 14.5rem), calc(100vh - 3.25rem), 980px);
+    height: min(calc(100vw - 14.5rem), calc(100vh - 3.25rem), 980px);
   }
 }
