@@ -314,7 +314,14 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                     <img
                       src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
                       alt={tile.name}
-                      className="w-full h-full object-cover select-none pointer-events-none scale-125"
+                      className="w-full h-full object-cover select-none pointer-events-none"
+                      style={
+                        tile.countryCode === 'cn'
+                          ? { objectPosition: '0% 0%', transform: 'scale(1.4) translate(10%, 10%)' }
+                          : tile.countryCode === 'us'
+                          ? { objectPosition: '10% 20%', transform: 'scale(1.2)' }
+                          : { transform: 'scale(1.15)' }
+                      }
                       loading="lazy"
                     />
                   </div>
