@@ -675,7 +675,7 @@ export const App: React.FC = () => {
       {/* Main Screen Area: Guaranteed Square Board & Responsive Sidebar */}
       <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto px-1 sm:px-2 md:px-3 py-1 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden relative">
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center lg:justify-end overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
           <Board
             room={room}
             onTileClick={(tile) => setSelectedTile(tile)}
@@ -696,7 +696,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Desktop Sidebar: Players Leaderboard */}
-        <div className="hidden lg:flex w-52 h-full flex-col flex-shrink-0">
+        <div className="hidden lg:flex w-72 xl:w-80 h-full flex-col flex-shrink-0">
           <Leaderboard
             room={room}
             currentPlayerId={currentPlayer.id}
@@ -712,7 +712,7 @@ export const App: React.FC = () => {
             className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-45 cursor-pointer"
             onClick={() => setIsChatOpen(false)}
           />
-          <div className="fixed top-12 bottom-3 left-3 z-50 w-[260px] sm:w-[275px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
+          <div className="fixed top-12 bottom-3 left-3 z-50 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
             <ChatAndLogs
               chat={room.chat || []}
               logs={room.logs || []}

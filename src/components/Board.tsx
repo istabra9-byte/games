@@ -83,7 +83,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
   return (
     <div
-      className="responsive-board-wrapper relative bg-[#120d1f] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_15px_45px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center m-auto lg:my-auto lg:ml-auto lg:mr-0"
+      className="responsive-board-wrapper relative bg-[#120d1f] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_15px_45px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center m-auto"
     >
       <div
         className="w-full h-full gap-[1px] sm:gap-[2px] md:gap-[3px] bg-[#0c0816] rounded-lg sm:rounded-xl p-0.5 sm:p-1 relative"
@@ -111,10 +111,13 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 {/* 0: START */}
                 {cornerType === 'start' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center">
-                    <span className="text-xs sm:text-base md:text-lg font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.8)] leading-none">
+                    <span
+                      className="font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.8)] leading-none"
+                      style={{ fontSize: 'clamp(13px, 2.2cqi, 26px)' }}
+                    >
                       START
                     </span>
-                    <span className="text-sm sm:text-xl md:text-2xl mt-1">
+                    <span className="mt-1" style={{ fontSize: 'clamp(18px, 3.2cqi, 38px)' }}>
                       🚀
                     </span>
                   </div>
@@ -124,7 +127,10 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 {cornerType === 'jail' && (
                   <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center relative">
                     <div className="flex flex-col items-center">
-                      <span className="text-[6.5px] sm:text-[8.5px] md:text-[9.5px] font-black text-gray-300 uppercase tracking-tight">
+                      <span
+                        className="font-black text-gray-300 uppercase tracking-tight"
+                        style={{ fontSize: 'clamp(7.5px, 1.1cqi, 12px)' }}
+                      >
                         Passing by
                       </span>
                       {/* Passing by tokens */}
@@ -132,7 +138,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                         <div className="flex items-center justify-center gap-0.5 mt-0.5">
                           {playersHere.filter(p => !p.inJail).map(p => (
                             <div key={p.id} className="flex items-center justify-center filter drop-shadow" title={`${p.name} (Visiting)`}>
-                              <PlayerAvatar avatar={p.avatar} color={p.color} size={18} />
+                              <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
                             </div>
                           ))}
                         </div>
@@ -142,7 +148,10 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                     <div className="w-[88%] h-[58%] bg-[#252a38] rounded border border-orange-500/50 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
                       {/* Prison Bars Overlay */}
                       <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#94a3b8_3px,#94a3b8_5px)]" />
-                      <span className="text-[7px] sm:text-[9px] md:text-[10px] font-black text-orange-300 uppercase z-10 leading-none">
+                      <span
+                        className="font-black text-orange-300 uppercase z-10 leading-none"
+                        style={{ fontSize: 'clamp(8.5px, 1.25cqi, 14px)' }}
+                      >
                         In Prison
                       </span>
                       {/* In Prison tokens */}
@@ -150,7 +159,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                         <div className="flex items-center justify-center gap-0.5 mt-0.5 z-20">
                           {playersHere.filter(p => p.inJail).map(p => (
                             <div key={p.id} className="flex items-center justify-center animate-pulse filter drop-shadow" title={`${p.name} (In Prison)`}>
-                              <PlayerAvatar avatar={p.avatar} color={p.color} size={18} />
+                              <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
                             </div>
                           ))}
                         </div>
@@ -163,10 +172,13 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 {/* 20: VACATION */}
                 {cornerType === 'vacation' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
-                    <div className="text-base sm:text-2xl md:text-3xl">
+                    <div style={{ fontSize: 'clamp(18px, 3.4cqi, 40px)' }}>
                       🏝️
                     </div>
-                    <span className="text-[8px] sm:text-[10.5px] md:text-[12px] font-black text-emerald-300 uppercase tracking-wider font-heading leading-tight">
+                    <span
+                      className="font-black text-emerald-300 uppercase tracking-wider font-heading leading-tight"
+                      style={{ fontSize: 'clamp(10px, 1.5cqi, 17px)' }}
+                    >
                       Vacation
                     </span>
                   </div>
@@ -175,8 +187,14 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 {/* 30: GO TO PRISON */}
                 {cornerType === 'go_to_jail' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
-                    <Skull className="w-4 h-4 sm:w-6 sm:h-6 md:w-7 md:h-7 text-gray-200" />
-                    <span className="text-[7.5px] sm:text-[9.5px] md:text-[11px] font-black text-gray-200 uppercase font-heading leading-tight tracking-wider">
+                    <Skull
+                      className="text-gray-200"
+                      style={{ width: 'clamp(18px, 3.2cqi, 36px)', height: 'clamp(18px, 3.2cqi, 36px)' }}
+                    />
+                    <span
+                      className="font-black text-gray-200 uppercase font-heading leading-tight tracking-wider"
+                      style={{ fontSize: 'clamp(9px, 1.35cqi, 15px)' }}
+                    >
                       Go to prison
                     </span>
                   </div>
@@ -209,21 +227,25 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
             <div className="flex items-center justify-center flex-shrink-0 z-10">
               {tile.price > 0 ? (
                 <div
-                  className={`px-1 sm:px-1.5 py-0.5 rounded-full text-[7px] sm:text-[8px] md:text-[9.5px] font-mono font-black shadow-sm leading-none flex items-center justify-center transition-all ${
+                  className={`px-1 sm:px-1.5 py-0.5 rounded-full font-mono font-black shadow-sm leading-none flex items-center justify-center transition-all ${
                     isOwned && owner
                       ? 'text-white border border-white/60 font-black'
                       : 'bg-white/15 border border-white/25 text-white'
                   }`}
-                  style={
-                    isOwned && owner
+                  style={{
+                    fontSize: 'clamp(8px, 1.15cqi, 12px)',
+                    ...(isOwned && owner
                       ? { backgroundColor: owner.color, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }
-                      : undefined
-                  }
+                      : {})
+                  }}
                 >
                   {tile.price}$
                 </div>
               ) : tile.type === 'tax' ? (
-                <div className="px-1 sm:px-1.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-[6.5px] sm:text-[8px] md:text-[9px] font-mono font-black text-amber-300 shadow-sm leading-none">
+                <div
+                  className="px-1 sm:px-1.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 font-mono font-black text-amber-300 shadow-sm leading-none"
+                  style={{ fontSize: 'clamp(7.5px, 1.1cqi, 11px)' }}
+                >
                   {tile.name.includes('Earnings') ? '%10' : '100$'}
                 </div>
               ) : null}
@@ -234,7 +256,10 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
           const iconBadge = (
             <div className="flex items-center justify-center flex-shrink-0 z-10">
               {tile.countryCode && tile.type === 'property' ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full overflow-hidden border-[1.5px] border-white/85 shadow-md flex items-center justify-center bg-black/40 flex-shrink-0">
+                <div
+                  className="rounded-full overflow-hidden border-[1.5px] border-white/85 shadow-md flex items-center justify-center bg-black/40 flex-shrink-0"
+                  style={{ width: 'clamp(20px, 3.1cqi, 36px)', height: 'clamp(20px, 3.1cqi, 36px)' }}
+                >
                   <img
                     src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
                     alt={tile.name}
@@ -250,41 +275,70 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                   />
                 </div>
               ) : tile.type === 'railroad' ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-slate-900 border-[1.5px] border-sky-400/70 shadow-md flex items-center justify-center flex-shrink-0">
-                  <Plane className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-200" />
+                <div
+                  className="rounded-full bg-slate-900 border-[1.5px] border-sky-400/70 shadow-md flex items-center justify-center flex-shrink-0"
+                  style={{ width: 'clamp(20px, 3.1cqi, 36px)', height: 'clamp(20px, 3.1cqi, 36px)' }}
+                >
+                  <Plane className="w-[58%] h-[58%] text-sky-200" />
                 </div>
               ) : tile.type === 'utility' ? (
                 tile.name.toUpperCase().includes('STEG') ? (
-                  <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 md:w-6.5 md:h-6.5 rounded-full bg-slate-950 border-[1.5px] border-blue-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0">
+                  <div
+                    className="rounded-full bg-slate-950 border-[1.5px] border-blue-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.4cqi, 38px)', height: 'clamp(22px, 3.4cqi, 38px)' }}
+                  >
                     <img src={stegLogo} alt="STEG" className="w-full h-full object-contain" />
                   </div>
                 ) : tile.name.toUpperCase().includes('SONEDE') ? (
-                  <div className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 md:w-6.5 md:h-6.5 rounded-full bg-slate-950 border-[1.5px] border-cyan-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0">
+                  <div
+                    className="rounded-full bg-slate-950 border-[1.5px] border-cyan-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.4cqi, 38px)', height: 'clamp(22px, 3.4cqi, 38px)' }}
+                  >
                     <img src={sonedeLogo} alt="SONEDE" className="w-full h-full object-contain" />
                   </div>
                 ) : (
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300" />
+                  <div
+                    className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0"
+                    style={{ width: 'clamp(20px, 3.1cqi, 36px)', height: 'clamp(20px, 3.1cqi, 36px)' }}
+                  >
+                    <Zap className="w-[58%] h-[58%] text-amber-300" />
                   </div>
                 )
               ) : tile.type === 'chest' ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-amber-950/80 border-[1.5px] border-amber-500/80 shadow-md flex items-center justify-center text-[10px] sm:text-xs md:text-sm flex-shrink-0">
+                <div
+                  className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-500/80 shadow-md flex items-center justify-center flex-shrink-0"
+                  style={{
+                    width: 'clamp(20px, 3.1cqi, 36px)',
+                    height: 'clamp(20px, 3.1cqi, 36px)',
+                    fontSize: 'clamp(11px, 1.6cqi, 18px)'
+                  }}
+                >
                   🎁
                 </div>
               ) : tile.type === 'chance' ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-pink-950/80 border-[1.5px] border-pink-500/80 shadow-md flex items-center justify-center text-[11px] sm:text-xs md:text-sm font-black text-pink-300 flex-shrink-0">
+                <div
+                  className="rounded-full bg-pink-950/80 border-[1.5px] border-pink-500/80 shadow-md flex items-center justify-center font-black text-pink-300 flex-shrink-0"
+                  style={{
+                    width: 'clamp(20px, 3.1cqi, 36px)',
+                    height: 'clamp(20px, 3.1cqi, 36px)',
+                    fontSize: 'clamp(12px, 1.8cqi, 20px)'
+                  }}
+                >
                   ?
                 </div>
               ) : tile.type === 'tax' ? (
-                <div className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0">
+                <div
+                  className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0"
+                  style={{ width: 'clamp(20px, 3.1cqi, 36px)', height: 'clamp(20px, 3.1cqi, 36px)' }}
+                >
                   {tile.name.includes('Earnings') ? (
-                    <Percent className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300" />
+                    <Percent className="w-[58%] h-[58%] text-amber-300" />
                   ) : (
-                    <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-300" />
+                    <Gem className="w-[58%] h-[58%] text-sky-300" />
                   )}
                 </div>
               ) : tile.flag ? (
-                <span className="text-xs sm:text-sm md:text-base">{tile.flag}</span>
+                <span style={{ fontSize: 'clamp(14px, 2.2cqi, 26px)' }}>{tile.flag}</span>
               ) : null}
             </div>
           );
@@ -294,11 +348,11 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
           const nameLabel = (
             <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-0.5 w-full">
               <span
-                className="font-black text-white select-none text-center leading-[1.05] tracking-tight max-w-full"
+                className="font-black text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]"
                 style={{
                   fontSize: isHorizontal
-                    ? (tile.name.length > 12 ? '8.5px' : tile.name.length > 9 ? '9.5px' : '11px')
-                    : (tile.name.length >= 8 ? '7.8px' : '9px'),
+                    ? (tile.name.length > 12 ? 'clamp(9px, 1.25cqi, 13px)' : tile.name.length > 9 ? 'clamp(10px, 1.4cqi, 14.5px)' : 'clamp(11px, 1.55cqi, 16px)')
+                    : (tile.name.length >= 8 ? 'clamp(8.5px, 1.2cqi, 13px)' : 'clamp(10px, 1.4cqi, 14.5px)'),
                   whiteSpace: hasSpace ? 'normal' : 'nowrap',
                   textRendering: 'optimizeLegibility'
                 }}

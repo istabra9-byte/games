@@ -42,12 +42,14 @@
 
 /* Perfect Square Responsive Board Across All Screens (Phones, Tablets, PCs) */
 .responsive-board-wrapper {
-  width: min(calc(100vw - 8px), calc(100vh - 3.25rem), 980px);
-  height: min(calc(100vw - 8px), calc(100vh - 3.25rem), 980px);
-  max-width: 980px;
-  max-height: 980px;
+  width: min(calc(100vw - 12px), calc(100vh - 3.25rem));
+  height: min(calc(100vw - 12px), calc(100vh - 3.25rem));
+  max-width: min(calc(100vw - 12px), calc(100vh - 3.25rem));
+  max-height: min(calc(100vh - 3.25rem), calc(100vw - 12px));
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
+  container-type: inline-size;
+  container-name: board;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -55,7 +57,18 @@
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 14.5rem), calc(100vh - 3.25rem), 980px);
-    height: min(calc(100vw - 14.5rem), calc(100vh - 3.25rem), 980px);
+    width: min(calc(100vw - 20rem), calc(100vh - 3.25rem));
+    height: min(calc(100vw - 20rem), calc(100vh - 3.25rem));
+    max-width: min(calc(100vw - 20rem), calc(100vh - 3.25rem));
+    max-height: min(calc(100vh - 3.25rem), calc(100vw - 20rem));
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-board-wrapper {
+    width: min(calc(100vw - 23rem), calc(100vh - 3.25rem));
+    height: min(calc(100vw - 23rem), calc(100vh - 3.25rem));
+    max-width: min(calc(100vw - 23rem), calc(100vh - 3.25rem));
+    max-height: min(calc(100vh - 3.25rem), calc(100vw - 23rem));
   }
 }
