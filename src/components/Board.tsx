@@ -10,7 +10,7 @@ import sonedeLogo from '../assets/sonede.svg';
 interface BoardProps {
   room: GameRoom;
   onTileClick?: (tile: Tile) => void;
-  centerContent?: React.ReactNode;
+  centerContent?: React.ReactNode | ((props: { isPieceMoving: boolean }) => React.ReactNode);
 }
 
 export function getGridPosition(index: number) {
@@ -44,25 +44,56 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
     return init;
   });
 
+  const [movingPlayerIds, setMovingPlayerIds] = useState<Set<string>>(new Set());
   const animTimers = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+  const isPieceMoving = Boolean(
+    movingPlayerIds.has(currentTurnPlayerId) ||
+    (currentTurnPlayerId && visualPositions[currentTurnPlayerId] !== undefined && visualPositions[currentTurnPlayerId] !== room.players[currentTurnPlayerId]?.position)
+  );
 
   useEffect(() => {
     Object.values(players).forEach(p => {
       const currentVisual = visualPositions[p.id] ?? p.position;
       const targetPos = p.position;
 
-      if (currentVisual !== targetPos && !animTimers.current[p.id]) {
-        let currentStep = currentVisual;
-        animTimers.current[p.id] = setInterval(() => {
-          currentStep = (currentStep + 1) % 40;
-          sound.playStep();
-          setVisualPositions(prev => ({ ...prev, [p.id]: currentStep }));
-
-          if (currentStep === targetPos) {
+      if (currentVisual !== targetPos) {
+        // Direct teleportation to jail
+        if (p.inJail && targetPos === 10) {
+          if (animTimers.current[p.id]) {
             clearInterval(animTimers.current[p.id]);
             delete animTimers.current[p.id];
           }
-        }, 110);
+          setVisualPositions(prev => ({ ...prev, [p.id]: 10 }));
+          setMovingPlayerIds(prev => {
+            const next = new Set(prev);
+            next.delete(p.id);
+            return next;
+          });
+          return;
+        }
+
+        if (!animTimers.current[p.id]) {
+          setMovingPlayerIds(prev => new Set(prev).add(p.id));
+          let currentStep = currentVisual;
+          animTimers.current[p.id] = setInterval(() => {
+            currentStep = (currentStep + 1) % 40;
+            sound.playStep();
+            setVisualPositions(prev => ({ ...prev, [p.id]: currentStep }));
+
+            if (currentStep === targetPos) {
+              clearInterval(animTimers.current[p.id]);
+              delete animTimers.current[p.id];
+              sound.playSelect();
+              setMovingPlayerIds(prev => {
+                const next = new Set(prev);
+                next.delete(p.id);
+                return next;
+              });
+            }
+          }, 110);
+        }
       }
     });
 
@@ -482,7 +513,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
         <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-gradient-to-br from-[#151023] via-[#120c1d] to-[#0c0814] rounded-xl border border-purple-900/40 flex flex-col items-center justify-between p-2 sm:p-3 relative overflow-hidden shadow-inner">
           {/* Center Interactive Content */}
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
-            {centerContent}
+            {typeof centerContent === 'function' ? centerContent({ isPieceMoving }) : centerContent}
           </div>
         </div>
       </div>

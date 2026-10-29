@@ -276,6 +276,8 @@ export const App: React.FC = () => {
     if (room.hostId !== currentPlayer.id) return;
 
     if (turnPlayer && turnPlayer.isBot && !turnPlayer.isBankrupt) {
+      // Allow piece movement animation to finish before bot takes action
+      const delay = room.turnPhase === 'action' ? 2000 : 1500;
       const botTimer = setTimeout(() => {
         if (room.turnPhase === 'roll') {
           const nextRoom = rollDice(room, turnPlayer.id);
@@ -676,10 +678,11 @@ export const App: React.FC = () => {
           <Board
             room={room}
             onTileClick={(tile) => setSelectedTile(tile)}
-            centerContent={
+            centerContent={({ isPieceMoving }) => (
               <CenterControls
                 room={room}
                 currentPlayerId={currentPlayer.id}
+                isPieceMoving={isPieceMoving}
                 onRoll={handleRoll}
                 onBuy={handleBuy}
                 onSkip={handleSkip}
@@ -688,7 +691,7 @@ export const App: React.FC = () => {
                 onRequestTime={handleRequestTime}
                 onTileClick={(tile) => setSelectedTile(tile)}
               />
-            }
+            )}
           />
         </div>
 
