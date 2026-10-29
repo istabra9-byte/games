@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tile, Player, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent } from 'lucide-react';
+import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent, ShoppingCart, Check } from 'lucide-react';
 import { sound } from '../services/sound';
 import { PlayerAvatar } from './PlayerAvatar';
 import stegLogo from '../assets/steg.png';
@@ -151,14 +151,14 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
   return (
     <div
-      className="responsive-board-wrapper relative bg-[#120d1f] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_15px_45px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center m-auto"
+      className="responsive-board-wrapper relative bg-[#171328] rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-[#261f3e] select-none flex flex-col justify-center m-auto"
     >
       <div
-        className="w-full h-full gap-[1px] sm:gap-[2px] md:gap-[3px] bg-[#0c0816] rounded-lg sm:rounded-xl p-0.5 sm:p-1 relative"
+        className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.45fr repeat(9, 1fr) 1.45fr',
-          gridTemplateRows: '1.45fr repeat(9, 1fr) 1.45fr'
+          gridTemplateColumns: '1.53fr repeat(9, 1fr) 1.53fr',
+          gridTemplateRows: '1.53fr repeat(9, 1fr) 1.53fr'
         }}
       >
         {tiles.map((tile) => {
@@ -166,6 +166,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           const groupMeta = tile.group ? PROPERTY_GROUPS[tile.group] : null;
           const owner = tile.ownerId ? players[tile.ownerId] : null;
           const playersHere = playersOnTile[tile.index] || [];
+          const isOwned = Boolean(owner);
+          const isHorizontal = side === 'left' || side === 'right';
 
           // Corner Tiles (Richup Exact Corners)
           if (isCorner) {
@@ -173,21 +175,24 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               <div
                 key={tile.index}
                 onClick={() => onTileClick && onTileClick(tile)}
-                className="relative rounded sm:rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-gradient-to-br from-[#241c38] to-[#1c152d] border border-purple-800/40 p-0.5 sm:p-1.5 shadow-inner hover:border-purple-500/70 transition-all select-none"
+                className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-[#262a4c] border border-purple-900/40 p-1 shadow-inner hover:border-purple-400/60 transition-all select-none"
                 style={{ gridRowStart: row, gridColumnStart: col }}
               >
                 {/* 0: START */}
                 {cornerType === 'start' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center">
                     <span
-                      className="font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.8)] leading-none"
-                      style={{ fontSize: 'clamp(13px, 2.2cqi, 26px)' }}
+                      className="font-black tracking-wider text-[#a3e635] font-heading drop-shadow-[0_2px_10px_rgba(163,230,53,0.8)] leading-none"
+                      style={{ fontSize: 'clamp(15px, 2.4cqi, 30px)' }}
                     >
                       START
                     </span>
-                    <span className="mt-1" style={{ fontSize: 'clamp(18px, 3.2cqi, 38px)' }}>
-                      🚀
-                    </span>
+                    <div className="flex items-center justify-center gap-0.5 mt-1 text-[#a3e635]">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: 'clamp(20px, 3.4cqi, 38px)', height: 'clamp(20px, 3.4cqi, 38px)' }}>
+                        <polygon points="4 4 12 12 4 20 4 4" />
+                        <polygon points="12 4 20 12 12 20 12 4" />
+                      </svg>
+                    </div>
                   </div>
                 )}
 
@@ -209,11 +214,11 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       )}
                     </div>
 
-                    <div className="w-[88%] h-[58%] bg-[#252a38] rounded border border-orange-500/50 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
+                    <div className="w-[88%] h-[58%] bg-[#1d192d] rounded border border-purple-500/40 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
                       {/* Prison Bars Overlay */}
-                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#94a3b8_3px,#94a3b8_5px)]" />
+                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#cbd5e1_3px,#cbd5e1_5px)]" />
                       <span
-                        className="font-black text-orange-300 uppercase z-10 leading-none"
+                        className="font-black text-purple-200 uppercase z-10 leading-none drop-shadow"
                         style={{ fontSize: 'clamp(8.5px, 1.25cqi, 14px)' }}
                       >
                         In Prison
@@ -232,18 +237,18 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 {/* 20: VACATION */}
                 {cornerType === 'vacation' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
-                    <div style={{ fontSize: 'clamp(18px, 3.4cqi, 40px)' }}>
+                    <div style={{ fontSize: 'clamp(20px, 3.6cqi, 42px)' }}>
                       🏝️
                     </div>
                     <span
-                      className="font-black text-emerald-300 uppercase tracking-wider font-heading leading-tight"
-                      style={{ fontSize: 'clamp(10px, 1.5cqi, 17px)' }}
+                      className="font-black text-white uppercase tracking-wider font-heading leading-tight"
+                      style={{ fontSize: 'clamp(11px, 1.6cqi, 18px)' }}
                     >
                       Vacation
                     </span>
                     <span
-                      className="font-semibold text-emerald-200/90 leading-none mt-0.5"
-                      style={{ fontSize: 'clamp(7.5px, 1.1cqi, 12px)' }}
+                      className="font-semibold text-emerald-300 leading-none mt-0.5 font-mono"
+                      style={{ fontSize: 'clamp(8px, 1.15cqi, 13px)' }}
                     >
                       ${room.pot || 0} on hold
                     </span>
@@ -254,12 +259,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 {cornerType === 'go_to_jail' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
                     <Skull
-                      className="text-gray-200"
-                      style={{ width: 'clamp(18px, 3.2cqi, 36px)', height: 'clamp(18px, 3.2cqi, 36px)' }}
+                      className="text-white drop-shadow"
+                      style={{ width: 'clamp(20px, 3.4cqi, 38px)', height: 'clamp(20px, 3.4cqi, 38px)' }}
                     />
                     <span
-                      className="font-black text-gray-200 uppercase font-heading leading-tight tracking-wider"
-                      style={{ fontSize: 'clamp(9px, 1.35cqi, 15px)' }}
+                      className="font-black text-white uppercase font-heading leading-tight tracking-wider"
+                      style={{ fontSize: 'clamp(10px, 1.45cqi, 16px)' }}
                     >
                       Go to prison
                     </span>
@@ -277,141 +282,160 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           }
 
           // Edge Tiles (Top, Right, Bottom, Left)
-          const isHorizontal = side === 'left' || side === 'right';
-          const isOwned = Boolean(owner);
-
-          // Price Pill Element
-          const pricePill = (
-            <div className="flex items-center justify-center flex-shrink-0 z-10">
-              {tile.price > 0 ? (
+          // 1. Outer Edge: Solid Owner Colored Bar OR Translucent Price Pill
+          const renderOuterEdge = () => {
+            if (isOwned && owner) {
+              return (
                 <div
-                  className={`px-1 sm:px-1.5 py-0.5 rounded-full font-mono font-black shadow-sm leading-none flex items-center justify-center transition-all ${
-                    isOwned && owner
-                      ? 'text-white border border-white/60 font-black'
-                      : 'bg-white/15 border border-white/25 text-white'
+                  className={`flex-shrink-0 flex items-center justify-center z-15 relative ${
+                    side === 'top'
+                      ? 'w-full h-2.5 sm:h-3 rounded-t-[6px]'
+                      : side === 'bottom'
+                      ? 'w-full h-2.5 sm:h-3 rounded-b-[6px]'
+                      : side === 'left'
+                      ? 'h-full w-2.5 sm:w-3 rounded-l-[6px]'
+                      : 'h-full w-2.5 sm:w-3 rounded-r-[6px]'
                   }`}
-                  style={{
-                    fontSize: 'clamp(8.5px, 1.25cqi, 13px)',
-                    ...(isOwned && owner
-                      ? { backgroundColor: owner.color, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }
-                      : {})
-                  }}
+                  style={{ backgroundColor: owner.color }}
                 >
-                  {tile.price}$
-                </div>
-              ) : tile.type === 'tax' ? (
-                <div
-                  className="px-1 sm:px-1.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 font-mono font-black text-amber-300 shadow-sm leading-none"
-                  style={{ fontSize: 'clamp(8px, 1.15cqi, 12px)' }}
-                >
-                  {tile.name.includes('Earnings') ? '%10' : '100$'}
-                </div>
-              ) : null}
-            </div>
-          );
-
-          // Circular Flag or Special Icon Badge
-          const iconBadge = (
-            <div className="flex items-center justify-center flex-shrink-0 z-10">
-              {tile.countryCode && tile.type === 'property' ? (
-                <div
-                  className="rounded-full overflow-hidden border-[1.5px] border-white/85 shadow-md flex items-center justify-center bg-black/40 flex-shrink-0"
-                  style={{ width: 'clamp(21px, 3.2cqi, 38px)', height: 'clamp(21px, 3.2cqi, 38px)' }}
-                >
-                  <img
-                    src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
-                    alt={tile.name}
-                    className="w-full h-full object-cover select-none pointer-events-none"
-                    style={
-                      tile.countryCode === 'cn'
-                        ? { objectPosition: '0% 0%', transform: 'scale(1.4) translate(10%, 10%)', imageRendering: '-webkit-optimize-contrast' as any }
-                        : tile.countryCode === 'us'
-                        ? { objectPosition: '10% 20%', transform: 'scale(1.2)', imageRendering: '-webkit-optimize-contrast' as any }
-                        : { transform: 'scale(1.15)', imageRendering: '-webkit-optimize-contrast' as any }
-                    }
-                    loading="lazy"
-                  />
-                </div>
-              ) : tile.type === 'railroad' ? (
-                <div
-                  className="rounded-full bg-slate-900 border-[1.5px] border-sky-400/70 shadow-md flex items-center justify-center flex-shrink-0"
-                  style={{ width: 'clamp(21px, 3.2cqi, 38px)', height: 'clamp(21px, 3.2cqi, 38px)' }}
-                >
-                  <Plane className="w-[58%] h-[58%] text-sky-200" />
-                </div>
-              ) : tile.type === 'utility' ? (
-                tile.name.toUpperCase().includes('STEG') ? (
-                  <div
-                    className="rounded-full bg-slate-950 border-[1.5px] border-blue-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0"
-                    style={{ width: 'clamp(23px, 3.5cqi, 40px)', height: 'clamp(23px, 3.5cqi, 40px)' }}
-                  >
-                    <img src={stegLogo} alt="STEG" className="w-full h-full object-contain" />
-                  </div>
-                ) : tile.name.toUpperCase().includes('SONEDE') ? (
-                  <div
-                    className="rounded-full bg-slate-950 border-[1.5px] border-cyan-400/80 shadow-md p-0.5 flex items-center justify-center flex-shrink-0"
-                    style={{ width: 'clamp(23px, 3.5cqi, 40px)', height: 'clamp(23px, 3.5cqi, 40px)' }}
-                  >
-                    <img src={sonedeLogo} alt="SONEDE" className="w-full h-full object-contain" />
-                  </div>
-                ) : (
-                  <div
-                    className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0"
-                    style={{ width: 'clamp(21px, 3.2cqi, 38px)', height: 'clamp(21px, 3.2cqi, 38px)' }}
-                  >
-                    <Zap className="w-[58%] h-[58%] text-amber-300" />
-                  </div>
-                )
-              ) : tile.type === 'chest' ? (
-                <div
-                  className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-500/80 shadow-md flex items-center justify-center flex-shrink-0"
-                  style={{
-                    width: 'clamp(21px, 3.2cqi, 38px)',
-                    height: 'clamp(21px, 3.2cqi, 38px)',
-                    fontSize: 'clamp(11.5px, 1.7cqi, 19px)'
-                  }}
-                >
-                  🎁
-                </div>
-              ) : tile.type === 'chance' ? (
-                <div
-                  className="rounded-full bg-pink-950/80 border-[1.5px] border-pink-500/80 shadow-md flex items-center justify-center font-black text-pink-300 flex-shrink-0"
-                  style={{
-                    width: 'clamp(21px, 3.2cqi, 38px)',
-                    height: 'clamp(21px, 3.2cqi, 38px)',
-                    fontSize: 'clamp(13px, 1.9cqi, 21px)'
-                  }}
-                >
-                  ?
-                </div>
-              ) : tile.type === 'tax' ? (
-                <div
-                  className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow-md flex items-center justify-center flex-shrink-0"
-                  style={{ width: 'clamp(21px, 3.2cqi, 38px)', height: 'clamp(21px, 3.2cqi, 38px)' }}
-                >
-                  {tile.name.includes('Earnings') ? (
-                    <Percent className="w-[58%] h-[58%] text-amber-300" />
-                  ) : (
-                    <Gem className="w-[58%] h-[58%] text-sky-300" />
+                  {/* House Cubes (sitting right on the owner bar) */}
+                  {tile.houses > 0 && (
+                    <div className="flex items-center gap-0.5">
+                      {tile.houses < 5 ? (
+                        Array.from({ length: tile.houses }).map((_, h) => (
+                          <div key={h} className="w-1.5 h-1.5 bg-emerald-300 rounded-[1px] shadow-sm border border-emerald-900" />
+                        ))
+                      ) : (
+                        <div className="w-2.5 h-2 bg-red-500 rounded-[1px] shadow border border-red-900 text-[6px] font-black text-white flex items-center justify-center">
+                          H
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-              ) : tile.flag ? (
-                <span style={{ fontSize: 'clamp(15px, 2.3cqi, 28px)' }}>{tile.flag}</span>
-              ) : null}
-            </div>
-          );
+              );
+            }
 
-          // Clean, Sharp Tile Name Element (No Ellipsis, Upright & Crisp)
-          const hasSpace = tile.name.includes(' ');
+            // Unowned: Translucent price badge
+            if (tile.price > 0) {
+              return (
+                <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
+                  <div
+                    className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
+                    style={{ fontSize: 'clamp(8.5px, 1.25cqi, 13px)' }}
+                  >
+                    {tile.price} $
+                  </div>
+                </div>
+              );
+            }
+
+            if (tile.type === 'tax') {
+              return (
+                <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
+                  <div
+                    className="px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
+                    style={{ fontSize: 'clamp(8px, 1.15cqi, 12px)' }}
+                  >
+                    {tile.name.includes('Earnings') ? '%10' : '$75'}
+                  </div>
+                </div>
+              );
+            }
+
+            return <div className="h-2 flex-shrink-0" />;
+          };
+
+          // 2. Circular Flag or Special Space Icon (Inner Edge)
+          const renderInnerIcon = () => {
+            return (
+              <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
+                {tile.countryCode && tile.type === 'property' ? (
+                  <div
+                    className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center bg-black/40 flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    <img
+                      src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
+                      alt={tile.name}
+                      className="w-full h-full object-cover select-none pointer-events-none"
+                      style={
+                        tile.countryCode === 'cn'
+                          ? { objectPosition: '0% 0%', transform: 'scale(1.4) translate(10%, 10%)' }
+                          : tile.countryCode === 'us'
+                          ? { objectPosition: '10% 20%', transform: 'scale(1.2)' }
+                          : { transform: 'scale(1.15)' }
+                      }
+                    />
+                  </div>
+                ) : tile.type === 'railroad' ? (
+                  <div
+                    className="rounded-full bg-slate-700/80 border-[1.5px] border-slate-400/60 shadow flex items-center justify-center flex-shrink-0 text-sky-200"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    <Plane
+                      className="w-[60%] h-[60%] text-sky-200"
+                      style={{
+                        transform:
+                          side === 'top' ? 'rotate(180deg)' :
+                          side === 'bottom' ? 'rotate(0deg)' :
+                          side === 'left' ? 'rotate(90deg)' : 'rotate(-90deg)'
+                      }}
+                    />
+                  </div>
+                ) : tile.type === 'utility' ? (
+                  <div
+                    className="rounded-full bg-teal-800/80 border-[1.5px] border-teal-400/70 shadow flex items-center justify-center flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    {tile.name.toUpperCase().includes('POWER') || tile.name.toUpperCase().includes('STEG') ? (
+                      <Zap className="w-[60%] h-[60%] text-yellow-300 fill-yellow-300" />
+                    ) : (
+                      <Droplets className="w-[60%] h-[60%] text-sky-300 fill-sky-300" />
+                    )}
+                  </div>
+                ) : tile.type === 'chest' ? (
+                  <div
+                    className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-500/80 shadow flex items-center justify-center font-bold text-amber-300 flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    🎁
+                  </div>
+                ) : tile.type === 'chance' ? (
+                  <div
+                    className="rounded-full bg-pink-950/80 border-[1.5px] border-pink-500/80 shadow flex items-center justify-center font-black text-pink-300 flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    ?
+                  </div>
+                ) : tile.type === 'tax' ? (
+                  <div
+                    className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow flex items-center justify-center flex-shrink-0"
+                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                  >
+                    {tile.name.includes('Earnings') ? (
+                      <Percent className="w-[58%] h-[58%] text-amber-300" />
+                    ) : (
+                      <Gem className="w-[58%] h-[58%] text-sky-300" />
+                    )}
+                  </div>
+                ) : tile.flag ? (
+                  <span style={{ fontSize: 'clamp(16px, 2.4cqi, 28px)' }}>{tile.flag}</span>
+                ) : null}
+              </div>
+            );
+          };
+
+          // 3. Title / City Name (Clean, Bold, Upright font matching Richup)
           const nameLabel = (
-            <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-0.5 w-full">
+            <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-1 w-full">
               <span
-                className="font-black text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)]"
+                className="font-heading font-black text-white select-none text-center leading-[1.1] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
                 style={{
                   fontSize: isHorizontal
-                    ? (tile.name.length > 12 ? 'clamp(9.5px, 1.35cqi, 14px)' : tile.name.length > 9 ? 'clamp(10.5px, 1.45cqi, 15px)' : 'clamp(11.5px, 1.6cqi, 16.5px)')
-                    : (tile.name.length >= 8 ? 'clamp(9px, 1.3cqi, 13.5px)' : 'clamp(10.5px, 1.45cqi, 15px)'),
-                  whiteSpace: hasSpace ? 'normal' : 'nowrap',
+                    ? 'clamp(11px, 1.6cqi, 16px)'
+                    : 'clamp(11px, 1.55cqi, 15px)',
+                  whiteSpace: 'normal',
                   textRendering: 'optimizeLegibility'
                 }}
                 title={tile.name}
@@ -425,84 +449,42 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             <div
               key={tile.index}
               onClick={() => onTileClick && onTileClick(tile)}
-              className={`relative rounded-md flex overflow-hidden cursor-pointer transition-all duration-200 select-none ${
-                isOwned
-                  ? 'border-2 shadow-lg'
-                  : 'border border-[#281f3d] bg-gradient-to-br from-[#1d162d] to-[#140f21] hover:from-[#261d3b] hover:to-[#1b142c] hover:border-purple-500/60'
-              }`}
+              className="relative rounded-[7px] flex overflow-hidden cursor-pointer transition-all duration-150 select-none bg-[#262a4c] border border-purple-900/40 hover:border-purple-400/60 shadow-sm"
               style={{
                 gridRowStart: row,
                 gridColumnStart: col,
                 ...(isOwned && owner
                   ? {
-                      background: `linear-gradient(135deg, ${owner.color}3d 0%, ${owner.color}1f 50%, #130e1f 100%)`,
-                      borderColor: owner.color,
-                      boxShadow: `0 0 10px ${owner.color}45, inset 0 0 6px ${owner.color}20`
+                      boxShadow: `inset 0 0 25px 2px ${owner.color}35`,
+                      borderColor: `${owner.color}60`
                     }
                   : {})
               }}
             >
               {isHorizontal ? (
-                /* Horizontal Tiles (Left & Right Sides): Wide Rectangle Layout */
-                <div className="w-full h-full flex flex-col justify-between items-center p-0.5 sm:p-1 gap-0.5">
-                  <div className={`w-full flex items-center justify-between z-10 ${side === 'left' ? 'flex-row' : 'flex-row-reverse'}`}>
-                    {pricePill}
-                    {iconBadge}
-                  </div>
+                /* Horizontal Layout for Left & Right Column Tiles */
+                <div className={`w-full h-full flex items-center justify-between z-10 ${
+                  side === 'left' ? 'flex-row' : 'flex-row-reverse'
+                }`}>
+                  {renderOuterEdge()}
                   {nameLabel}
+                  {renderInnerIcon()}
                 </div>
               ) : (
-                /* Vertical Tiles (Top & Bottom Rows): Tall Rectangle Layout */
-                <div className={`w-full h-full flex items-center justify-between p-0.5 sm:p-1 gap-0.5 ${
+                /* Vertical Layout for Top & Bottom Row Tiles */
+                <div className={`w-full h-full flex items-center justify-between z-10 ${
                   side === 'top' ? 'flex-col' : 'flex-col-reverse'
                 }`}>
-                  {pricePill}
+                  {renderOuterEdge()}
                   {nameLabel}
-                  {iconBadge}
-                </div>
-              )}
-
-              {/* House Indicators on Tile (Richup Green Houses / Red Hotel) */}
-              {tile.houses > 0 && (
-                <div className={`absolute z-20 flex gap-0.5 items-center justify-center pointer-events-none ${
-                  isHorizontal
-                    ? (side === 'left' ? 'left-3 sm:left-3.5 top-1 bottom-1 flex-col' : 'right-3 sm:right-3.5 top-1 bottom-1 flex-col')
-                    : (side === 'top' ? 'top-3 sm:top-3.5 left-1 right-1 flex-row' : 'bottom-3 sm:bottom-3.5 left-1 right-1 flex-row')
-                }`}>
-                  {tile.houses < 5 ? (
-                    Array.from({ length: tile.houses }).map((_, hIdx) => (
-                      <div
-                        key={hIdx}
-                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-[2px] shadow-sm border border-emerald-950"
-                        title={`${tile.houses} Houses`}
-                      />
-                    ))
-                  ) : (
-                    <div
-                      className="px-1 py-0.5 bg-gradient-to-t from-rose-600 to-red-500 rounded-[2px] shadow border border-red-950 text-[6px] sm:text-[7px] font-black text-white leading-none tracking-tight"
-                      title="Hotel"
-                    >
-                      HOTEL
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Owner Indicator Strip & Badge */}
-              {owner && (
-                <div
-                  className="absolute top-0 right-0 z-20 flex items-center justify-center rounded-bl px-0.5 py-0.5 shadow-md border-b border-l border-white/30"
-                  style={{ backgroundColor: `${owner.color}dd` }}
-                  title={`Owned by ${owner.name}`}
-                >
-                  <PlayerAvatar avatar={owner.avatar} color={owner.color} size={15} />
+                  {renderInnerIcon()}
                 </div>
               )}
 
               {/* Mortgaged Overlay */}
               {tile.isMortgaged && (
                 <div className="absolute inset-0 bg-black/85 backdrop-blur-[1px] flex items-center justify-center z-25">
-                  <span className="text-[7px] sm:text-[8px] font-black text-red-400 uppercase -rotate-12 border border-red-500/80 px-1 py-0.5 rounded bg-red-950/90 shadow">
+                  <span className="text-[7.5px] sm:text-[9px] font-black text-red-400 uppercase -rotate-12 border border-red-500/80 px-1 py-0.5 rounded bg-red-950/90 shadow">
                     MORTGAGED
                   </span>
                 </div>
@@ -529,8 +511,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         })}
 
         {/* Center Board Stage */}
-        <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-gradient-to-br from-[#151023] via-[#120c1d] to-[#0c0814] rounded-xl border border-purple-900/40 flex flex-col items-center justify-between p-2 sm:p-3 relative overflow-hidden shadow-inner">
-          {/* Center Interactive Content */}
+        <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#130f1d] rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden shadow-inner">
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
             {typeof centerContent === 'function' ? centerContent({ isPieceMoving }) : centerContent}
           </div>

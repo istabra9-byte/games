@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { GameRoom, Tile } from '../types/game';
 import { DiceView } from './DiceView';
-import { PlayerAvatar } from './PlayerAvatar';
-import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Dices, DollarSign, X, Home, ArrowRight, ShieldAlert } from 'lucide-react';
-import stegLogo from '../assets/steg.png';
-import sonedeLogo from '../assets/sonede.svg';
+import { Dices, Check, ShoppingCart, ShieldAlert } from 'lucide-react';
 
 interface CenterControlsProps {
   room: GameRoom;
@@ -28,8 +24,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   onBuy,
   onSkip,
   onEndTurn,
-  onPayBail,
-  onTileClick
+  onPayBail
 }) => {
   const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
   const turnPlayer = room.players[turnPlayerId];
@@ -40,7 +35,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
 
   if (!turnPlayer) return null;
 
-  // Filter out redundant logs
+  // Filter out noisy timer-tick logs
   const meaningfulLogs = (room.logs || []).filter(l => 
     !l.text.includes('Turn limit expired') && 
     !l.text.includes('time has expired')
@@ -60,10 +55,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         <DiceView values={room.dice} isRolling={false} />
       </div>
 
-      {/* 2. Turn Status / Action Control (Right Under Dice) */}
-      <div className="flex flex-col items-center justify-center min-h-[46px]">
+      {/* 2. Turn Status / Action Controls (Directly Under Dice) */}
+      <div className="flex flex-col items-center justify-center min-h-[48px]">
         {isPieceMoving ? (
-          <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-full border border-purple-500/30">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-black/30 rounded-full border border-purple-500/30">
             <span
               className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
               style={{ backgroundColor: turnPlayer.color }}
@@ -91,10 +86,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                 {isMyTurn ? (
                   <button
                     onClick={onRoll}
-                    className="px-6 sm:px-8 py-2 sm:py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
+                    className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
                   >
-                    <Dices className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span>ROLL DICE</span>
+                    <Dices className="w-4 h-4" />
+                    <span>Roll dice</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
@@ -110,71 +105,37 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
               </div>
             )}
 
-            {/* Phase 2: UNOWNED PROPERTY DECISION (BUY OR SKIP) */}
+            {/* Phase 2: UNOWNED PROPERTY DECISION (Exact Richup 2 Side-by-Side Pill Buttons) */}
             {room.turnPhase === 'action' && landedTile && (
-              <div className="w-full max-w-[270px] bg-[#1a1228] border-2 border-purple-500/60 rounded-xl overflow-hidden shadow-2xl flex flex-col text-center animate-in zoom-in-95 fade-in duration-200">
-                <div
-                  className="py-1 px-3 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-between"
-                  style={{
-                    backgroundColor: landedTile.ownerId && room.players[landedTile.ownerId]
-                      ? room.players[landedTile.ownerId].color
-                      : '#2a1e45'
-                  }}
-                >
-                  <div className="flex items-center gap-1.5">
-                    {landedTile.name.toUpperCase().includes('STEG') ? (
-                      <img src={stegLogo} alt="STEG" className="w-5 h-4 object-contain rounded-[2px]" />
-                    ) : landedTile.name.toUpperCase().includes('SONEDE') ? (
-                      <img src={sonedeLogo} alt="SONEDE" className="w-5 h-4 object-contain rounded-[2px]" />
-                    ) : landedTile.countryCode ? (
-                      <img
-                        src={`https://flagcdn.com/w40/${landedTile.countryCode}.png`}
-                        alt={landedTile.name}
-                        className="w-5 h-3.5 rounded-[2px] shadow object-cover"
-                      />
-                    ) : landedTile.flag ? (
-                      <span className="text-base leading-none">{landedTile.flag}</span>
-                    ) : null}
-                    <span>{landedTile.name}</span>
-                  </div>
-                  <span className="font-mono">${landedTile.price}</span>
-                </div>
-
-                <div className="p-1.5 space-y-0.5 text-[10px] font-mono text-gray-300 bg-[#140e21]">
-                  <div className="flex justify-between">
-                    <span>Base Rent:</span>
-                    <span className="text-emerald-400">${landedTile.rent[0]}</span>
-                  </div>
-                  {landedTile.rent.length >= 6 && (
-                    <div className="flex justify-between text-red-400 font-bold">
-                      <span>Hotel Rent:</span>
-                      <span>${landedTile.rent[5]}</span>
-                    </div>
-                  )}
-                </div>
-
+              <div className="flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-150">
                 {isMyTurn ? (
-                  <div className="p-1.5 bg-[#1a1228] border-t border-purple-900/60 flex items-center gap-2">
+                  <>
+                    <button
+                      onClick={onSkip}
+                      className="px-5 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>End turn</span>
+                    </button>
+
                     <button
                       onClick={onBuy}
                       disabled={turnPlayer.cash < landedTile.price}
-                      className="flex-1 py-1.5 px-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 transition-all shadow cursor-pointer"
+                      className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 disabled:opacity-40 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-lg border border-purple-400/50"
                     >
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <span>Buy (${landedTile.price})</span>
+                      <ShoppingCart className="w-3.5 h-3.5" />
+                      <span>Buy for ${landedTile.price}</span>
                     </button>
-
-                    <button
-                      onClick={onSkip}
-                      className="flex-1 py-1.5 px-2 bg-gray-700 hover:bg-gray-600 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1 transition-all shadow cursor-pointer border border-gray-500/40"
-                    >
-                      <X className="w-3.5 h-3.5 text-rose-400" />
-                      <span>Skip</span>
-                    </button>
-                  </div>
+                  </>
                 ) : (
-                  <div className="p-1.5 text-xs text-gray-400 italic">
-                    {turnPlayer.name} is deciding to buy or skip...
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                      style={{ backgroundColor: turnPlayer.color }}
+                    />
+                    <span className="text-xs font-bold text-gray-200">
+                      {turnPlayer.name} is playing...
+                    </span>
                   </div>
                 )}
               </div>
@@ -186,10 +147,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                 {isMyTurn ? (
                   <button
                     onClick={onEndTurn}
-                    className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-95 text-white font-black text-xs tracking-wider uppercase rounded-xl shadow-lg flex items-center gap-2 transition-all cursor-pointer border border-emerald-400/30"
+                    className="px-6 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
                   >
-                    <span>END TURN</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <Check className="w-3.5 h-3.5" />
+                    <span>End turn</span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
@@ -208,24 +169,24 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         )}
       </div>
 
-      {/* 3. Floating Clean Text Event Logs (Directly under turn action, scrollable up & down) */}
-      <div className="w-full max-w-[310px] sm:max-w-[340px] mt-1 flex flex-col items-center">
+      {/* 3. Floating Clean Text Event Logs (Centered, Scrollable, Smooth Fading) */}
+      <div className="w-full max-w-[340px] mt-1 flex flex-col items-center">
         <div
           ref={logsContainerRef}
-          className="w-full max-h-24 sm:max-h-28 overflow-y-auto space-y-1 px-2 py-1 text-center select-text scroll-smooth"
+          className="w-full max-h-32 sm:max-h-36 overflow-y-auto space-y-1 px-1 py-1 text-center select-text scroll-smooth"
         >
           {meaningfulLogs.length > 0 ? (
             meaningfulLogs.map((log) => (
               <div
                 key={log.id}
-                className="text-[10px] sm:text-[11px] text-gray-300 font-medium leading-snug drop-shadow-sm"
+                className="text-[11px] text-gray-300 font-medium leading-snug drop-shadow-sm flex items-center justify-center gap-1.5 flex-wrap"
               >
-                {log.text}
+                <span>{log.text}</span>
               </div>
             ))
           ) : (
-            <div className="text-[10px] text-gray-500 italic text-center">
-              Game started! Good luck!
+            <div className="text-[11px] text-gray-500 italic text-center">
+              Game started with a randomized players order. Good luck!
             </div>
           )}
         </div>
