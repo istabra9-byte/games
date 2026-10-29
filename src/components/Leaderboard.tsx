@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameRoom, Player } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot, X } from 'lucide-react';
+import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot, X, Palmtree } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
+import { TurnClock } from './TurnClock';
 
 interface LeaderboardProps {
   room: GameRoom;
   currentPlayerId: string;
   onInitiateTrade: (targetPlayerId: string) => void;
+  onRequestTime?: () => void;
   onClose?: () => void;
 }
 
@@ -15,9 +17,22 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   room,
   currentPlayerId,
   onInitiateTrade,
+  onRequestTime,
   onClose
 }) => {
   const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+
+  // Live timer tick for turn countdown
+  const [remainingSec, setRemainingSec] = useState(() =>
+    Math.max(0, Math.floor((room.turnEndsAt - Date.now()) / 1000))
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRemainingSec(Math.max(0, Math.floor((room.turnEndsAt - Date.now()) / 1000)));
+    }, 500);
+    return () => clearInterval(timer);
+  }, [room.turnEndsAt]);
 
   // Rank players by net worth descending
   const sortedPlayers = Object.values(room.players).sort((a, b) => {
@@ -36,6 +51,12 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           </h3>
         </div>
         <div className="flex items-center gap-2">
+          {room.settings.vacationCash && (
+            <div className="px-2 py-0.5 bg-emerald-950/80 border border-emerald-500/50 rounded-full flex items-center gap-1 text-[10px] font-bold text-emerald-300 font-mono shadow-sm">
+              <Palmtree className="w-3 h-3 text-emerald-400" />
+              <span>Pot: ${room.pot}</span>
+            </div>
+          )}
           <span className="text-[11px] text-gray-400 font-mono">
             {Object.keys(room.players).length} Players
           </span>
@@ -100,7 +121,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex flex-col text-right font-mono">
                     <span className="text-xs font-bold text-emerald-400">
-                      ${player.cash}
+                      ${player.cash} Cash
                     </span>
                     <span className="text-[9px] text-gray-400">
                       Net: ${player.netWorth}
@@ -150,9 +171,20 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   </span>
                 )}
                 {isTurn && !player.isBankrupt && (
-                  <span className="px-1.5 py-0.5 bg-purple-900/80 border border-purple-400 text-[9px] font-bold text-purple-200 rounded animate-pulse">
-                    Current Turn
-                  </span>
+                  <div className="mt-2 pt-2 border-t border-purple-800/40 flex items-center justify-between w-full">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="text-[10px] font-bold text-purple-200 uppercase tracking-wider font-mono">
+                        Current Turn
+                      </span>
+                    </div>
+                    <TurnClock
+                      remainingSec={remainingSec}
+                      totalSec={room.settings.turnTimeLimit}
+                      isMyTurn={isMe}
+                      onRequestTime={isMe ? onRequestTime : undefined}
+                    />
+                  </div>
                 )}
               </div>
             </div>

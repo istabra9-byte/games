@@ -67,8 +67,14 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   const countryDisplayName = tile.country || groupMeta?.name || 'Country';
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl text-white relative">
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl text-white relative cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Title & Group Color Strip */}
         <div
           className="p-4 text-center relative"

@@ -52,8 +52,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     const receiver = room.players[activeTrade.receiverId];
 
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl text-white relative">
+      <div
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer"
+        onClick={onClose}
+      >
+        <div
+          className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-lg p-6 shadow-2xl text-white relative cursor-default"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-center justify-between mb-4 border-b border-purple-800/60 pb-3">
             <div className="flex items-center gap-2">
               <ArrowLeftRight className="w-5 h-5 text-purple-400" />
@@ -162,8 +168,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-xl p-6 shadow-2xl text-white relative max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#1f1630] border-2 border-purple-500/50 rounded-2xl w-full max-w-xl p-6 shadow-2xl text-white relative max-h-[90vh] flex flex-col cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-4 border-b border-purple-800/60 pb-3">
           <div className="flex items-center gap-2">

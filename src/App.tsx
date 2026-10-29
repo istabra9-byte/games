@@ -687,7 +687,7 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Screen Area: Guaranteed Square Board & Responsive Sidebar */}
-      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto px-1 sm:px-2 md:px-3 py-1 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden relative">
+      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto px-1 sm:px-1.5 py-0.5 flex items-center justify-center gap-2 sm:gap-2.5 overflow-hidden relative">
         {/* Center Hero: The Board with Embedded Center Controls */}
         <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
           <Board
@@ -715,6 +715,7 @@ export const App: React.FC = () => {
             room={room}
             currentPlayerId={currentPlayer.id}
             onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
+            onRequestTime={handleRequestTime}
           />
         </div>
       </div>
@@ -750,6 +751,7 @@ export const App: React.FC = () => {
               room={room}
               currentPlayerId={currentPlayer.id}
               onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
+              onRequestTime={handleRequestTime}
               onClose={() => setIsPlayersOpen(false)}
             />
           </div>
