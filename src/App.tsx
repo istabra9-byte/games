@@ -16,6 +16,7 @@ import {
 } from './services/gameEngine';
 import { multiplayer } from './services/firebase';
 import { sound } from './services/sound';
+import { INITIAL_BOARD_TILES } from './data/boardTiles';
 import { Home } from './components/Home';
 import { Board } from './components/Board';
 import { CenterControls } from './components/CenterControls';
@@ -165,6 +166,29 @@ export const App: React.FC = () => {
 
     const unsub = multiplayer.subscribeToRoom(roomId, (updatedRoom) => {
       if (!updatedRoom) return;
+
+      // Ensure canonical Richup board names, flags, and rules are always applied
+      if (updatedRoom.tiles && Array.isArray(updatedRoom.tiles) && updatedRoom.tiles.length === 40) {
+        let hasChanges = false;
+        const hydratedTiles = updatedRoom.tiles.map((t, idx) => {
+          const canonical = INITIAL_BOARD_TILES[idx];
+          if (!canonical) return t;
+          if (t.name !== canonical.name || t.flag !== canonical.flag || t.country !== canonical.country) {
+            hasChanges = true;
+          }
+          return {
+            ...canonical,
+            ownerId: t.ownerId ?? null,
+            houses: t.houses ?? 0,
+            isMortgaged: t.isMortgaged ?? false,
+            mortgageValue: canonical.mortgageValue || Math.floor(canonical.price / 2)
+          };
+        });
+        updatedRoom.tiles = hydratedTiles;
+        if (hasChanges && (currentPlayer.isHost || updatedRoom.hostId === currentPlayer.id)) {
+          multiplayer.updateRoom(updatedRoom);
+        }
+      }
 
       // Auto-register peer player in lobby if not already in room
       if (updatedRoom.status === 'lobby' && !updatedRoom.players[currentPlayer.id]) {
