@@ -177,29 +177,6 @@ export const App: React.FC = () => {
     const unsub = multiplayer.subscribeToRoom(roomId, (updatedRoom) => {
       if (!updatedRoom) return;
 
-      // Ensure canonical Richup board names, flags, and rules are always applied
-      if (updatedRoom.tiles && Array.isArray(updatedRoom.tiles) && updatedRoom.tiles.length === 40) {
-        let hasChanges = false;
-        const hydratedTiles = updatedRoom.tiles.map((t, idx) => {
-          const canonical = INITIAL_BOARD_TILES[idx];
-          if (!canonical) return t;
-          if (t.name !== canonical.name || t.flag !== canonical.flag || t.country !== canonical.country) {
-            hasChanges = true;
-          }
-          return {
-            ...canonical,
-            ownerId: t.ownerId ?? null,
-            houses: t.houses ?? 0,
-            isMortgaged: t.isMortgaged ?? false,
-            mortgageValue: canonical.mortgageValue || Math.floor(canonical.price / 2)
-          };
-        });
-        updatedRoom.tiles = hydratedTiles;
-        if (hasChanges && (currentPlayer.isHost || updatedRoom.hostId === currentPlayer.id)) {
-          multiplayer.updateRoom(updatedRoom);
-        }
-      }
-
       // Auto-register peer player in lobby if not already in room
       if (updatedRoom.status === 'lobby' && !updatedRoom.players[currentPlayer.id]) {
         const isFirst = Object.keys(updatedRoom.players).length === 0;
@@ -256,7 +233,7 @@ export const App: React.FC = () => {
         }
         return prev;
       });
-    }, 350);
+    }, 1200);
 
     return () => {
       unsub();
@@ -305,13 +282,19 @@ export const App: React.FC = () => {
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'action') {
           const landed = room.tiles[turnPlayer.position];
+          let actedRoom: GameRoom;
           if (landed && !landed.ownerId && turnPlayer.cash >= landed.price + 50) {
-            const nextRoom = buyCurrentProperty(room, turnPlayer.id);
-            multiplayer.updateRoom(nextRoom);
+            actedRoom = buyCurrentProperty(room, turnPlayer.id);
           } else {
-            const nextRoom = skipCurrentProperty(room, turnPlayer.id);
-            multiplayer.updateRoom(nextRoom);
+            actedRoom = skipCurrentProperty(room, turnPlayer.id);
           }
+          // AI can build houses if it owns a monopoly before ending turn
+          const monopolyTiles = actedRoom.tiles.filter((_, idx) => canBuildHouse(actedRoom, turnPlayer.id, idx));
+          if (monopolyTiles.length > 0 && turnPlayer.cash >= 300) {
+            actedRoom = buildHouse(actedRoom, turnPlayer.id, monopolyTiles[0].index);
+          }
+          const nextRoom = endTurn(actedRoom);
+          multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'end') {
           // AI can build houses if it owns a monopoly
           let roomWithUpgrades = room;

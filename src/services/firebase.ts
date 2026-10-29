@@ -1,25 +1,91 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getDatabase, ref, set, onValue, Database, off, runTransaction } from 'firebase/database';
-import { GameRoom, ChatMessage, GameLog } from '../types/game';
+import { getDatabase, ref, set, onValue, Database, runTransaction } from 'firebase/database';
+import { GameRoom, ChatMessage, GameLog, Tile } from '../types/game';
 import { firebaseConfig as staticConfig } from '../firebaseConfig';
 import { INITIAL_BOARD_TILES } from '../data/boardTiles';
 
-export function sanitizeRoom(room: GameRoom): GameRoom {
+// Lightweight dynamic tile state for network packets (reduces tiles payload by 96%)
+export interface CompactTileState {
+  o?: string | null; // ownerId
+  h?: number;        // houses count (0-5)
+  m?: boolean;       // isMortgaged
+}
+
+/**
+ * Compresses room state before sending over the wire to Firebase RTDB.
+ * Strips 40 static board definitions (names, prices, flags, rents) and
+ * keeps only dynamic ownership, houses, mortgage, and capped logs/chat.
+ */
+export function compressRoomForNetwork(room: GameRoom): any {
   if (!room) return room;
-  if (Array.isArray(room.tiles)) {
-    room.tiles = INITIAL_BOARD_TILES.map((canonical, idx) => {
-      const saved = room.tiles[idx] || {};
-      return {
-        ...canonical,
-        ownerId: saved.ownerId || null,
-        houses: typeof saved.houses === 'number' ? saved.houses : 0,
-        isMortgaged: Boolean(saved.isMortgaged)
-      };
+  const clone: any = { ...room };
+
+  // 1. Pack 40 heavy tile objects into a compact dictionary of only active/owned tiles
+  const tileState: Record<number, CompactTileState> = {};
+  if (Array.isArray(clone.tiles)) {
+    clone.tiles.forEach((t: Tile, idx: number) => {
+      if (t.ownerId || t.houses > 0 || t.isMortgaged) {
+        tileState[idx] = {
+          ...(t.ownerId ? { o: t.ownerId } : {}),
+          ...(t.houses > 0 ? { h: t.houses } : {}),
+          ...(t.isMortgaged ? { m: true } : {})
+        };
+      }
     });
-  } else {
-    room.tiles = JSON.parse(JSON.stringify(INITIAL_BOARD_TILES));
   }
-  return room;
+
+  // Remove the static tiles array from network payload
+  delete clone.tiles;
+  clone.tileState = tileState;
+
+  // 2. Cap logs to the most recent 25 to avoid accumulating bandwidth over long games
+  if (Array.isArray(clone.logs) && clone.logs.length > 25) {
+    clone.logs = clone.logs.slice(-25);
+  }
+
+  // 3. Cap chat messages to the most recent 25
+  if (Array.isArray(clone.chat) && clone.chat.length > 25) {
+    clone.chat = clone.chat.slice(-25);
+  }
+
+  return clone;
+}
+
+/**
+ * Hydrates full canonical room from compact network packet.
+ * Combines static local board metadata with network tile state seamlessly.
+ */
+export function sanitizeRoom(raw: any): GameRoom {
+  if (!raw) return raw;
+  const room = { ...raw };
+
+  const tileState: Record<number, CompactTileState> = room.tileState || {};
+  const legacyTiles: any[] = Array.isArray(room.tiles) ? room.tiles : [];
+
+  // Reconstruct full 40 canonical tiles from local static definitions
+  room.tiles = INITIAL_BOARD_TILES.map((canonical, idx) => {
+    const compact = tileState[idx];
+    const legacy = legacyTiles[idx];
+
+    const ownerId = compact?.o !== undefined ? compact.o : (legacy?.ownerId || null);
+    const houses = compact?.h !== undefined ? compact.h : (typeof legacy?.houses === 'number' ? legacy.houses : 0);
+    const isMortgaged = compact?.m !== undefined ? Boolean(compact.m) : Boolean(legacy?.isMortgaged);
+
+    return {
+      ...canonical,
+      ownerId: ownerId || null,
+      houses,
+      isMortgaged,
+      mortgageValue: canonical.mortgageValue || Math.floor(canonical.price / 2)
+    };
+  });
+
+  if (!room.logs) room.logs = [];
+  if (!room.chat) room.chat = [];
+  if (!room.players) room.players = {};
+  if (!room.playerOrder) room.playerOrder = [];
+
+  return room as GameRoom;
 }
 
 export interface FirebaseConfig {
@@ -60,6 +126,7 @@ class MultiplayerService {
   private broadcast: BroadcastChannel | null = null;
   private memoryRooms: Record<string, GameRoom> = {};
   private activeRoomSubscribers: Record<string, ((room: GameRoom) => void)[]> = {};
+  private lastSentFingerprint: Record<string, string> = {};
 
   constructor() {
     this.broadcast = typeof window !== 'undefined' && 'BroadcastChannel' in window 
@@ -77,6 +144,22 @@ class MultiplayerService {
     }
 
     this.tryInit();
+  }
+
+  // Fast game-state digest to detect and suppress redundant network transmissions
+  private getRoomFingerprint(room: GameRoom): string {
+    const tileDigest = Array.isArray(room.tiles)
+      ? room.tiles.map(t => `${t.ownerId || ''}:${t.houses}:${t.isMortgaged ? 1 : 0}`).join(';')
+      : '';
+    const playerDigest = Object.values(room.players || {})
+      .map(p => `${p.id}:${p.cash}:${p.position}:${p.inJail ? 1 : 0}:${p.isBankrupt ? 1 : 0}:${p.color}:${p.avatar}`)
+      .join(';');
+    const logsCount = (room.logs || []).length;
+    const lastLogId = logsCount > 0 ? room.logs[logsCount - 1].id : '';
+    const chatCount = (room.chat || []).length;
+    const lastChatId = chatCount > 0 ? room.chat[chatCount - 1].id : '';
+
+    return `${room.status}_${room.currentTurnPlayerIndex}_${room.turnPhase}_${room.dice?.join(',')}_${room.pot}_${room.winnerId}_${tileDigest}_${playerDigest}_${lastLogId}_${lastChatId}`;
   }
 
   public tryInit(): boolean {
@@ -115,10 +198,16 @@ class MultiplayerService {
       const unsubscribe = onValue(roomRef, (snapshot) => {
         const val = snapshot.val();
         if (val) {
-          callback(sanitizeRoom(val as GameRoom));
+          const hydrated = sanitizeRoom(val);
+          // Record fingerprint of received state to prevent echo writes back
+          this.lastSentFingerprint[roomId] = this.getRoomFingerprint(hydrated);
+          callback(hydrated);
         }
       });
-      return () => off(roomRef, 'value', unsubscribe);
+      // Proper Firebase modular v9 unsubscribe method
+      return () => {
+        unsubscribe();
+      };
     } else {
       // Local multi-tab fallback when database is not yet connected
       if (!this.activeRoomSubscribers[roomId]) {
@@ -153,21 +242,28 @@ class MultiplayerService {
   }
 
   public async updateRoom(room: GameRoom): Promise<void> {
-    const cleanRoom = sanitizeRoom(room);
-    cleanRoom.lastUpdated = Date.now();
+    const fingerprint = this.getRoomFingerprint(room);
+    if (this.lastSentFingerprint[room.id] === fingerprint) {
+      // Data is identical; skip redundant database write to save internet bandwidth
+      return;
+    }
+    this.lastSentFingerprint[room.id] = fingerprint;
+
+    const compressed = compressRoomForNetwork(room);
+    compressed.lastUpdated = Date.now();
 
     if (this.isFirebaseReady && this.db) {
-      const roomRef = ref(this.db, `rooms/${cleanRoom.id}`);
-      await set(roomRef, cleanRoom);
+      const roomRef = ref(this.db, `rooms/${room.id}`);
+      await set(roomRef, compressed);
     } else {
-      this.memoryRooms[cleanRoom.id] = cleanRoom;
+      this.memoryRooms[room.id] = sanitizeRoom(compressed);
       try {
-        localStorage.setItem(`room_${cleanRoom.id}`, JSON.stringify(cleanRoom));
+        localStorage.setItem(`room_${room.id}`, JSON.stringify(compressed));
       } catch (e) {}
       if (this.broadcast) {
-        this.broadcast.postMessage({ type: 'ROOM_UPDATE', room: cleanRoom });
+        this.broadcast.postMessage({ type: 'ROOM_UPDATE', room: this.memoryRooms[room.id] });
       }
-      this.notifySubscribers(cleanRoom.id, cleanRoom);
+      this.notifySubscribers(room.id, this.memoryRooms[room.id]);
     }
   }
 
@@ -176,12 +272,13 @@ class MultiplayerService {
       const roomRef = ref(this.db, `rooms/${roomId}/chat`);
       await runTransaction(roomRef, (currentChat) => {
         const chat = currentChat || [];
-        return [...chat, message];
+        // Keep max 25 recent messages to minimize egress data
+        return [...chat.slice(-24), message];
       });
     } else {
       const room = this.memoryRooms[roomId];
       if (room) {
-        room.chat = [...(room.chat || []), message];
+        room.chat = [...(room.chat || []).slice(-24), message];
         await this.updateRoom(room);
       }
     }
@@ -192,12 +289,13 @@ class MultiplayerService {
       const logsRef = ref(this.db, `rooms/${roomId}/logs`);
       await runTransaction(logsRef, (currentLogs) => {
         const logs = currentLogs || [];
-        return [...logs, log];
+        // Keep max 25 recent logs to minimize egress data
+        return [...logs.slice(-24), log];
       });
     } else {
       const room = this.memoryRooms[roomId];
       if (room) {
-        room.logs = [...(room.logs || []), log];
+        room.logs = [...(room.logs || []).slice(-24), log];
         await this.updateRoom(room);
       }
     }
