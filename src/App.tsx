@@ -17,6 +17,7 @@ import {
 import { multiplayer } from './services/firebase';
 import { sound } from './services/sound';
 import { INITIAL_BOARD_TILES } from './data/boardTiles';
+import { evaluateBotPropertyPurchase, getBotHouseBuildTileIndex, evaluateBotJailExit } from './services/aiLogic';
 import { Home } from './components/Home';
 import { Board } from './components/Board';
 import { CenterControls } from './components/CenterControls';
@@ -266,7 +267,7 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [room, currentPlayer.id]);
 
-  // AI Bot player executor
+  // Intelligent AI Bot player executor
   useEffect(() => {
     if (!room || room.status !== 'playing') return;
     const currentTurnId = room.playerOrder[room.currentTurnPlayerIndex];
@@ -277,37 +278,61 @@ export const App: React.FC = () => {
 
     if (turnPlayer && turnPlayer.isBot && !turnPlayer.isBankrupt) {
       // Allow piece movement animation to finish before bot takes action
-      const delay = room.turnPhase === 'action' ? 2000 : 1500;
+      const delay = room.turnPhase === 'action' ? 2000 : 1400;
       const botTimer = setTimeout(() => {
         if (room.turnPhase === 'roll') {
+          // Check strategic jail exit
+          if (turnPlayer.inJail) {
+            const jailExit = evaluateBotJailExit(room, turnPlayer.id);
+            if (jailExit === 'bail' && turnPlayer.cash >= 50) {
+              const unjailed = JSON.parse(JSON.stringify(room));
+              unjailed.players[turnPlayer.id].cash -= 50;
+              unjailed.pot += 50;
+              unjailed.players[turnPlayer.id].inJail = false;
+              unjailed.players[turnPlayer.id].jailTurns = 0;
+              unjailed.logs.push({
+                id: `bot_bail_${Date.now()}`,
+                text: `⚖️ ${turnPlayer.name} paid $50 bail to exit prison!`,
+                timestamp: Date.now(),
+                type: 'jail'
+              });
+              const rolled = rollDice(unjailed, turnPlayer.id);
+              multiplayer.updateRoom(rolled);
+              return;
+            }
+          }
           const nextRoom = rollDice(room, turnPlayer.id);
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'action') {
           const landed = room.tiles[turnPlayer.position];
           let actedRoom: GameRoom;
-          if (landed && !landed.ownerId && turnPlayer.cash >= landed.price + 50) {
-            actedRoom = buyCurrentProperty(room, turnPlayer.id);
+          if (landed && !landed.ownerId && landed.price > 0) {
+            const decision = evaluateBotPropertyPurchase(room, turnPlayer.id, landed);
+            if (decision.shouldBuy) {
+              actedRoom = buyCurrentProperty(room, turnPlayer.id);
+            } else {
+              actedRoom = skipCurrentProperty(room, turnPlayer.id);
+            }
           } else {
-            actedRoom = skipCurrentProperty(room, turnPlayer.id);
+            actedRoom = { ...room };
           }
-          // AI can build houses if it owns a monopoly before ending turn
-          const monopolyTiles = actedRoom.tiles.filter((_, idx) => canBuildHouse(actedRoom, turnPlayer.id, idx));
-          if (monopolyTiles.length > 0 && turnPlayer.cash >= 300) {
-            actedRoom = buildHouse(actedRoom, turnPlayer.id, monopolyTiles[0].index);
+          // Smart House Building
+          const bestTileToBuild = getBotHouseBuildTileIndex(actedRoom, turnPlayer.id);
+          if (bestTileToBuild !== null) {
+            actedRoom = buildHouse(actedRoom, turnPlayer.id, bestTileToBuild);
           }
           const nextRoom = endTurn(actedRoom);
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'end') {
-          // AI can build houses if it owns a monopoly
           let roomWithUpgrades = room;
-          const monopolyTiles = room.tiles.filter((_, idx) => canBuildHouse(room, turnPlayer.id, idx));
-          if (monopolyTiles.length > 0 && turnPlayer.cash >= 300) {
-            roomWithUpgrades = buildHouse(room, turnPlayer.id, monopolyTiles[0].index);
+          const bestTileToBuild = getBotHouseBuildTileIndex(roomWithUpgrades, turnPlayer.id);
+          if (bestTileToBuild !== null) {
+            roomWithUpgrades = buildHouse(roomWithUpgrades, turnPlayer.id, bestTileToBuild);
           }
           const nextRoom = endTurn(roomWithUpgrades);
           multiplayer.updateRoom(nextRoom);
         }
-      }, 1500);
+      }, delay);
 
       return () => clearTimeout(botTimer);
     }
@@ -677,6 +702,7 @@ export const App: React.FC = () => {
         <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
           <Board
             room={room}
+            currentPlayerId={currentPlayer.id}
             onTileClick={(tile) => setSelectedTile(tile)}
             centerContent={({ isPieceMoving }) => (
               <CenterControls

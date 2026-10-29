@@ -215,7 +215,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
           sound.playRent();
 
           if (player.cash < 0) {
-            handleBankruptcy(newRoom, player.id, owner.id);
+            resolveDebtOrBankruptcy(newRoom, player.id, owner.id);
           }
         }
       }
@@ -242,7 +242,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     });
     sound.playTax();
     if (player.cash < 0) {
-      handleBankruptcy(newRoom, player.id, null);
+      resolveDebtOrBankruptcy(newRoom, player.id, null);
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'vacation') {
@@ -582,6 +582,66 @@ export function calculateRent(room: GameRoom, tile: Tile, rollTotal: number): nu
   return 0;
 }
 
+/**
+ * Automatically sells houses and mortgages un-monopolized properties to cover debt
+ * before resorting to bankruptcy. Prevents sudden unfair elimination.
+ */
+export function resolveDebtOrBankruptcy(room: GameRoom, debtorId: string, creditorId: string | null) {
+  const debtor = room.players[debtorId];
+  if (!debtor || debtor.cash >= 0) return;
+
+  // 1. First sell houses on owned properties (if any)
+  const ownedTilesWithHouses = room.tiles
+    .filter(t => t.ownerId === debtorId && t.houses > 0)
+    .sort((a, b) => a.houses - b.houses);
+
+  for (const t of ownedTilesWithHouses) {
+    while (t.houses > 0 && debtor.cash < 0) {
+      const houseRefund = Math.floor((t.houseCost || 100) / 2);
+      t.houses -= 1;
+      debtor.cash += houseRefund;
+      room.logs.push({
+        id: `sell_house_debt_${Date.now()}_${t.index}`,
+        text: `🏚️ ${debtor.name} sold a house on ${t.name} (+$${houseRefund}) to pay debt!`,
+        timestamp: Date.now(),
+        type: 'rent',
+        playerId: debtor.id
+      });
+    }
+    if (debtor.cash >= 0) break;
+  }
+
+  // 2. If still in debt, mortgage unmortgaged properties
+  if (debtor.cash < 0) {
+    const unmortgagedTiles = room.tiles
+      .filter(t => t.ownerId === debtorId && !t.isMortgaged && t.houses === 0)
+      .sort((a, b) => {
+        // Prioritize non-monopoly loose properties first
+        const aGroupCount = room.tiles.filter(tile => tile.group === a.group && tile.ownerId === debtorId).length;
+        const bGroupCount = room.tiles.filter(tile => tile.group === b.group && tile.ownerId === debtorId).length;
+        return aGroupCount - bGroupCount;
+      });
+
+    for (const t of unmortgagedTiles) {
+      t.isMortgaged = true;
+      debtor.cash += t.mortgageValue;
+      room.logs.push({
+        id: `mortgage_debt_${Date.now()}_${t.index}`,
+        text: `🛡️ ${debtor.name} mortgaged ${t.name} (+$${t.mortgageValue}) to avoid bankruptcy!`,
+        timestamp: Date.now(),
+        type: 'rent',
+        playerId: debtor.id
+      });
+      if (debtor.cash >= 0) break;
+    }
+  }
+
+  // 3. If after selling and mortgaging everything the player is STILL negative:
+  if (debtor.cash < 0) {
+    handleBankruptcy(room, debtorId, creditorId);
+  }
+}
+
 export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: string | null) {
   const debtor = room.players[debtorId];
   if (!debtor) return;
@@ -630,6 +690,9 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
     case 'pay_pot_50':
       player.cash -= 50;
       room.pot += 50;
+      if (player.cash < 0) {
+        resolveDebtOrBankruptcy(room, player.id, null);
+      }
       break;
     case 'receive_100':
       player.cash += 100;

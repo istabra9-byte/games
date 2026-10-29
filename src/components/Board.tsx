@@ -9,6 +9,7 @@ import sonedeLogo from '../assets/sonede.svg';
 
 interface BoardProps {
   room: GameRoom;
+  currentPlayerId?: string;
   onTileClick?: (tile: Tile) => void;
   centerContent?: React.ReactNode | ((props: { isPieceMoving: boolean }) => React.ReactNode);
 }
@@ -33,7 +34,7 @@ export function getGridPosition(index: number) {
   }
 }
 
-export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }) => {
+export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick, centerContent }) => {
   const { tiles, players } = room;
 
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>(() => {
@@ -52,6 +53,42 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
     movingPlayerIds.has(currentTurnPlayerId) ||
     (currentTurnPlayerId && visualPositions[currentTurnPlayerId] !== undefined && visualPositions[currentTurnPlayerId] !== room.players[currentTurnPlayerId]?.position)
   );
+
+  // Prominent, non-bouncing, high-visibility player token renderer
+  const renderPlayerToken = (p: Player, isCorner: boolean = false) => {
+    const isMe = p.id === currentPlayerId;
+    const isTurn = p.id === currentTurnPlayerId;
+    const size = isCorner ? 'clamp(28px, 4.3cqi, 40px)' : 'clamp(26px, 3.8cqi, 36px)';
+
+    return (
+      <div
+        key={p.id}
+        className="relative flex items-center justify-center flex-shrink-0 transition-transform duration-200 pointer-events-auto"
+        title={`${p.name} ($${p.cash})`}
+        style={{
+          filter: `drop-shadow(0 2px 4px rgba(0,0,0,0.95)) drop-shadow(0 0 5px ${p.color})`
+        }}
+      >
+        {/* Active turn pulsing halo */}
+        {isTurn && (
+          <div
+            className="absolute -inset-1 rounded-full ring-2 ring-white/90 animate-pulse pointer-events-none"
+            style={{ boxShadow: `0 0 10px ${p.color}` }}
+          />
+        )}
+
+        {/* Clear "YOU" indicator so player never loses their icon */}
+        {isMe && (
+          <span className="absolute -top-2.5 px-1 py-0.2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black text-[7.5px] sm:text-[8.5px] rounded-full shadow-lg border border-white tracking-wider leading-none z-40 pointer-events-none">
+            YOU
+          </span>
+        )}
+
+        {/* Large, stable avatar (no bounce) */}
+        <PlayerAvatar avatar={p.avatar} color={p.color} size={size} />
+      </div>
+    );
+  };
 
   useEffect(() => {
     Object.values(players).forEach(p => {
@@ -166,12 +203,8 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                       </span>
                       {/* Passing by tokens */}
                       {playersHere.filter(p => !p.inJail).length > 0 && (
-                        <div className="flex items-center justify-center gap-0.5 mt-0.5">
-                          {playersHere.filter(p => !p.inJail).map(p => (
-                            <div key={p.id} className="flex items-center justify-center filter drop-shadow" title={`${p.name} (Visiting)`}>
-                              <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
-                            </div>
-                          ))}
+                        <div className="flex items-center justify-center -space-x-2 mt-0.5 z-20">
+                          {playersHere.filter(p => !p.inJail).map(p => renderPlayerToken(p, true))}
                         </div>
                       )}
                     </div>
@@ -187,12 +220,8 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                       </span>
                       {/* In Prison tokens */}
                       {playersHere.filter(p => p.inJail).length > 0 && (
-                        <div className="flex items-center justify-center gap-0.5 mt-0.5 z-20">
-                          {playersHere.filter(p => p.inJail).map(p => (
-                            <div key={p.id} className="flex items-center justify-center animate-pulse filter drop-shadow" title={`${p.name} (In Prison)`}>
-                              <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
-                            </div>
-                          ))}
+                        <div className="flex items-center justify-center -space-x-2 mt-0.5 z-20">
+                          {playersHere.filter(p => p.inJail).map(p => renderPlayerToken(p, true))}
                         </div>
                       )}
                     </div>
@@ -233,16 +262,8 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
                 {/* Player Tokens On Corner (Non-Jail) */}
                 {cornerType !== 'jail' && playersHere.length > 0 && (
-                  <div className="absolute bottom-0.5 inset-x-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none">
-                    {playersHere.map((p) => (
-                      <div
-                        key={p.id}
-                        className="animate-pulse filter drop-shadow flex items-center justify-center"
-                        title={`${p.name} ($${p.cash})`}
-                      >
-                        <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
-                      </div>
-                    ))}
+                  <div className="absolute bottom-1 inset-x-0 flex items-center justify-center -space-x-2 z-20 pointer-events-none">
+                    {playersHere.map((p) => renderPlayerToken(p, true))}
                   </div>
                 )}
               </div>
@@ -481,28 +502,20 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 </div>
               )}
 
-              {/* Player Tokens On Tile (Positioned along inner edge to keep tile name 100% visible) */}
+              {/* Player Tokens On Tile (Non-bouncing, prominent with "YOU" badge and clean spacing) */}
               {playersHere.length > 0 && (
                 <div
-                  className={`absolute z-30 pointer-events-none flex items-center justify-center gap-0.5 ${
+                  className={`absolute z-30 pointer-events-none flex items-center justify-center ${
                     side === 'top'
-                      ? 'bottom-0.5 inset-x-0 flex-row'
+                      ? 'bottom-1 inset-x-0 flex-row -space-x-2'
                       : side === 'bottom'
-                      ? 'top-0.5 inset-x-0 flex-row'
+                      ? 'top-1 inset-x-0 flex-row -space-x-2'
                       : side === 'left'
-                      ? 'right-0.5 inset-y-0 flex-col'
-                      : 'left-0.5 inset-y-0 flex-col'
+                      ? 'right-1 inset-y-0 flex-col -space-y-2'
+                      : 'left-1 inset-y-0 flex-col -space-y-2'
                   }`}
                 >
-                  {playersHere.map((p) => (
-                    <div
-                      key={p.id}
-                      className="transform animate-bounce duration-500 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] flex items-center justify-center"
-                      title={`${p.name} ($${p.cash})`}
-                    >
-                      <PlayerAvatar avatar={p.avatar} color={p.color} size={22} />
-                    </div>
-                  ))}
+                  {playersHere.map((p) => renderPlayerToken(p, false))}
                 </div>
               )}
             </div>
