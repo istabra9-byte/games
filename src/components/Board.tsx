@@ -114,15 +114,9 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               >
                 {/* 0: START */}
                 {cornerType === 'start' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
-                    <span className="text-[14px] sm:text-base font-black tracking-widest text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.6)]">
+                  <div className="w-full h-full flex flex-col items-center justify-start p-1.5 text-center">
+                    <span className="text-[15px] sm:text-lg font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_10px_rgba(168,255,62,0.7)]">
                       START
-                    </span>
-                    <div className="text-2xl sm:text-3xl animate-bounce">
-                      👾
-                    </div>
-                    <span className="text-[8px] sm:text-[9.5px] font-mono font-bold text-gray-400">
-                      Collect $200
                     </span>
                   </div>
                 )}
@@ -223,28 +217,34 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               </div>
 
               {/* Middle Section: City Name & Special Center Graphics */}
-              <div className="flex-1 flex flex-col justify-center items-center text-center px-0.5 min-w-0 z-10 overflow-hidden">
+              <div className="flex-1 flex flex-col justify-center items-center text-center z-10 relative overflow-visible min-w-0">
                 {/* Special Icons */}
                 {tile.type === 'chest' && (
-                  <div className="text-xl sm:text-2xl drop-shadow mb-0.5">
+                  <div className={`text-xl sm:text-2xl drop-shadow mb-0.5 ${
+                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                  }`}>
                     📦
                   </div>
                 )}
                 {tile.type === 'chance' && (
-                  <div className="text-xl sm:text-2xl drop-shadow text-pink-400 font-black mb-0.5">
+                  <div className={`text-xl sm:text-2xl drop-shadow text-pink-400 font-black mb-0.5 ${
+                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                  }`}>
                     ❓
                   </div>
                 )}
                 {tile.type === 'railroad' && (
                   <Plane className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-300 drop-shadow mb-0.5 ${
-                    side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`} />
                 )}
                 {tile.type === 'utility' && (
                   tile.name.includes('Water') ? (
                     <div className="text-lg sm:text-xl drop-shadow mb-0.5">🚰</div>
                   ) : (
-                    <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5" />
+                    <Zap className={`w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5 ${
+                      isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
+                    }`} />
                   )
                 )}
                 {tile.type === 'tax' && (
@@ -256,22 +256,26 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 )}
 
                 {/* Tile Name */}
-                <span className={`font-black leading-tight text-white drop-shadow whitespace-nowrap ${
-                  isHorizontal
-                    ? side === 'left'
-                      ? 'text-[8.5px] sm:text-[9.5px] md:text-[10.5px] rotate-90 origin-center'
-                      : 'text-[8.5px] sm:text-[9.5px] md:text-[10.5px] -rotate-90 origin-center'
-                    : 'text-[7.5px] sm:text-[8.5px] md:text-[9.5px]'
-                }`}>
+                <span
+                  className={`font-black text-white drop-shadow select-none text-center ${
+                    isHorizontal
+                      ? 'tracking-tight leading-none'
+                      : 'text-[7.5px] sm:text-[8.5px] md:text-[9.5px] leading-tight'
+                  }`}
+                  style={
+                    isHorizontal
+                      ? {
+                          writingMode: 'vertical-rl',
+                          transform: side === 'left' ? 'rotate(180deg)' : undefined,
+                          fontSize: tile.name.length > 11 ? '8px' : '9px',
+                          maxHeight: '48px',
+                          display: 'inline-block'
+                        }
+                      : undefined
+                  }
+                >
                   {tile.name}
                 </span>
-
-                {/* Subtitle for taxes / utilities on top/bottom */}
-                {!isHorizontal && tile.type === 'tax' && (
-                  <span className="text-[6.5px] sm:text-[7.5px] text-gray-400 font-semibold leading-none mt-0.5">
-                    {tile.name.includes('Earnings') ? 'Earnings Tax' : 'Premium Tax'}
-                  </span>
-                )}
               </div>
 
               {/* Inner Edge: Round Circular Country Flag */}
