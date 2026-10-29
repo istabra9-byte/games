@@ -45,8 +45,8 @@ export const CHANCE_CARDS = [
   {
     id: 'ch_6',
     type: 'chance',
-    title: 'Trip to Mayfair',
-    description: 'Advance to Mayfair Plaza.',
+    title: 'Trip to New York',
+    description: 'Advance to New York.',
     action: 'advance_to_39'
   }
 ];

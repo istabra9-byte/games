@@ -71,10 +71,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 5: TLV Airport
+  // 5: MAD Airport
   {
     index: 5,
-    name: 'TLV Airport',
+    name: 'MAD Airport',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -85,13 +85,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 6: Tel Aviv (Israel)
+  // 6: Seville (Spain)
   {
     index: 6,
-    name: 'Tel Aviv',
-    country: 'Israel',
-    countryCode: 'il',
-    flag: '🇮🇱',
+    name: 'Seville',
+    country: 'Spain',
+    countryCode: 'es',
+    flag: '🇪🇸',
     type: 'property',
     group: 'light_blue',
     price: 100,
@@ -102,13 +102,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 50
   },
-  // 7: Haifa (Israel)
+  // 7: Barcelona (Spain)
   {
     index: 7,
-    name: 'Haifa',
-    country: 'Israel',
-    countryCode: 'il',
-    flag: '🇮🇱',
+    name: 'Barcelona',
+    country: 'Spain',
+    countryCode: 'es',
+    flag: '🇪🇸',
     type: 'property',
     group: 'light_blue',
     price: 110,
@@ -131,13 +131,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 9: Jerusalem (Israel)
+  // 9: Madrid (Spain)
   {
     index: 9,
-    name: 'Jerusalem',
-    country: 'Israel',
-    countryCode: 'il',
-    flag: '🇮🇱',
+    name: 'Madrid',
+    country: 'Spain',
+    countryCode: 'es',
+    flag: '🇪🇸',
     type: 'property',
     group: 'light_blue',
     price: 120,
@@ -607,7 +607,7 @@ export const INITIAL_BOARD_TILES: Tile[] = [
 
 export const PROPERTY_GROUPS: Record<string, { name: string; country: string; color: string; count: number }> = {
   brown: { name: 'Brazil', country: 'Brazil', color: '#45322E', count: 2 },
-  light_blue: { name: 'Israel', country: 'Israel', color: '#2B4B77', count: 3 },
+  light_blue: { name: 'Spain', country: 'Spain', color: '#B45309', count: 3 },
   pink: { name: 'Italy', country: 'Italy', color: '#1B6B60', count: 3 },
   orange: { name: 'Germany', country: 'Germany', color: '#882233', count: 3 },
   red: { name: 'China', country: 'China', color: '#6A2576', count: 3 },
