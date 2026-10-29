@@ -12,6 +12,7 @@ import {
 } from './services/gameEngine';
 import { multiplayer } from './services/firebase';
 import { sound } from './services/sound';
+import { Home } from './components/Home';
 import { Board } from './components/Board';
 import { CenterControls } from './components/CenterControls';
 import { Lobby } from './components/Lobby';
@@ -21,7 +22,7 @@ import { AuctionModal } from './components/AuctionModal';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
-import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices } from 'lucide-react';
+import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Generate random 5-letter alphanumeric code matching Richup
@@ -60,17 +61,13 @@ export const App: React.FC = () => {
     };
   });
 
+  // Read roomId from URL hash or query; empty string means Home view
   const [roomId, setRoomId] = useState<string>(() => {
-    // Check hash e.g. #/room/s5zwl or #room=s5zwl
     const hashMatch = window.location.hash.match(/room[=/]([a-zA-Z0-9]+)/);
     if (hashMatch) return hashMatch[1];
-    // Check query e.g. ?room=s5zwl
     const searchMatch = window.location.search.match(/room=([a-zA-Z0-9]+)/);
     if (searchMatch) return searchMatch[1];
-    // Check pathname
-    const pathMatch = window.location.pathname.match(/\/room\/([a-zA-Z0-9]+)/);
-    if (pathMatch) return pathMatch[1];
-    return 's5zwl';
+    return '';
   });
 
   const [room, setRoom] = useState<GameRoom | null>(null);
@@ -81,17 +78,23 @@ export const App: React.FC = () => {
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
 
-  // Keep URL hash updated with active room id
+  // Sync window.location.hash
   useEffect(() => {
-    window.location.hash = `/room/${roomId}`;
+    if (roomId) {
+      window.location.hash = `/room/${roomId}`;
+    } else {
+      window.location.hash = '';
+    }
   }, [roomId]);
 
-  // Listen to external hash changes
+  // Listen to hash changes (e.g. back button or pasted link)
   useEffect(() => {
     const handleHash = () => {
       const match = window.location.hash.match(/room[=/]([a-zA-Z0-9]+)/);
-      if (match && match[1] !== roomId) {
-        setRoomId(match[1]);
+      if (match) {
+        if (match[1] !== roomId) setRoomId(match[1]);
+      } else {
+        setRoomId('');
       }
     };
     window.addEventListener('hashchange', handleHash);
@@ -103,8 +106,13 @@ export const App: React.FC = () => {
     localStorage.setItem('richup_player', JSON.stringify(currentPlayer));
   }, [currentPlayer]);
 
-  // Subscribe to room updates
+  // Subscribe to room updates when roomId is set
   useEffect(() => {
+    if (!roomId) {
+      setRoom(null);
+      return;
+    }
+
     const unsub = multiplayer.subscribeToRoom(roomId, (updatedRoom) => {
       if (!updatedRoom) return;
 
@@ -321,6 +329,13 @@ export const App: React.FC = () => {
     multiplayer.updateRoom(started);
   };
 
+  const handleRestartRoom = () => {
+    if (!room) return;
+    const freshRoom = createInitialRoom(room.id, currentPlayer, room.settings);
+    multiplayer.updateRoom(freshRoom);
+    setRoom(freshRoom);
+  };
+
   const handleSendMessage = (text: string) => {
     if (!room) return;
     multiplayer.sendChatMessage(room.id, {
@@ -392,18 +407,35 @@ export const App: React.FC = () => {
     multiplayer.updateRoom(newRoom);
   };
 
+  // 1. HOME SCREEN (When on root or no room specified)
+  if (!roomId) {
+    return (
+      <Home
+        onJoinRoom={(rid, name) => {
+          setCurrentPlayer(prev => ({ ...prev, name }));
+          setRoomId(rid);
+        }}
+        onCreatePrivateRoom={(name) => {
+          setCurrentPlayer(prev => ({ ...prev, name }));
+          setRoomId(generateRoomId());
+        }}
+      />
+    );
+  }
+
+  // 2. LOADING SCREEN
   if (!room) {
     return (
-      <div className="w-screen h-screen bg-[#130f1d] flex flex-col items-center justify-center text-white">
-        <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-3" />
+      <div className="w-screen h-screen bg-[#130f1d] flex flex-col items-center justify-center text-white select-none">
+        <div className="w-10 h-10 border-4 border-[#6647e0] border-t-transparent rounded-full animate-spin mb-3" />
         <span className="text-xl font-bold font-heading tracking-widest text-purple-200">
-          Loading Richup...
+          Entering Richup Room {roomId}...
         </span>
       </div>
     );
   }
 
-  // Lobby Status
+  // 3. LOBBY SCREEN
   if (room.status === 'lobby') {
     return (
       <div className="w-screen h-screen bg-[#130f1d] flex flex-col justify-between overflow-y-auto">
@@ -441,27 +473,38 @@ export const App: React.FC = () => {
     );
   }
 
-  // Playing / Ended Game Screen
+  const isCurrentPlayerInGame = Boolean(room.players[currentPlayer.id]);
+
+  // 4. GAME PLAYING / ENDED SCREEN
   return (
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col overflow-hidden text-white font-sans select-none">
       {/* Top Header Navigation */}
       <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
         <div className="flex items-center gap-2 sm:gap-3">
-          <h1 className="text-2xl sm:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400">
+          <button
+            onClick={() => setRoomId('')}
+            className="text-2xl sm:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             RICHUP
-          </h1>
+          </button>
           <span className="text-[11px] text-purple-300 font-mono bg-[#21163b] px-2 py-0.5 rounded-md border border-purple-800/60">
             Room: {room.id}
           </span>
+
+          {!isCurrentPlayerInGame && (
+            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold">
+              Spectator Mode
+            </span>
+          )}
         </div>
 
         {/* Mobile Navigation Pills */}
         <div className="flex items-center gap-1.5 lg:hidden">
           <button
-            onClick={() => setMobileTab(mobileTab === 'board' ? 'chat' : 'board')}
+            onClick={() => setMobileTab(mobileTab === 'chat' ? 'board' : 'chat')}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-colors ${
               mobileTab === 'chat'
-                ? 'bg-purple-600 text-white border-purple-400'
+                ? 'bg-[#6647e0] text-white border-purple-400'
                 : 'bg-[#21163b] text-purple-200 border-purple-800/60'
             }`}
           >
@@ -473,7 +516,7 @@ export const App: React.FC = () => {
             onClick={() => setMobileTab(mobileTab === 'players' ? 'board' : 'players')}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-colors ${
               mobileTab === 'players'
-                ? 'bg-purple-600 text-white border-purple-400'
+                ? 'bg-[#6647e0] text-white border-purple-400'
                 : 'bg-[#21163b] text-purple-200 border-purple-800/60'
             }`}
           >
@@ -482,7 +525,18 @@ export const App: React.FC = () => {
           </button>
         </div>
 
+        {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Restart match button */}
+          <button
+            onClick={handleRestartRoom}
+            title="Restart Match / New Game"
+            className="px-2.5 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Restart</span>
+          </button>
+
           {/* Audio toggle */}
           <button
             onClick={() => setIsMuted(sound.toggleMute())}
@@ -492,25 +546,21 @@ export const App: React.FC = () => {
             {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
           </button>
 
-          {/* Leave game */}
+          {/* Leave game to home */}
           <button
-            onClick={() => {
-              if (confirm('Leave current game?')) {
-                setRoomId(generateRoomId());
-              }
-            }}
+            onClick={() => setRoomId('')}
             className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Leave</span>
+            <span className="hidden sm:inline">Exit</span>
           </button>
         </div>
       </header>
 
-      {/* Main Game Screen (3-Pane Layout) */}
-      <div className="flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-3 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 overflow-hidden relative">
-        {/* Left Pane: Chat & Action Activity Logs */}
-        <div className={`w-full lg:w-80 h-full flex-col flex-shrink-0 ${
+      {/* Main 3-Pane Screen: Left Utility/Chat | Center Board | Right Leaderboard */}
+      <div className="flex-1 w-full max-w-[1550px] mx-auto p-2 sm:p-3 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 overflow-hidden relative">
+        {/* Left Pane: Chat & Activity Logs */}
+        <div className={`w-full lg:w-64 h-full flex-col flex-shrink-0 ${
           mobileTab === 'chat'
             ? 'fixed inset-0 top-12 z-40 bg-[#130f1d] p-3 flex'
             : 'hidden lg:flex'
@@ -523,7 +573,7 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Center: The Game Board with Embedded Center Controls */}
+        {/* Center Hero: The Board with Embedded Center Controls */}
         <div className="flex-1 w-full h-full flex items-center justify-center overflow-hidden">
           <Board
             room={room}
@@ -544,7 +594,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Right Pane: Players Leaderboard */}
-        <div className={`w-full lg:w-80 h-full flex-col flex-shrink-0 ${
+        <div className={`w-full lg:w-64 h-full flex-col flex-shrink-0 ${
           mobileTab === 'players'
             ? 'fixed inset-0 top-12 z-40 bg-[#130f1d] p-3 flex'
             : 'hidden lg:flex'
