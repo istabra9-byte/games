@@ -30,11 +30,11 @@ export const DiceView: React.FC<DiceProps> = ({ values, isRolling }) => {
         {dots.map(([left, top], dIdx) => (
           <div
             key={dIdx}
-            className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-gradient-to-br from-red-500 to-rose-700 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-inner"
+            className="absolute w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-[#111827] rounded-full -translate-x-1/2 -translate-y-1/2 shadow-inner"
             style={{
               left: `${left}%`,
               top: `${top}%`,
-              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.6), 0 0.5px 1px rgba(255,255,255,0.4)'
+              boxShadow: 'inset 0 1px 1.5px rgba(0,0,0,0.9), 0 0.5px 1px rgba(255,255,255,0.2)'
             }}
           />
         ))}

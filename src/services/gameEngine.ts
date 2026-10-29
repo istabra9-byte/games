@@ -781,3 +781,34 @@ export function sellPropertyToBank(room: GameRoom, playerId: string, tileIndex: 
   updateNetWorths(newRoom);
   return newRoom;
 }
+
+
+export function surrenderBankruptcy(room: GameRoom, playerId: string): GameRoom {
+  const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+  const player = newRoom.players[playerId];
+  if (!player || player.isBankrupt) return room;
+
+  handleBankruptcy(newRoom, playerId, null);
+  updateNetWorths(newRoom);
+
+  // Check if only one non-bankrupt player remains (victory)
+  const activePlayers = Object.values(newRoom.players).filter(p => !p.isBankrupt);
+  if (activePlayers.length === 1) {
+    newRoom.winnerId = activePlayers[0].id;
+    newRoom.status = 'ended';
+    newRoom.logs.push({
+      id: `winner_${Date.now()}`,
+      text: `🏆 ${activePlayers[0].name} has won the match by bankruptcy!`,
+      timestamp: Date.now(),
+      type: 'system'
+    });
+    return newRoom;
+  }
+
+  // If it's this player's turn, advance to next player
+  const currentTurnPlayerId = newRoom.playerOrder[newRoom.currentTurnPlayerIndex];
+  if (currentTurnPlayerId === playerId) {
+    return endTurn(newRoom);
+  }
+  return newRoom;
+}

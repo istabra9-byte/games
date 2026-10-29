@@ -241,6 +241,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     >
                       Vacation
                     </span>
+                    <span
+                      className="font-semibold text-emerald-200/90 leading-none mt-0.5"
+                      style={{ fontSize: 'clamp(7.5px, 1.1cqi, 12px)' }}
+                    >
+                      ${room.pot || 0} on hold
+                    </span>
                   </div>
                 )}
 

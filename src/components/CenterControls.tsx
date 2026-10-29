@@ -29,7 +29,6 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   onSkip,
   onEndTurn,
   onPayBail,
-  onRequestTime,
   onTileClick
 }) => {
   const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
@@ -37,164 +36,54 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   const isMyTurn = turnPlayerId === currentPlayerId;
   const landedTile = turnPlayer ? room.tiles[turnPlayer.position] : null;
 
-  const remainingSec = Math.max(0, Math.floor((room.turnEndsAt - Date.now()) / 1000));
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
   if (!turnPlayer) return null;
 
-  const groupMeta = landedTile && landedTile.group ? PROPERTY_GROUPS[landedTile.group] : null;
+  // Filter out redundant logs
+  const meaningfulLogs = (room.logs || []).filter(l => 
+    !l.text.includes('Turn limit expired') && 
+    !l.text.includes('time has expired')
+  );
 
-  // Find if current player owns any completed country monopoly that can be upgraded
-  const upgradableTiles = room.tiles.filter((t) => {
-    if (!t.group || t.group === 'station' || t.group === 'utility' || t.ownerId !== currentPlayerId) return false;
-    const groupTiles = room.tiles.filter(tile => tile.group === t.group);
-    const ownsAll = groupTiles.every(tile => tile.ownerId === currentPlayerId && !tile.isMortgaged);
-    return ownsAll && t.houses < 5;
-  });
-
-  // All meaningful game event logs (buys, sells, trades, rents, cards, bankruptcies)
-  const meaningfulLogs = (room.logs || []).filter(l => Boolean(l && l.text));
-  const logsContainerRef = useRef<HTMLDivElement>(null);
-
+  // Auto-scroll logs to bottom
   useEffect(() => {
     if (logsContainerRef.current) {
       logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight;
     }
-  }, [room.logs?.length]);
-
-  // Dynamic Event Notification Banner (Between top and center of game)
-  const [activeNotification, setActiveNotification] = useState<{
-    id: string;
-    text: string;
-    playerName: string;
-    playerColor: string;
-    playerAvatar: string;
-    icon: string;
-  } | null>(null);
-
-  const lastNotifiedLogIdRef = useRef<string>('');
-
-  useEffect(() => {
-    const logs = room.logs || [];
-    if (logs.length === 0) return;
-    const latestLog = logs[logs.length - 1];
-
-    // Filter to significant events: buy, monopoly, rent, build, tax, vacation, jail, trade
-    const isSignificant =
-      ['buy', 'rent', 'trade', 'jail', 'card', 'bankrupt'].includes(latestLog.type) ||
-      latestLog.text.includes('monopoly') ||
-      latestLog.text.includes('owns all states') ||
-      latestLog.text.includes('bought') ||
-      latestLog.text.includes('upgraded') ||
-      latestLog.text.includes('rent') ||
-      latestLog.text.includes('tax') ||
-      latestLog.text.includes('Vacation');
-
-    if (isSignificant && latestLog.id !== lastNotifiedLogIdRef.current) {
-      lastNotifiedLogIdRef.current = latestLog.id;
-
-      // Identify player: from playerId or matching name in text
-      const player = latestLog.playerId && room.players[latestLog.playerId]
-        ? room.players[latestLog.playerId]
-        : Object.values(room.players).find(p => latestLog.text.includes(p.name));
-
-      const color = player ? player.color : '#ec4899';
-      const avatar = player ? player.avatar || player.name[0] : '🔔';
-      const name = player ? player.name : '';
-
-      // Determine appropriate icon
-      let icon = '🔔';
-      if (latestLog.text.includes('monopoly') || latestLog.text.includes('owns all states')) icon = '🎉';
-      else if (latestLog.text.includes('upgraded') || latestLog.text.includes('HOTEL')) icon = '🏠';
-      else if (latestLog.type === 'buy' || latestLog.text.includes('bought')) icon = '🏷️';
-      else if (latestLog.text.includes('rent')) icon = '💸';
-      else if (latestLog.text.includes('tax') || latestLog.text.includes('Tax')) icon = '💰';
-      else if (latestLog.text.includes('Vacation')) icon = '🌴';
-      else if (latestLog.type === 'trade') icon = '🤝';
-      else if (latestLog.type === 'jail') icon = '⛓️';
-      else if (latestLog.type === 'bankrupt') icon = '💥';
-
-      // Clean message by stripping leading emojis from text
-      const cleanText = latestLog.text.replace(/^[^\w\s]+/, '').trim();
-
-      setActiveNotification({
-        id: latestLog.id,
-        text: cleanText,
-        playerName: name,
-        playerColor: color,
-        playerAvatar: avatar,
-        icon
-      });
-
-      const timer = setTimeout(() => {
-        setActiveNotification(null);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [room.logs, room.players]);
+  }, [meaningfulLogs.length]);
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-1 sm:px-2 py-0.5 sm:py-1 select-none">
-
-      {/* Dynamic Event Notification (Between Top Turn Area and Center Dice) */}
-      <div className="w-full flex items-center justify-center min-h-[30px] sm:min-h-[34px] my-0.5 px-1">
-        {activeNotification && (
-          <div
-            key={activeNotification.id}
-            className="w-auto max-w-[95%] sm:max-w-[320px] px-2.5 py-1 rounded-full sm:rounded-xl border-2 flex items-center gap-1.5 shadow-xl backdrop-blur-md animate-in slide-in-from-top-1 fade-in duration-300 overflow-hidden"
-            style={{
-              backgroundColor: `${activeNotification.playerColor}22`,
-              borderColor: activeNotification.playerColor,
-              boxShadow: `0 0 14px ${activeNotification.playerColor}40, inset 0 0 6px ${activeNotification.playerColor}15`
-            }}
-          >
-            {/* Player Avatar Badge in their color */}
-            <div className="w-5 h-5 sm:w-5.5 sm:h-5.5 flex items-center justify-center flex-shrink-0">
-              <PlayerAvatar avatar={activeNotification.playerAvatar} color={activeNotification.playerColor} size={20} />
-            </div>
-
-            {/* Notification Text */}
-            <div className="flex-1 min-w-0 text-[8.5px] sm:text-[9.5px] font-bold text-white truncate text-left leading-tight flex items-center gap-1">
-              <span className="text-[9.5px] flex-shrink-0">{activeNotification.icon}</span>
-              <span className="truncate">{activeNotification.text}</span>
-            </div>
-
-            {/* Pulsing colored dot */}
-            <span
-              className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-ping"
-              style={{ backgroundColor: activeNotification.playerColor }}
-            />
-          </div>
-        )}
+    <div className="flex flex-col items-center justify-center w-full h-full max-w-sm px-2 py-1 select-none gap-2">
+      {/* 1. Large 3D Dice in Center */}
+      <div className="flex flex-col items-center justify-center">
+        <DiceView values={room.dice} isRolling={false} />
       </div>
 
-      {/* Center Dynamic Area (Dice / Actions / Deed Cards - Centered) */}
-      <div className="my-auto w-full flex flex-col items-center justify-center py-1 sm:py-2">
-        {/* While token is hopping across the board: show rolled dice and moving badge; withhold action buttons until piece stops */}
+      {/* 2. Turn Status / Action Control (Right Under Dice) */}
+      <div className="flex flex-col items-center justify-center min-h-[46px]">
         {isPieceMoving ? (
-          <div className="flex flex-col items-center gap-2 sm:gap-2.5 animate-in fade-in duration-150">
-            <DiceView values={room.dice} isRolling={false} />
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-[#1a1228] border border-purple-500/50 rounded-full shadow-lg">
-              <span className="w-2 h-2 rounded-full bg-pink-400 animate-ping flex-shrink-0" />
-              <span className="text-[10px] sm:text-xs font-bold text-purple-200 tracking-wide">
-                {turnPlayer.name} is moving...
-              </span>
-            </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-black/30 rounded-full border border-purple-500/30">
+            <span
+              className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+              style={{ backgroundColor: turnPlayer.color }}
+            />
+            <span className="text-xs font-bold text-purple-200">
+              {turnPlayer.name} is moving...
+            </span>
           </div>
         ) : (
           <>
             {/* Phase 1: ROLL DICE */}
             {room.turnPhase === 'roll' && (
-              <div className="flex flex-col items-center gap-2 sm:gap-3">
-                <DiceView values={room.dice} isRolling={false} />
-
+              <div className="flex flex-col items-center gap-1.5">
                 {turnPlayer.inJail && isMyTurn && (
                   <button
                     onClick={onPayBail}
                     disabled={turnPlayer.cash < 50}
-                    className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
+                    className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
                   >
-                    <ShieldAlert className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <ShieldAlert className="w-3.5 h-3.5" />
                     <span>Pay $50 Bail</span>
                   </button>
                 )}
@@ -202,23 +91,28 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                 {isMyTurn ? (
                   <button
                     onClick={onRoll}
-                    className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl sm:rounded-2xl shadow-[0_6px_20px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
+                    className="px-6 sm:px-8 py-2 sm:py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl sm:rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
                   >
                     <Dices className="w-4 h-4 sm:w-5 sm:h-5" />
                     <span>ROLL DICE</span>
                   </button>
                 ) : (
-                  <div className="flex items-center gap-1 text-[10px] sm:text-xs text-purple-300/80 font-medium italic animate-pulse text-center">
-                    <span>Waiting for {turnPlayer.name} to roll...</span>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                      style={{ backgroundColor: turnPlayer.color }}
+                    />
+                    <span className="text-xs font-bold text-gray-200">
+                      {turnPlayer.name} is playing...
+                    </span>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Phase 2: UNOWNED PROPERTY DECISION (BUY OR SKIP) - Appears only AFTER piece stops */}
+            {/* Phase 2: UNOWNED PROPERTY DECISION (BUY OR SKIP) */}
             {room.turnPhase === 'action' && landedTile && (
-              <div className="w-full max-w-[280px] bg-[#1a1228] border-2 border-purple-500/60 rounded-xl overflow-hidden shadow-2xl flex flex-col text-center animate-in zoom-in-95 fade-in duration-200">
-                {/* Deed Header */}
+              <div className="w-full max-w-[270px] bg-[#1a1228] border-2 border-purple-500/60 rounded-xl overflow-hidden shadow-2xl flex flex-col text-center animate-in zoom-in-95 fade-in duration-200">
                 <div
                   className="py-1 px-3 text-white font-bold text-xs uppercase tracking-wide flex items-center justify-between"
                   style={{
@@ -246,8 +140,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                   <span className="font-mono">${landedTile.price}</span>
                 </div>
 
-                {/* Quick Rent preview */}
-                <div className="p-2 space-y-1 text-[10px] font-mono text-gray-300 bg-[#140e21]">
+                <div className="p-1.5 space-y-0.5 text-[10px] font-mono text-gray-300 bg-[#140e21]">
                   <div className="flex justify-between">
                     <span>Base Rent:</span>
                     <span className="text-emerald-400">${landedTile.rent[0]}</span>
@@ -260,9 +153,8 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                   )}
                 </div>
 
-                {/* Action Buttons: BUY vs SKIP */}
                 {isMyTurn ? (
-                  <div className="p-2 bg-[#1a1228] border-t border-purple-900/60 flex items-center gap-2">
+                  <div className="p-1.5 bg-[#1a1228] border-t border-purple-900/60 flex items-center gap-2">
                     <button
                       onClick={onBuy}
                       disabled={turnPlayer.cash < landedTile.price}
@@ -281,7 +173,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                     </button>
                   </div>
                 ) : (
-                  <div className="p-2 text-xs text-gray-400 italic">
+                  <div className="p-1.5 text-xs text-gray-400 italic">
                     {turnPlayer.name} is deciding to buy or skip...
                   </div>
                 )}
@@ -291,8 +183,6 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             {/* Phase 3: END TURN */}
             {room.turnPhase === 'end' && (
               <div className="flex flex-col items-center gap-2 animate-in fade-in duration-200">
-                <DiceView values={room.dice} isRolling={false} />
-
                 {isMyTurn ? (
                   <button
                     onClick={onEndTurn}
@@ -302,58 +192,42 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 ) : (
-                  <span className="text-xs text-gray-400 italic">
-                    {turnPlayer.name}'s turn is concluding...
-                  </span>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                    <span
+                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                      style={{ backgroundColor: turnPlayer.color }}
+                    />
+                    <span className="text-xs font-bold text-gray-200">
+                      {turnPlayer.name} is playing...
+                    </span>
+                  </div>
                 )}
               </div>
             )}
           </>
         )}
+      </div>
 
-        {/* Monopoly House Upgrade Shortcut */}
-        {isMyTurn && upgradableTiles.length > 0 && onTileClick && (
-          <button
-            onClick={() => onTileClick(upgradableTiles[0])}
-            className="mt-2 px-3 py-1 bg-gradient-to-r from-amber-500 via-emerald-600 to-teal-600 hover:from-amber-400 hover:to-emerald-500 text-white font-black text-xs rounded-xl flex items-center gap-1.5 shadow-lg border border-amber-300/40 cursor-pointer animate-pulse"
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>Upgrade Houses 🏠 ({upgradableTiles.length} available)</span>
-          </button>
-        )}
-
-        {/* Live Activity Text Feed (Scrollable, Exactly Under Roll Dice Button) */}
-        <div className="w-full max-w-[290px] sm:max-w-[330px] mt-2.5 flex flex-col items-center">
-          <div className="flex items-center gap-1 text-[8.5px] sm:text-[9.5px] text-purple-300 font-mono font-bold uppercase tracking-wider mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Live Activity</span>
-            <span className="text-gray-500 text-[8px] font-normal">• scroll up/down to view</span>
-          </div>
-
-          <div
-            ref={logsContainerRef}
-            className="w-full max-h-24 sm:max-h-32 overflow-y-auto space-y-1 px-2.5 py-1.5 text-left bg-black/25 rounded-xl border border-purple-900/30 backdrop-blur-xs select-text shadow-inner"
-          >
-            {meaningfulLogs.length > 0 ? (
-              meaningfulLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="text-[8.5px] sm:text-[9.5px] text-gray-200 leading-snug flex items-start gap-1.5 break-words"
-                >
-                  <span className="text-[9px] flex-shrink-0 mt-0.5">
-                    {log.type === 'buy' ? '🏠' : log.type === 'trade' ? '🤝' : log.type === 'rent' ? '💸' : log.type === 'jail' ? '⛓️' : '🎲'}
-                  </span>
-                  <span className="text-gray-300">
-                    {log.text}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="text-[8.5px] text-gray-500 italic text-center py-1">
-                Roll the dice to start the game!
+      {/* 3. Floating Clean Text Event Logs (Directly under turn action, scrollable up & down) */}
+      <div className="w-full max-w-[310px] sm:max-w-[340px] mt-1 flex flex-col items-center">
+        <div
+          ref={logsContainerRef}
+          className="w-full max-h-24 sm:max-h-28 overflow-y-auto space-y-1 px-2 py-1 text-center select-text scroll-smooth"
+        >
+          {meaningfulLogs.length > 0 ? (
+            meaningfulLogs.map((log) => (
+              <div
+                key={log.id}
+                className="text-[10px] sm:text-[11px] text-gray-300 font-medium leading-snug drop-shadow-sm"
+              >
+                {log.text}
               </div>
-            )}
-          </div>
+            ))
+          ) : (
+            <div className="text-[10px] text-gray-500 italic text-center">
+              Game started! Good luck!
+            </div>
+          )}
         </div>
       </div>
     </div>

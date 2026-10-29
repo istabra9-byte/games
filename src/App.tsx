@@ -12,7 +12,8 @@ import {
   mortgageProperty,
   unmortgageProperty,
   sellPropertyToBank, 
-  endTurn 
+  endTurn,
+  surrenderBankruptcy
 } from './services/gameEngine';
 import { multiplayer } from './services/firebase';
 import { sound } from './services/sound';
@@ -22,6 +23,9 @@ import { Home } from './components/Home';
 import { Board } from './components/Board';
 import { CenterControls } from './components/CenterControls';
 import { Lobby } from './components/Lobby';
+import { LeftSidebar } from './components/LeftSidebar';
+import { RightSidebar } from './components/RightSidebar';
+import { RoomSettingsModal } from './components/RoomSettingsModal';
 import { Leaderboard } from './components/Leaderboard';
 import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
@@ -89,6 +93,7 @@ export const App: React.FC = () => {
   const [showTradeModal, setShowTradeModal] = useState<boolean>(false);
   const [selectedTradePartnerId, setSelectedTradePartnerId] = useState<string>('');
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
@@ -363,6 +368,12 @@ export const App: React.FC = () => {
     multiplayer.updateRoom(updated);
   };
 
+  const handleDeclareBankruptcy = () => {
+    if (!room) return;
+    const updated = surrenderBankruptcy(room, currentPlayer.id);
+    multiplayer.updateRoom(updated);
+  };
+
   const handlePayBail = () => {
     if (!room) return;
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
@@ -594,19 +605,16 @@ export const App: React.FC = () => {
   // 4. GAME PLAYING / ENDED SCREEN
   return (
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col overflow-hidden text-white font-sans select-none">
-      {/* Top Header Navigation */}
-      <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-2 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
-        {/* Left: Brand & Room Info */}
-        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+      {/* Top Header Navigation matching Richup */}
+      <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
+        {/* Left: Brand */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => setRoomId('')}
-            className="text-xl sm:text-2xl md:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400 hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
+            className="text-xl sm:text-2xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 hover:opacity-85 transition-opacity cursor-pointer flex-shrink-0"
           >
-            MONOPOLY
+            RICHUP.IO
           </button>
-          <span className="text-[10px] sm:text-[11px] text-purple-300 font-mono bg-[#21163b] px-1.5 sm:px-2 py-0.5 rounded-md border border-purple-800/60 truncate">
-            {room.id}
-          </span>
 
           {!isCurrentPlayerInGame && (
             <span className="hidden sm:inline px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold whitespace-nowrap">
@@ -615,61 +623,50 @@ export const App: React.FC = () => {
           )}
         </div>
 
-        {/* Right Actions: Responsive for Desktop & Mobile/Tablet */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Chat toggle button */}
+        {/* Right Actions: Clean minimal controls matching Richup */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mobile Chat drawer toggle (< 1024px) */}
           <button
             onClick={() => {
               setIsChatOpen(!isChatOpen);
               if (!isChatOpen) setIsPlayersOpen(false);
             }}
-            title="Chat (Press T)"
-            className={`px-2 sm:px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer relative ${
+            title="Chat"
+            className={`lg:hidden px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer relative ${
               isChatOpen 
                 ? 'bg-purple-600 text-white border-purple-400 shadow-md' 
-                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200 hover:text-white'
+                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200'
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Chat</span>
-            <kbd className="hidden lg:inline px-1 bg-black/40 rounded text-[9px] font-mono text-purple-300">T</kbd>
             {droppedMessages.length > 0 && !isChatOpen && (
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink-500 rounded-full animate-ping" />
             )}
           </button>
 
-          {/* Standings Button (Mobile/Tablet drawer toggle) */}
+          {/* Mobile Players drawer toggle (< 1024px) */}
           <button
             onClick={() => {
               setIsPlayersOpen(!isPlayersOpen);
               if (!isPlayersOpen) setIsChatOpen(false);
             }}
-            title="Players Standings"
-            className={`lg:hidden px-2 sm:px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+            title="Players & Standings"
+            className={`lg:hidden px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               isPlayersOpen
                 ? 'bg-purple-600 text-white border-purple-400 shadow-md'
-                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200 hover:text-white'
+                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Players</span>
           </button>
 
-          {/* Propose Trade button */}
-          <button
-            onClick={() => setShowTradeModal(true)}
-            title="Propose Trade with Player"
-            className="p-1 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <span className="hidden sm:inline">Trade</span>
-            <span className="sm:hidden text-xs">🤝</span>
-          </button>
-
           {/* Restart match button */}
           <button
             onClick={handleRestartRoom}
             title="Restart Match / New Game"
-            className="p-1 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+            className="p-1.5 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Restart</span>
@@ -696,8 +693,18 @@ export const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Screen Area: Guaranteed Square Board & Responsive Sidebar */}
-      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto px-1 sm:px-1.5 py-0.5 flex items-center justify-center gap-2 sm:gap-2.5 overflow-hidden relative">
+      {/* Main Screen 3-Column Area: LeftSidebar (Share & Chat), Board, RightSidebar (Players, Bankrupt, Trades, My Properties) */}
+      <div className="flex-1 w-full h-[calc(100vh-3rem)] px-2 sm:px-3 py-2 flex items-center justify-between gap-3 overflow-hidden relative">
+        {/* Desktop Left Sidebar: Share this game & Permanent Chat */}
+        <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
+          <LeftSidebar
+            room={room}
+            currentPlayer={currentPlayer}
+            onSendMessage={handleSendMessage}
+            onOpenSettings={() => setShowSettingsModal(true)}
+          />
+        </div>
+
         {/* Center Hero: The Board with Embedded Center Controls */}
         <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
           <Board
@@ -721,58 +728,60 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Desktop Sidebar: Players Leaderboard */}
-        <div className="hidden lg:flex w-72 xl:w-80 h-full flex-col flex-shrink-0">
-          <Leaderboard
+        {/* Desktop Right Sidebar: Players, Bankrupt, Trades, My Properties */}
+        <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
+          <RightSidebar
             room={room}
             currentPlayerId={currentPlayer.id}
             onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
-            onRequestTime={handleRequestTime}
+            onOpenTradeModal={() => { setSelectedTradePartnerId(''); setShowTradeModal(true); }}
+            onSelectTile={(tile) => setSelectedTile(tile)}
+            onDeclareBankruptcy={handleDeclareBankruptcy}
           />
         </div>
       </div>
 
-      {/* Slide-In Chat Drawer (With Backdrop on all screens to click anywhere to quick close) */}
+      {/* Mobile/Tablet Drawer for Left Sidebar (Chat & Share) */}
       {isChatOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-45 cursor-pointer"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-45 lg:hidden cursor-pointer"
             onClick={() => setIsChatOpen(false)}
           />
-          <div className="fixed top-12 bottom-3 left-3 z-50 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
-            <ChatAndLogs
-              chat={room.chat || []}
-              logs={room.logs || []}
+          <div className="fixed top-12 bottom-3 left-3 z-50 w-80 max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl lg:hidden">
+            <LeftSidebar
+              room={room}
               currentPlayer={currentPlayer}
               onSendMessage={handleSendMessage}
-              onClose={() => setIsChatOpen(false)}
+              onOpenSettings={() => setShowSettingsModal(true)}
             />
           </div>
         </>
       )}
 
-      {/* Slide-In Mobile/Tablet Standings Drawer */}
+      {/* Mobile/Tablet Drawer for Right Sidebar (Players, Bankrupt, Trades, My Properties) */}
       {isPlayersOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-45 lg:hidden cursor-pointer"
             onClick={() => setIsPlayersOpen(false)}
           />
-          <div className="fixed top-12 bottom-3 right-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-right duration-200 shadow-2xl lg:hidden">
-            <Leaderboard
+          <div className="fixed top-12 bottom-3 right-3 z-50 w-80 max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-right duration-200 shadow-2xl lg:hidden">
+            <RightSidebar
               room={room}
               currentPlayerId={currentPlayer.id}
               onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
-              onRequestTime={handleRequestTime}
-              onClose={() => setIsPlayersOpen(false)}
+              onOpenTradeModal={() => { setSelectedTradePartnerId(''); setShowTradeModal(true); }}
+              onSelectTile={(tile) => setSelectedTile(tile)}
+              onDeclareBankruptcy={handleDeclareBankruptcy}
             />
           </div>
         </>
       )}
 
-      {/* Floating Incoming Messages when Chat is Closed (auto-dismissed, no persistent pill) */}
+      {/* Floating Incoming Messages when Chat is Closed on mobile */}
       {!isChatOpen && droppedMessages.length > 0 && (
-        <div className="fixed bottom-4 left-4 z-40 flex flex-col gap-2 max-w-xs sm:max-w-sm pointer-events-none">
+        <div className="fixed bottom-4 left-4 z-40 flex flex-col gap-2 max-w-xs sm:max-w-sm pointer-events-none lg:hidden">
           {droppedMessages.map((msg) => (
             <div
               key={msg.id}
@@ -799,6 +808,13 @@ export const App: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+
+      {showSettingsModal && (
+        <RoomSettingsModal
+          settings={room.settings}
+          onClose={() => setShowSettingsModal(false)}
+        />
       )}
 
       {(showTradeModal || room.activeTrade) && (

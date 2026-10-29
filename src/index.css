@@ -21,7 +21,7 @@
   }
 }
 
-/* Custom Scrollbar for chat and leaderboard */
+/* Custom Scrollbar for chat, logs and sidebar */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -40,12 +40,12 @@
   background: rgba(168, 85, 247, 0.8);
 }
 
-/* Perfect Square Responsive Board Across All Screens (Phones, Tablets, PCs) */
+/* Authentic Richup Square Responsive Board Across All Screens */
 .responsive-board-wrapper {
-  width: min(calc(100vw - 8px), calc(100vh - 3.1rem));
-  height: min(calc(100vw - 8px), calc(100vh - 3.1rem));
-  max-width: min(calc(100vw - 8px), calc(100vh - 3.1rem));
-  max-height: min(calc(100vh - 3.1rem), calc(100vw - 8px));
+  width: min(calc(100vw - 8px), calc(100vh - 3.5rem));
+  height: min(calc(100vw - 8px), calc(100vh - 3.5rem));
+  max-width: min(calc(100vw - 8px), calc(100vh - 3.5rem));
+  max-height: min(calc(100vh - 3.5rem), calc(100vw - 8px));
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
   container-type: inline-size;
@@ -57,18 +57,18 @@
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 19rem), calc(100vh - 3.1rem));
-    height: min(calc(100vw - 19rem), calc(100vh - 3.1rem));
-    max-width: min(calc(100vw - 19rem), calc(100vh - 3.1rem));
-    max-height: min(calc(100vh - 3.1rem), calc(100vw - 19rem));
+    width: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
+    height: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
+    max-width: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
+    max-height: min(calc(100vh - 3.5rem), calc(100vw - 36rem));
   }
 }
 
 @media (min-width: 1280px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 21rem), calc(100vh - 3.1rem));
-    height: min(calc(100vw - 21rem), calc(100vh - 3.1rem));
-    max-width: min(calc(100vw - 21rem), calc(100vh - 3.1rem));
-    max-height: min(calc(100vh - 3.1rem), calc(100vw - 21rem));
+    width: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
+    height: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
+    max-width: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
+    max-height: min(calc(100vh - 3.5rem), calc(100vw - 38rem));
   }
 }
