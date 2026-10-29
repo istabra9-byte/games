@@ -159,7 +159,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
                 {/* Tokens on corner */}
                 {playersHere.length > 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none bg-black/30 backdrop-blur-[1px]">
+                  <div className="absolute inset-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none ">
                     {playersHere.map((p) => (
                       <div
                         key={p.id}
@@ -265,7 +265,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
               {/* Player Tokens On Tile */}
               {playersHere.length > 0 && (
-                <div className="absolute inset-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-30 pointer-events-none bg-black/20 backdrop-blur-[1px]">
+                <div className="absolute inset-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-30 pointer-events-none ">
                   {playersHere.map((p) => (
                     <div
                       key={p.id}

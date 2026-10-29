@@ -501,14 +501,14 @@ export const INITIAL_BOARD_TILES: Tile[] = [
 ];
 
 export const PROPERTY_GROUPS: Record<string, { name: string; color: string; count: number }> = {
-  brown: { name: 'Brown', color: '#8B4513', count: 2 },
-  light_blue: { name: 'Sky Blue', color: '#5fccff', count: 3 },
-  pink: { name: 'Pink', color: '#ff4081', count: 3 },
-  orange: { name: 'Orange', color: '#ff9800', count: 3 },
-  red: { name: 'Red', color: '#f44336', count: 3 },
-  yellow: { name: 'Yellow', color: '#ffeb3b', count: 3 },
-  green: { name: 'Green', color: '#4caf50', count: 3 },
-  dark_blue: { name: 'Midnight Blue', color: '#1a237e', count: 2 },
-  station: { name: 'Airport', color: '#607d8b', count: 4 },
-  utility: { name: 'Utility', color: '#9e9e9e', count: 2 }
+  brown: { name: 'Brown', color: '#8B5A2B', count: 2 },
+  light_blue: { name: 'Sky Blue', color: '#38bdf8', count: 3 },
+  pink: { name: 'Pink', color: '#ec4899', count: 3 },
+  orange: { name: 'Orange', color: '#f97316', count: 3 },
+  red: { name: 'Red', color: '#ef4444', count: 3 },
+  yellow: { name: 'Yellow', color: '#eab308', count: 3 },
+  green: { name: 'Green', color: '#22c55e', count: 3 },
+  dark_blue: { name: 'Royal Blue', color: '#2563eb', count: 2 },
+  station: { name: 'Airport', color: '#64748b', count: 4 },
+  utility: { name: 'Utility', color: '#94a3b8', count: 2 }
 };
