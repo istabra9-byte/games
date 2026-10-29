@@ -39,3 +39,20 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(168, 85, 247, 0.8);
 }
+
+/* Perfect Square Responsive Board Across All Screens (Phones, Tablets, PCs) */
+.responsive-board-wrapper {
+  width: min(calc(100vw - 12px), calc(100vh - 4.25rem), 860px);
+  height: min(calc(100vw - 12px), calc(100vh - 4.25rem), 860px);
+  max-width: 860px;
+  max-height: 860px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+}
+
+@media (min-width: 1024px) {
+  .responsive-board-wrapper {
+    width: min(calc(100vw - 19rem), calc(100vh - 4.25rem), 860px);
+    height: min(calc(100vw - 19rem), calc(100vh - 4.25rem), 860px);
+  }
+}

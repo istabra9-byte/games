@@ -21,14 +21,14 @@ export const TurnClock: React.FC<TurnClockProps> = ({
   const isUrgent = remainingSec <= 10;
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-md border transition-all duration-300 ${
+    <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full backdrop-blur-md border transition-all duration-300 ${
       isUrgent 
         ? 'bg-red-950/80 border-red-500/50 text-red-200 animate-pulse' 
         : 'bg-[#1b152b]/90 border-purple-500/30 text-purple-200'
     }`}>
       {/* Radial Ring */}
-      <div className="relative w-8 h-8 flex items-center justify-center">
-        <svg className="w-8 h-8 -rotate-90" viewBox="0 0 44 44">
+      <div className="relative w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center">
+        <svg className="w-6 h-6 sm:w-8 sm:h-8 -rotate-90" viewBox="0 0 44 44">
           <circle
             cx="22"
             cy="22"
@@ -51,21 +51,21 @@ export const TurnClock: React.FC<TurnClockProps> = ({
             className="transition-all duration-500"
           />
         </svg>
-        <Clock className={`w-3.5 h-3.5 absolute ${isUrgent ? 'text-red-400' : 'text-purple-400'}`} />
+        <Clock className={`w-3 h-3 sm:w-3.5 sm:h-3.5 absolute ${isUrgent ? 'text-red-400' : 'text-purple-400'}`} />
       </div>
 
       <div className="flex flex-col">
-        <span className="text-xs font-mono font-bold leading-none">
+        <span className="text-[10px] sm:text-xs font-mono font-bold leading-none">
           {remainingSec}s
         </span>
-        <span className="text-[10px] text-gray-400 font-medium">Turn limit</span>
+        <span className="text-[8px] sm:text-[10px] text-gray-400 font-medium">Turn limit</span>
       </div>
 
       {isMyTurn && onRequestTime && (
         <button
           onClick={onRequestTime}
           title="Ask for +15s extra time"
-          className="ml-1 p-1 bg-purple-600/40 hover:bg-purple-600/70 border border-purple-500/40 rounded-full transition-colors flex items-center gap-0.5 text-[10px] font-bold text-white px-2"
+          className="ml-0.5 sm:ml-1 p-0.5 sm:p-1 bg-purple-600/40 hover:bg-purple-600/70 border border-purple-500/40 rounded-full transition-colors flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-white px-1.5 sm:px-2 cursor-pointer"
         >
           <Plus className="w-2.5 h-2.5" />
           <span>15s</span>

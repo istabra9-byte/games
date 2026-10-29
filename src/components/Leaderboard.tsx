@@ -1,18 +1,20 @@
 import React from 'react';
 import { GameRoom, Player } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot } from 'lucide-react';
+import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot, X } from 'lucide-react';
 
 interface LeaderboardProps {
   room: GameRoom;
   currentPlayerId: string;
   onInitiateTrade: (targetPlayerId: string) => void;
+  onClose?: () => void;
 }
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({
   room,
   currentPlayerId,
-  onInitiateTrade
+  onInitiateTrade,
+  onClose
 }) => {
   const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
 
@@ -32,9 +34,20 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             Players & Standings
           </h3>
         </div>
-        <span className="text-[11px] text-gray-400 font-mono">
-          {Object.keys(room.players).length} Players
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-gray-400 font-mono">
+            {Object.keys(room.players).length} Players
+          </span>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              title="Close Standings"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Players List */}

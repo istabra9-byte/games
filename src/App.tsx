@@ -83,6 +83,7 @@ export const App: React.FC = () => {
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [isPlayersOpen, setIsPlayersOpen] = useState<boolean>(false);
   const [droppedMessages, setDroppedMessages] = useState<ChatMessage[]>([]);
   const lastMessageCountRef = useRef<number>(0);
 
@@ -558,59 +559,36 @@ export const App: React.FC = () => {
   return (
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col overflow-hidden text-white font-sans select-none">
       {/* Top Header Navigation */}
-      <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-2 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
+        {/* Left: Brand & Room Info */}
+        <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
           <button
             onClick={() => setRoomId('')}
-            className="text-2xl sm:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400 hover:opacity-80 transition-opacity cursor-pointer"
+            className="text-xl sm:text-2xl md:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-pink-400 hover:opacity-80 transition-opacity cursor-pointer flex-shrink-0"
           >
             RICHUP
           </button>
-          <span className="text-[11px] text-purple-300 font-mono bg-[#21163b] px-2 py-0.5 rounded-md border border-purple-800/60">
-            Room: {room.id}
+          <span className="text-[10px] sm:text-[11px] text-purple-300 font-mono bg-[#21163b] px-1.5 sm:px-2 py-0.5 rounded-md border border-purple-800/60 truncate">
+            {room.id}
           </span>
 
           {!isCurrentPlayerInGame && (
-            <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold">
-              Spectator Mode
+            <span className="hidden sm:inline px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold whitespace-nowrap">
+              Spectator
             </span>
           )}
         </div>
 
-        {/* Mobile Navigation Pills */}
-        <div className="flex items-center gap-1.5 lg:hidden">
-          <button
-            onClick={() => setIsChatOpen(!isChatOpen)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-colors ${
-              isChatOpen
-                ? 'bg-[#6647e0] text-white border-purple-400'
-                : 'bg-[#21163b] text-purple-200 border-purple-800/60'
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Chat</span>
-          </button>
-
-          <button
-            onClick={() => setMobileTab(mobileTab === 'players' ? 'board' : 'players')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 border transition-colors ${
-              mobileTab === 'players'
-                ? 'bg-[#6647e0] text-white border-purple-400'
-                : 'bg-[#21163b] text-purple-200 border-purple-800/60'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Players</span>
-          </button>
-        </div>
-
-        {/* Header Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right Actions: Responsive for Desktop & Mobile/Tablet */}
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Chat toggle button */}
           <button
-            onClick={() => setIsChatOpen(!isChatOpen)}
+            onClick={() => {
+              setIsChatOpen(!isChatOpen);
+              if (!isChatOpen) setIsPlayersOpen(false);
+            }}
             title="Chat (Press T)"
-            className={`px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2 sm:px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer relative ${
               isChatOpen 
                 ? 'bg-purple-600 text-white border-purple-400 shadow-md' 
                 : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200 hover:text-white'
@@ -618,23 +596,44 @@ export const App: React.FC = () => {
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Chat</span>
-            <kbd className="hidden sm:inline px-1 bg-black/40 rounded text-[9px] font-mono text-purple-300">T</kbd>
+            <kbd className="hidden lg:inline px-1 bg-black/40 rounded text-[9px] font-mono text-purple-300">T</kbd>
+            {droppedMessages.length > 0 && !isChatOpen && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink-500 rounded-full animate-ping" />
+            )}
+          </button>
+
+          {/* Standings Button (Mobile/Tablet drawer toggle) */}
+          <button
+            onClick={() => {
+              setIsPlayersOpen(!isPlayersOpen);
+              if (!isPlayersOpen) setIsChatOpen(false);
+            }}
+            title="Players Standings"
+            className={`lg:hidden px-2 sm:px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+              isPlayersOpen
+                ? 'bg-purple-600 text-white border-purple-400 shadow-md'
+                : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200 hover:text-white'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Players</span>
           </button>
 
           {/* Propose Trade button */}
           <button
             onClick={() => setShowTradeModal(true)}
             title="Propose Trade with Player"
-            className="px-2.5 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+            className="p-1 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
             <span className="hidden sm:inline">Trade</span>
+            <span className="sm:hidden text-xs">🤝</span>
           </button>
 
           {/* Restart match button */}
           <button
             onClick={handleRestartRoom}
             title="Restart Match / New Game"
-            className="px-2.5 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+            className="p-1 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Restart</span>
@@ -646,24 +645,25 @@ export const App: React.FC = () => {
             title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
             className="p-1.5 rounded-lg bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 transition-colors cursor-pointer"
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4" />}
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
 
           {/* Leave game to home */}
           <button
             onClick={() => setRoomId('')}
-            className="flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
+            title="Exit to Main Menu"
+            className="p-1 sm:px-2 sm:py-1 flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Exit</span>
           </button>
         </div>
       </header>
 
-      {/* Main Screen: Center Board & Right Leaderboard */}
-      <div className="flex-1 w-full max-w-[1550px] mx-auto p-2 sm:p-3 flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-3 overflow-hidden relative">
+      {/* Main Screen Area: Guaranteed Centered Square Board & Responsive Sidebar */}
+      <div className="flex-1 w-full h-[calc(100vh-3rem)] mx-auto p-1 sm:p-2 md:p-3 flex items-center justify-center gap-3 overflow-hidden relative">
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center p-1 sm:p-2 overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
           <Board
             room={room}
             onTileClick={(tile) => setSelectedTile(tile)}
@@ -683,12 +683,8 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Right Pane: Players Leaderboard */}
-        <div className={`w-full lg:w-64 h-full flex-col flex-shrink-0 ${
-          mobileTab === 'players'
-            ? 'fixed inset-0 top-12 z-40 bg-[#130f1d] p-3 flex'
-            : 'hidden lg:flex'
-        }`}>
+        {/* Desktop Sidebar: Players Leaderboard */}
+        <div className="hidden lg:flex w-64 h-full flex-col flex-shrink-0">
           <Leaderboard
             room={room}
             currentPlayerId={currentPlayer.id}
@@ -697,17 +693,41 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Slide-In Floating Chat Drawer (Opens on 'T' or Chat button) */}
+      {/* Slide-In Chat Drawer (With Backdrop on Mobile/Tablet) */}
       {isChatOpen && (
-        <div className="fixed top-12 bottom-3 left-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200">
-          <ChatAndLogs
-            chat={room.chat || []}
-            logs={room.logs || []}
-            currentPlayer={currentPlayer}
-            onSendMessage={handleSendMessage}
-            onClose={() => setIsChatOpen(false)}
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+            onClick={() => setIsChatOpen(false)}
           />
-        </div>
+          <div className="fixed top-12 bottom-3 left-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-left duration-200 shadow-2xl">
+            <ChatAndLogs
+              chat={room.chat || []}
+              logs={room.logs || []}
+              currentPlayer={currentPlayer}
+              onSendMessage={handleSendMessage}
+              onClose={() => setIsChatOpen(false)}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Slide-In Mobile/Tablet Standings Drawer */}
+      {isPlayersOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 lg:hidden"
+            onClick={() => setIsPlayersOpen(false)}
+          />
+          <div className="fixed top-12 bottom-3 right-3 z-50 w-[320px] sm:w-[350px] max-w-[calc(100vw-1.5rem)] flex flex-col animate-in slide-in-from-right duration-200 shadow-2xl lg:hidden">
+            <Leaderboard
+              room={room}
+              currentPlayerId={currentPlayer.id}
+              onInitiateTrade={(targetId) => { setSelectedTradePartnerId(targetId); setShowTradeModal(true); }}
+              onClose={() => setIsPlayersOpen(false)}
+            />
+          </div>
+        </>
       )}
 
       {/* Floating Incoming Messages & Mini 'T' Pill when Chat is Closed */}
@@ -743,13 +763,13 @@ export const App: React.FC = () => {
             </div>
           ))}
 
-          {/* Mini 'T' Chat Pill */}
+          {/* Mini 'T' Chat Pill (Desktop only) */}
           <button
             onClick={() => {
               setIsChatOpen(true);
               setDroppedMessages([]);
             }}
-            className="pointer-events-auto self-start px-3 py-1.5 bg-[#171126]/90 hover:bg-[#251b3d] border border-purple-800/60 rounded-xl text-xs font-bold text-purple-200 hover:text-white flex items-center gap-2 shadow-lg backdrop-blur-sm transition-all cursor-pointer group active:scale-95"
+            className="pointer-events-auto self-start hidden md:flex px-3 py-1.5 bg-[#171126]/90 hover:bg-[#251b3d] border border-purple-800/60 rounded-xl text-xs font-bold text-purple-200 hover:text-white items-center gap-2 shadow-lg backdrop-blur-sm transition-all cursor-pointer group active:scale-95"
           >
             <MessageSquare className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300" />
             <span>Press <kbd className="px-1.5 py-0.5 bg-purple-950 border border-purple-700/60 rounded font-mono text-[10px] text-purple-300">T</kbd> to chat</span>

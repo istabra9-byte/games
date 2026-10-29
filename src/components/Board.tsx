@@ -80,17 +80,10 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
   return (
     <div
-      className="relative aspect-square max-h-full max-w-full bg-[#120d1f] rounded-2xl p-1 sm:p-2 shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-[#2b1f45] select-none flex flex-col justify-center"
-      style={{
-        height: '100%',
-        width: 'auto',
-        maxHeight: 'min(100%, calc(100vh - 4.25rem), 880px)',
-        maxWidth: 'min(100%, calc(100vh - 4.25rem), 880px)',
-        aspectRatio: '1 / 1'
-      }}
+      className="responsive-board-wrapper relative bg-[#120d1f] rounded-xl sm:rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_15px_45px_rgba(0,0,0,0.85)] border border-[#2b1f45] select-none flex flex-col justify-center m-auto"
     >
       <div
-        className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#0c0816] rounded-xl p-0.5 sm:p-1 relative"
+        className="w-full h-full gap-[1px] sm:gap-[2px] md:gap-[3px] bg-[#0c0816] rounded-lg sm:rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
           gridTemplateColumns: '1.45fr repeat(9, 1fr) 1.45fr',
@@ -109,13 +102,13 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               <div
                 key={tile.index}
                 onClick={() => onTileClick && onTileClick(tile)}
-                className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-gradient-to-br from-[#241c38] to-[#1c152d] border border-purple-800/40 p-1 shadow-inner hover:border-purple-500/70 transition-all"
+                className="relative rounded sm:rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-gradient-to-br from-[#241c38] to-[#1c152d] border border-purple-800/40 p-0.5 sm:p-1 shadow-inner hover:border-purple-500/70 transition-all"
                 style={{ gridRowStart: row, gridColumnStart: col }}
               >
                 {/* 0: START */}
                 {cornerType === 'start' && (
-                  <div className="w-full h-full flex flex-col items-center justify-start p-1.5 text-center">
-                    <span className="text-[15px] sm:text-lg font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_10px_rgba(168,255,62,0.7)]">
+                  <div className="w-full h-full flex flex-col items-center justify-start p-0.5 sm:p-1 text-center">
+                    <span className="text-[10px] sm:text-[14px] md:text-base font-black tracking-wider text-[#a8ff3e] font-heading drop-shadow-[0_2px_8px_rgba(168,255,62,0.7)]">
                       START
                     </span>
                   </div>
@@ -123,28 +116,28 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
                 {/* 10: PASSING BY / IN PRISON */}
                 {cornerType === 'jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center relative">
-                    <span className="text-[8px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-tight">
+                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 sm:p-1 text-center relative">
+                    <span className="text-[5.5px] sm:text-[7.5px] md:text-[8.5px] font-bold text-gray-400 uppercase tracking-tight">
                       Passing by
                     </span>
-                    <div className="w-4/5 h-3/5 bg-[#252a38] rounded-md border border-orange-500/40 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
+                    <div className="w-4/5 h-3/5 bg-[#252a38] rounded border border-orange-500/40 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
                       {/* Prison Bars Overlay */}
-                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#94a3b8_4px,#94a3b8_6px)]" />
-                      <span className="text-[8px] sm:text-[9px] font-black text-orange-300 uppercase z-10">
+                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#94a3b8_3px,#94a3b8_5px)]" />
+                      <span className="text-[5.5px] sm:text-[7.5px] md:text-[8.5px] font-black text-orange-300 uppercase z-10 leading-none">
                         In Prison
                       </span>
                     </div>
-                    <div className="h-1" />
+                    <div className="h-0.5" />
                   </div>
                 )}
 
                 {/* 20: VACATION */}
                 {cornerType === 'vacation' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
-                    <div className="text-2xl sm:text-3xl drop-shadow">
+                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 sm:p-1 text-center">
+                    <div className="text-sm sm:text-2xl md:text-3xl drop-shadow">
                       🏝️
                     </div>
-                    <span className="text-[10px] sm:text-xs font-black text-emerald-300 uppercase tracking-wider font-heading drop-shadow">
+                    <span className="text-[7px] sm:text-[9.5px] md:text-xs font-black text-emerald-300 uppercase tracking-wider font-heading drop-shadow">
                       Vacation
                     </span>
                   </div>
@@ -152,9 +145,9 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
                 {/* 30: GO TO PRISON */}
                 {cornerType === 'go_to_jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-1 text-center">
-                    <Skull className="w-6 h-6 sm:w-7 sm:h-7 text-gray-200 drop-shadow mt-1" />
-                    <span className="text-[9px] sm:text-[10.5px] font-black text-gray-200 uppercase font-heading leading-tight tracking-wider">
+                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 sm:p-1 text-center">
+                    <Skull className="w-3.5 h-3.5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-200 drop-shadow mt-0.5" />
+                    <span className="text-[6.5px] sm:text-[8.5px] md:text-[10px] font-black text-gray-200 uppercase font-heading leading-tight tracking-wider">
                       Go to prison
                     </span>
                   </div>
@@ -162,11 +155,11 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
 
                 {/* Player Tokens On Corner */}
                 {playersHere.length > 0 && (
-                  <div className="absolute bottom-1 inset-x-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none">
+                  <div className="absolute bottom-0.5 inset-x-0 flex items-center justify-center gap-0.5 flex-wrap p-0.5 z-20 pointer-events-none">
                     {playersHere.map((p) => (
                       <div
                         key={p.id}
-                        className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[11px] font-black border-2 border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+                        className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[7px] sm:text-[9px] md:text-[11px] font-black border border-white/90 shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
                         style={{ backgroundColor: p.color }}
                         title={`${p.name} ($${p.cash})`}
                       >
@@ -202,13 +195,13 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 isHorizontal ? (side === 'left' ? 'pl-0.5 sm:pl-1' : 'pr-0.5 sm:pr-1') : (side === 'top' ? 'pt-0.5 sm:pt-1' : 'pb-0.5 sm:pb-1')
               }`}>
                 {tile.price > 0 ? (
-                  <div className={`px-1 sm:px-1.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[7px] sm:text-[8px] md:text-[9px] font-mono font-bold text-white shadow-sm leading-none flex items-center justify-center ${
+                  <div className={`px-0.5 sm:px-1.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[6px] sm:text-[7.5px] md:text-[9px] font-mono font-bold text-white shadow-sm leading-none flex items-center justify-center ${
                     side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
                   }`}>
                     {tile.price}$
                   </div>
                 ) : tile.type === 'tax' ? (
-                  <div className={`px-1 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-[7px] sm:text-[8px] font-mono font-bold text-amber-300 shadow-sm leading-none ${
+                  <div className={`px-0.5 sm:px-1 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-[5.5px] sm:text-[7.5px] font-mono font-bold text-amber-300 shadow-sm leading-none ${
                     side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
                   }`}>
                     {tile.name.includes('Earnings') ? '%10' : '$75'}
@@ -217,41 +210,41 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
               </div>
 
               {/* Middle Section: City Name & Special Center Graphics */}
-              <div className="flex-1 flex flex-col justify-center items-center text-center z-10 relative overflow-visible min-w-0">
+              <div className="flex-1 flex flex-col justify-center items-center text-center z-10 relative overflow-visible min-w-0 px-0.5">
                 {/* Special Icons */}
                 {tile.type === 'chest' && (
-                  <div className={`text-xl sm:text-2xl drop-shadow mb-0.5 ${
+                  <div className={`text-xs sm:text-base md:text-xl drop-shadow mb-0.5 ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`}>
                     📦
                   </div>
                 )}
                 {tile.type === 'chance' && (
-                  <div className={`text-xl sm:text-2xl drop-shadow text-pink-400 font-black mb-0.5 ${
+                  <div className={`text-xs sm:text-base md:text-xl drop-shadow text-pink-400 font-black mb-0.5 ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`}>
                     ❓
                   </div>
                 )}
                 {tile.type === 'railroad' && (
-                  <Plane className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-300 drop-shadow mb-0.5 ${
+                  <Plane className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-300 drop-shadow mb-0.5 ${
                     isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                   }`} />
                 )}
                 {tile.type === 'utility' && (
                   tile.name.includes('Water') ? (
-                    <div className="text-lg sm:text-xl drop-shadow mb-0.5">🚰</div>
+                    <div className="text-xs sm:text-base md:text-xl drop-shadow mb-0.5">🚰</div>
                   ) : (
-                    <Zap className={`w-4 h-4 sm:w-5 sm:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5 ${
+                    <Zap className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-amber-400 drop-shadow fill-amber-400 mb-0.5 ${
                       isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
                     }`} />
                   )
                 )}
                 {tile.type === 'tax' && (
                   tile.name.includes('Earnings') ? (
-                    <Percent className="w-3.5 h-3.5 text-amber-300 mb-0.5" />
+                    <Percent className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300 mb-0.5" />
                   ) : (
-                    <Gem className="w-3.5 h-3.5 text-sky-300 mb-0.5" />
+                    <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-300 mb-0.5" />
                   )
                 )}
 
@@ -260,15 +253,15 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                   className={`font-black text-white drop-shadow select-none text-center ${
                     isHorizontal
                       ? 'tracking-tight leading-none'
-                      : 'text-[7.5px] sm:text-[8.5px] md:text-[9.5px] leading-tight'
+                      : 'text-[5.5px] xs:text-[6.5px] sm:text-[8px] md:text-[9.5px] leading-tight'
                   }`}
                   style={
                     isHorizontal
                       ? {
                           writingMode: 'vertical-rl',
                           transform: side === 'left' ? 'rotate(180deg)' : undefined,
-                          fontSize: tile.name.length > 11 ? '8px' : '9px',
-                          maxHeight: '48px',
+                          fontSize: tile.name.length > 11 ? '6.5px' : '7.5px',
+                          maxHeight: '44px',
                           display: 'inline-block'
                         }
                       : undefined
@@ -283,7 +276,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 isHorizontal ? (side === 'left' ? 'pr-0.5 sm:pr-1' : 'pl-0.5 sm:pl-1') : (side === 'top' ? 'pb-0.5 sm:pb-1' : 'pt-0.5 sm:pt-1')
               }`}>
                 {tile.countryCode ? (
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full overflow-hidden border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center bg-black/40">
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full overflow-hidden border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center bg-black/40">
                     <img
                       src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
                       alt={tile.name}
@@ -292,7 +285,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                     />
                   </div>
                 ) : tile.flag && tile.type === 'property' ? (
-                  <span className="text-xs sm:text-sm drop-shadow">{tile.flag}</span>
+                  <span className="text-[9px] sm:text-xs md:text-sm drop-shadow">{tile.flag}</span>
                 ) : null}
               </div>
 
@@ -348,7 +341,7 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                   {playersHere.map((p) => (
                     <div
                       key={p.id}
-                      className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-[9px] sm:text-[11px] font-black border-2 border-white/90 shadow-[0_2px_8px_rgba(0,0,0,0.8)] transform hover:scale-125 transition-transform"
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[7.5px] sm:text-[9px] md:text-[11px] font-black border border-white/90 shadow-[0_2px_6px_rgba(0,0,0,0.8)] transform hover:scale-125 transition-transform"
                       style={{ backgroundColor: p.color }}
                       title={`${p.name} ($${p.cash})`}
                     >

@@ -48,17 +48,17 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   });
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-2 py-1 select-none">
+    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-1 sm:px-2 py-0.5 sm:py-1 select-none">
       {/* Brand Header & Vacation Pot */}
       <div className="flex flex-col items-center">
-        <h1 className="text-2xl sm:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 leading-none">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 leading-none">
           RICHUP
         </h1>
 
         {room.settings.vacationCash && (
-          <div className="mt-1 px-2.5 py-0.5 bg-emerald-950/70 border border-emerald-500/40 rounded-full flex items-center gap-1.5 shadow-sm">
-            <Palmtree className="w-3 h-3 text-emerald-400" />
-            <span className="text-[10px] sm:text-xs text-emerald-200 font-mono font-bold">
+          <div className="mt-0.5 sm:mt-1 px-2 py-0.5 bg-emerald-950/70 border border-emerald-500/40 rounded-full flex items-center gap-1 shadow-sm">
+            <Palmtree className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
+            <span className="text-[9px] sm:text-xs text-emerald-200 font-mono font-bold">
               Pot: ${room.pot}
             </span>
           </div>
@@ -66,19 +66,19 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
       </div>
 
       {/* Active Turn Header + Turn Clock */}
-      <div className="flex items-center justify-between w-full px-2 py-1 bg-[#1a1329]/80 rounded-xl border border-purple-900/40 shadow-sm mt-1">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between w-full px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#1a1329]/80 rounded-lg sm:rounded-xl border border-purple-900/40 shadow-sm mt-0.5 sm:mt-1">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm text-white border-2 border-white/70 shadow"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-sm text-white border sm:border-2 border-white/70 shadow flex-shrink-0"
             style={{ backgroundColor: turnPlayer.color }}
           >
             {turnPlayer.avatar || turnPlayer.name[0]}
           </div>
           <div className="flex flex-col">
-            <span className="text-xs sm:text-sm font-bold text-white leading-tight">
+            <span className="text-[11px] sm:text-sm font-bold text-white leading-tight truncate max-w-[90px] sm:max-w-[140px]">
               {turnPlayer.name} {isMyTurn ? '(You)' : ''}
             </span>
-            <span className="text-[10px] text-emerald-400 font-mono font-bold">
+            <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono font-bold">
               ${turnPlayer.cash} Cash
             </span>
           </div>
@@ -93,19 +93,19 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
       </div>
 
       {/* Center Dynamic Area (Dice / Actions / Deed Cards) */}
-      <div className="my-auto w-full flex flex-col items-center justify-center py-2">
+      <div className="my-auto w-full flex flex-col items-center justify-center py-1 sm:py-2">
         {/* Phase 1: ROLL DICE */}
         {room.turnPhase === 'roll' && (
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-2 sm:gap-3">
             <DiceView values={room.dice} isRolling={false} />
 
             {turnPlayer.inJail && isMyTurn && (
               <button
                 onClick={onPayBail}
                 disabled={turnPlayer.cash < 50}
-                className="px-3 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow border border-amber-400/40 cursor-pointer"
+                className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
               >
-                <ShieldAlert className="w-3.5 h-3.5" />
+                <ShieldAlert className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>Pay $50 Bail</span>
               </button>
             )}
@@ -113,13 +113,13 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             {isMyTurn ? (
               <button
                 onClick={onRoll}
-                className="px-6 py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-500 hover:to-red-500 active:scale-95 text-white font-black text-sm tracking-wider uppercase rounded-xl shadow-[0_4px_15px_rgba(236,72,153,0.4)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/40"
+                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 hover:from-purple-500 hover:to-red-500 active:scale-95 text-white font-black text-xs sm:text-sm tracking-wider uppercase rounded-xl shadow-[0_4px_15px_rgba(236,72,153,0.4)] flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer border border-pink-400/40"
               >
-                <Dices className="w-4 h-4" />
+                <Dices className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>ROLL DICE</span>
               </button>
             ) : (
-              <div className="flex items-center gap-1 text-xs text-purple-300/80 font-medium italic animate-pulse">
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-purple-300/80 font-medium italic animate-pulse text-center">
                 <span>Waiting for {turnPlayer.name} to roll...</span>
               </div>
             )}
