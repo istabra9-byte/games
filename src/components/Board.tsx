@@ -229,92 +229,29 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                     {tile.price}$
                   </div>
                 ) : tile.type === 'tax' ? (
-                  <div className={`px-0.5 sm:px-1 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-[5.5px] sm:text-[7.5px] font-mono font-bold text-amber-300 shadow-sm leading-none ${
+                  <div className={`px-0.5 sm:px-1.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-[6px] sm:text-[7.5px] font-mono font-bold text-amber-300 shadow-sm leading-none ${
                     side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
                   }`}>
-                    {tile.name.includes('Earnings') ? '%10' : '$75'}
+                    {tile.name.includes('Earnings') ? '%10' : '100$'}
                   </div>
                 ) : null}
               </div>
 
-              {/* Middle Section: City Name & Special Center Graphics */}
-              <div className={`flex-1 flex justify-center items-center text-center z-10 relative overflow-visible min-w-0 px-0.5 ${
-                isHorizontal
-                  ? side === 'left'
-                    ? 'flex-row gap-0.5 sm:gap-1'
-                    : 'flex-row-reverse gap-0.5 sm:gap-1'
-                  : 'flex-col gap-0.5'
-              }`}>
-                {/* Special Icons */}
-                {tile.type === 'chest' && (
-                  <div className={`drop-shadow flex items-center justify-center ${
-                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                  }`}>
-                    <span className="text-xs sm:text-base md:text-lg">🎁</span>
-                  </div>
-                )}
-                {tile.type === 'chance' && (
-                  <div className={`drop-shadow font-black text-pink-400 flex items-center justify-center ${
-                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                  }`}>
-                    <span className="text-xs sm:text-base md:text-lg text-[#ff4b8b] drop-shadow-[0_0_8px_rgba(255,75,139,0.7)] font-black">?</span>
-                  </div>
-                )}
-                {tile.type === 'railroad' && (
-                  <Plane className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-sky-200 drop-shadow ${
-                    isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                  }`} />
-                )}
-                {tile.type === 'utility' && (
-                  tile.name.toUpperCase().includes('STEG') ? (
-                    <img
-                      src={stegLogo}
-                      alt="STEG"
-                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 object-contain drop-shadow ${
-                        isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                      }`}
-                    />
-                  ) : tile.name.toUpperCase().includes('SONEDE') ? (
-                    <img
-                      src={sonedeLogo}
-                      alt="SONEDE"
-                      className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 object-contain drop-shadow ${
-                        isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                      }`}
-                    />
-                  ) : tile.name.includes('Water') ? (
-                    <Droplets className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-cyan-400 drop-shadow ${
-                      isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                    }`} />
-                  ) : (
-                    <Zap className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-amber-400 drop-shadow fill-amber-400 ${
-                      isHorizontal ? (side === 'left' ? '-rotate-90' : 'rotate-90') : ''
-                    }`} />
-                  )
-                )}
-                {tile.type === 'tax' && (
-                  tile.name.includes('Earnings') ? (
-                    <Percent className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-amber-300" />
-                  ) : (
-                    <Gem className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-sky-300" />
-                  )
-                )}
-
-                {/* Tile Name */}
+              {/* Middle Section: Clean Name */}
+              <div className="flex-1 flex justify-center items-center text-center z-10 relative overflow-hidden min-w-0 px-0.5">
                 <span
-                  className={`font-black text-white drop-shadow select-none text-center ${
+                  className={`font-black text-white drop-shadow select-none text-center leading-tight ${
                     isHorizontal
-                      ? 'tracking-tight leading-none'
-                      : 'text-[5.5px] xs:text-[6.5px] sm:text-[8px] md:text-[9.5px] leading-tight'
+                      ? side === 'left'
+                        ? 'rotate-90 whitespace-nowrap'
+                        : '-rotate-90 whitespace-nowrap'
+                      : 'text-[6px] xs:text-[7px] sm:text-[8px] md:text-[9.5px] max-w-full px-0.5'
                   }`}
                   style={
                     isHorizontal
                       ? {
-                          writingMode: 'vertical-rl',
-                          transform: side === 'left' ? 'rotate(180deg)' : undefined,
-                          fontSize: tile.name.length > 12 ? '6.5px' : tile.name.length > 9 ? '7.5px' : '8.5px',
-                          display: 'inline-block',
-                          whiteSpace: 'nowrap'
+                          fontSize: tile.name.length > 11 ? '6.5px' : tile.name.length > 8 ? '7.5px' : '9px',
+                          letterSpacing: '-0.2px'
                         }
                       : undefined
                   }
@@ -323,11 +260,11 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                 </span>
               </div>
 
-              {/* Inner Edge: Round Circular Country Flag */}
+              {/* Inner Edge: Round Circular Country Flag or Special Icon Badge */}
               <div className={`flex items-center justify-center flex-shrink-0 p-0.5 z-10 ${
                 isHorizontal ? (side === 'left' ? 'pr-0.5 sm:pr-1' : 'pl-0.5 sm:pl-1') : (side === 'top' ? 'pb-0.5 sm:pb-1' : 'pt-0.5 sm:pt-1')
               }`}>
-                {tile.countryCode ? (
+                {tile.countryCode && tile.type === 'property' ? (
                   <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full overflow-hidden border border-white/70 shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center justify-center bg-black/40">
                     <img
                       src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
@@ -343,7 +280,43 @@ export const Board: React.FC<BoardProps> = ({ room, onTileClick, centerContent }
                       loading="lazy"
                     />
                   </div>
-                ) : tile.flag && tile.type === 'property' ? (
+                ) : tile.type === 'railroad' ? (
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full bg-slate-800 border border-sky-400/50 shadow flex items-center justify-center">
+                    <Plane className={`w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3.5 md:h-3.5 text-sky-200 drop-shadow ${
+                      side === 'left' ? 'rotate-90' : side === 'right' ? '-rotate-90' : ''
+                    }`} />
+                  </div>
+                ) : tile.type === 'utility' ? (
+                  tile.name.toUpperCase().includes('STEG') ? (
+                    <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5.5 md:h-5.5 rounded-full bg-slate-900 border border-blue-400/60 shadow p-0.5 flex items-center justify-center">
+                      <img src={stegLogo} alt="STEG" className="w-full h-full object-contain" />
+                    </div>
+                  ) : tile.name.toUpperCase().includes('SONEDE') ? (
+                    <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5.5 md:h-5.5 rounded-full bg-slate-900 border border-cyan-400/60 shadow p-0.5 flex items-center justify-center">
+                      <img src={sonedeLogo} alt="SONEDE" className="w-full h-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full bg-amber-950/60 border border-amber-400/50 shadow flex items-center justify-center">
+                      <Zap className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-amber-300" />
+                    </div>
+                  )
+                ) : tile.type === 'chest' ? (
+                  <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5.5 md:h-5.5 rounded-full bg-amber-950/70 border border-amber-500/70 shadow flex items-center justify-center text-[8px] sm:text-[10px] md:text-xs">
+                    🎁
+                  </div>
+                ) : tile.type === 'chance' ? (
+                  <div className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-5.5 md:h-5.5 rounded-full bg-pink-950/70 border border-pink-500/70 shadow flex items-center justify-center text-[9px] sm:text-[11px] md:text-sm font-black text-pink-400 drop-shadow-[0_0_6px_rgba(244,114,182,0.8)]">
+                    ?
+                  </div>
+                ) : tile.type === 'tax' ? (
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-full bg-amber-950/70 border border-amber-400/60 shadow flex items-center justify-center">
+                    {tile.name.includes('Earnings') ? (
+                      <Percent className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-amber-300" />
+                    ) : (
+                      <Gem className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 text-sky-300" />
+                    )}
+                  </div>
+                ) : tile.flag ? (
                   <span className="text-[9px] sm:text-xs md:text-sm drop-shadow">{tile.flag}</span>
                 ) : null}
               </div>

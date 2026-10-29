@@ -221,11 +221,20 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       newRoom.turnPhase = isDoubles ? 'roll' : 'end';
     }
   } else if (tile.type === 'tax') {
-    player.cash -= tile.price;
-    newRoom.pot += tile.price;
+    let taxAmount = tile.price;
+    if (tile.name.toLowerCase().includes('earnings') || tile.index === 4) {
+      // Earnings Tax: takes 10% of player cash
+      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
+    } else if (tile.name.toLowerCase().includes('premium') || tile.index === 38) {
+      // Premium Tax: takes $100
+      taxAmount = 100;
+    }
+
+    player.cash -= taxAmount;
+    newRoom.pot += taxAmount;
     newRoom.logs.push({
       id: `tax_${Date.now()}`,
-      text: `${player.name} paid $${tile.price} in ${tile.name} (added to Vacation Pot)!`,
+      text: `${player.name} paid $${taxAmount} in ${tile.name}${tile.name.toLowerCase().includes('earnings') ? ' (10% of cash)' : ''} (added to Vacation Pot)!`,
       timestamp: Date.now(),
       type: 'rent'
     });
