@@ -272,9 +272,9 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   if (!turnPlayer) return null;
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-2 py-1.5 select-none relative">
+    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm sm:max-w-md px-2 pt-1 pb-0.5 select-none relative">
       {/* 0. Top Action Notification Banner (Elevated Higher to Top of Center Stage) */}
-      <div className="w-full flex items-center justify-center min-h-[38px] pt-1 mb-1">
+      <div className="w-full flex items-center justify-center min-h-[36px] flex-shrink-0 pt-0.5 mb-0.5">
         {latestActionLog ? (
           <div
             key={latestActionLog.id}
@@ -292,18 +292,18 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             </span>
           </div>
         ) : (
-          <div className="h-7" />
+          <div className="h-6" />
         )}
       </div>
 
       {/* 1. Large 3D Dice with Realistic Shake & Tumble + Turn Action Controls */}
-      <div className="flex flex-col items-center justify-center my-auto gap-2">
+      <div className="flex flex-col items-center justify-center my-auto gap-1.5 flex-shrink-0 py-1">
         <div className="flex flex-col items-center justify-center">
           <DiceView values={room.dice} isRolling={isRolling} />
         </div>
 
         {/* 2. Turn Status / Action Controls (Directly Under Dice) */}
-        <div className="flex flex-col items-center justify-center min-h-[48px]">
+        <div className="flex flex-col items-center justify-center min-h-[46px]">
           {isPieceMoving ? (
             <div className="flex items-center gap-2 px-3.5 py-1.5 bg-black/30 rounded-full border border-purple-500/30">
               <span
@@ -416,37 +416,37 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             </>
           )}
         </div>
+      </div>
 
-        {/* 3. Activity Feed Logs (Placed EXACTLY Under the Action Button with No Header) */}
-        <div
-          ref={logsContainerRef}
-          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {meaningfulLogs.slice(-15).map((log) => {
-            const isBuy = log.type === 'buy';
-            const isRent = log.type === 'rent';
-            const isJail = log.type === 'jail';
+      {/* 3. Activity Feed Logs (Appears from under the action button down into the border of the bottom tiles) */}
+      <div
+        ref={logsContainerRef}
+        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[85px] max-h-[175px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0.5 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {meaningfulLogs.slice(-20).map((log) => {
+          const isBuy = log.type === 'buy';
+          const isRent = log.type === 'rent';
+          const isJail = log.type === 'jail';
 
-            return (
-              <div
-                key={log.id}
-                className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded transition-colors ${
-                  isBuy ? 'text-emerald-300 bg-emerald-950/25' :
-                  isRent ? 'text-amber-300 bg-amber-950/25' :
-                  isJail ? 'text-red-300 bg-red-950/25' : 'text-gray-300'
-                }`}
-              >
-                <span className="flex-shrink-0 opacity-70 text-[10px]">
-                  {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
-                </span>
-                <span className="break-words line-clamp-2 inline-flex items-center flex-wrap">
-                  {renderNotificationText(log.text, room.players)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+          return (
+            <div
+              key={log.id}
+              className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded transition-colors ${
+                isBuy ? 'text-emerald-300 bg-emerald-950/25' :
+                isRent ? 'text-amber-300 bg-amber-950/25' :
+                isJail ? 'text-red-300 bg-red-950/25' : 'text-gray-300'
+              }`}
+            >
+              <span className="flex-shrink-0 opacity-70 text-[10px]">
+                {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
+              </span>
+              <span className="break-words line-clamp-2 inline-flex items-center flex-wrap">
+                {renderNotificationText(log.text, room.players)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

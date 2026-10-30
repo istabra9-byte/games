@@ -648,7 +648,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         })}
 
         {/* Center Board Stage */}
-        <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#130f1d] rounded-xl flex flex-col items-center justify-center p-2 relative overflow-hidden shadow-inner">
+        <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#130f1d] rounded-xl flex flex-col items-center justify-center p-1.5 sm:p-2 pb-0.5 sm:pb-1 relative overflow-hidden shadow-inner">
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
             {typeof centerContent === 'function' ? centerContent({ isPieceMoving }) : centerContent}
           </div>
