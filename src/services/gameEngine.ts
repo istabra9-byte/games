@@ -155,45 +155,33 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     }
   }
 
-  // Handle player in Vacation (similar to Jail: roll doubles or pay $150 departure fee)
+  // Handle player in Vacation (get out on first roll: free on doubles, or pay $150 departure fee, never stay trapped)
   if (player.inVacation) {
+    player.inVacation = false;
+    player.vacationTurns = 0;
+    newRoom.consecutiveDoubles = 0;
+    newRoom.isDoubles = false;
+
     if (isDoubles) {
-      player.inVacation = false;
-      player.vacationTurns = 0;
-      newRoom.consecutiveDoubles = 0;
-      newRoom.isDoubles = false;
       newRoom.logs.push({
         id: `vacation_free_${Date.now()}`,
-        text: `🎲 ${player.name} rolled doubles (${d1}-${d2}) and departed Vacation Island!`,
+        text: `🎲 ${player.name} rolled doubles (${d1}-${d2}) and departed Vacation Island for free!`,
         timestamp: Date.now(),
         type: 'system',
         playerId: player.id
       });
     } else {
-      player.vacationTurns = (player.vacationTurns || 0) + 1;
-      if (player.vacationTurns >= 3) {
-        // Force pay island fee
-        player.cash -= 150;
-        newRoom.pot += 150;
-        player.inVacation = false;
-        player.vacationTurns = 0;
-        newRoom.logs.push({
-          id: `vacation_pay_${Date.now()}`,
-          text: `🌴 ${player.name} stayed 3 turns, paid $150 island fee and departed Vacation Island.`,
-          timestamp: Date.now(),
-          type: 'system',
-          playerId: player.id
-        });
-      } else {
-        newRoom.logs.push({
-          id: `vacation_stay_${Date.now()}`,
-          text: `🌴 ${player.name} remains on Vacation Island (Turn ${player.vacationTurns}/3).`,
-          timestamp: Date.now(),
-          type: 'system',
-          playerId: player.id
-        });
-        newRoom.turnPhase = 'end';
-        return newRoom;
+      player.cash -= 150;
+      newRoom.pot += 150;
+      newRoom.logs.push({
+        id: `vacation_pay_${Date.now()}`,
+        text: `🌴 ${player.name} rolled (${d1}-${d2}), paid $150 departure fee and departed Vacation Island!`,
+        timestamp: Date.now(),
+        type: 'system',
+        playerId: player.id
+      });
+      if (player.cash < 0) {
+        resolveDebtOrBankruptcy(newRoom, player.id, null);
       }
     }
   }
