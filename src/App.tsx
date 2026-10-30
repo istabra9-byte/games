@@ -625,7 +625,7 @@ export const App: React.FC = () => {
             onClick={() => setRoomId('')}
             className="text-xl sm:text-2xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 hover:opacity-85 transition-opacity cursor-pointer flex-shrink-0"
           >
-            RICHUP.IO
+            MONOPOLY
           </button>
 
           {!isCurrentPlayerInGame && (
