@@ -368,27 +368,29 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             <>
               {/* Phase 1: ROLL DICE */}
               {room.turnPhase === 'roll' && (
-                <div className="flex flex-col items-center gap-1.5">
-                  {turnPlayer.inJail && isMyTurn && (
-                    <button
-                      onClick={onPayBail}
-                      disabled={turnPlayer.cash < 50}
-                      className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
-                    >
-                      <ShieldAlert className="w-3.5 h-3.5" />
-                      <span>Pay $50 Bail</span>
-                    </button>
-                  )}
-
+                <div className="flex items-center justify-center gap-2.5">
                   {isMyTurn ? (
-                    <button
-                      onClick={handleRollClick}
-                      disabled={isRolling}
-                      className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
-                    >
-                      <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-                      <span>Roll dice</span>
-                    </button>
+                    <>
+                      <button
+                        onClick={handleRollClick}
+                        disabled={isRolling}
+                        className="px-5 sm:px-6 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-pink-400/50 whitespace-nowrap min-w-[130px]"
+                      >
+                        <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
+                        <span>Roll dice</span>
+                      </button>
+
+                      {turnPlayer.inJail && (
+                        <button
+                          onClick={onPayBail}
+                          disabled={turnPlayer.cash < 50}
+                          className="px-5 sm:px-6 py-2.5 bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:to-orange-500 active:scale-95 disabled:opacity-40 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-amber-400/50 whitespace-nowrap min-w-[130px]"
+                        >
+                          <ShieldAlert className="w-4 h-4 text-amber-200" />
+                          <span>Pay $50 Bail</span>
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
                       <span
