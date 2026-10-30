@@ -4,6 +4,10 @@ import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Home, X, DollarSign, AlertCircle, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
+import tunisairLogo from '../assets/tunisair.svg';
+import qatarLogo from '../assets/qatarairways.svg';
+import nouvelairLogo from '../assets/nouvelair.svg';
+import emiratesLogo from '../assets/emirates.svg';
 
 interface PropertyDetailModalProps {
   tile: Tile | null;
@@ -89,13 +93,36 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
           
           <div className="flex items-center justify-center gap-2">
             {tile.name.toUpperCase().includes('STEG') ? (
-              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/40 shadow p-1 bg-black/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/60 shadow p-1 bg-white flex items-center justify-center">
                 <img src={stegLogo} alt="STEG" className="max-w-full max-h-full object-contain" />
               </div>
             ) : tile.name.toUpperCase().includes('SONEDE') ? (
-              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/40 shadow p-1 bg-black/40 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/60 shadow p-1 bg-white flex items-center justify-center">
                 <img src={sonedeLogo} alt="SONEDE" className="max-w-full max-h-full object-contain" />
               </div>
+            ) : tile.type === 'railroad' ? (
+              (() => {
+                let airportLogo = null;
+                const uName = tile.name.toUpperCase();
+                if (tile.index === 5 || uName.includes('TUNIS') || uName.includes('CARTHAGE') || uName.includes('MAD')) {
+                  airportLogo = tunisairLogo;
+                } else if (tile.index === 15 || uName.includes('QATAR') || uName.includes('MUC')) {
+                  airportLogo = qatarLogo;
+                } else if (tile.index === 25 || uName.includes('NOUVELAIR') || uName.includes('CDG')) {
+                  airportLogo = nouvelairLogo;
+                } else if (tile.index === 35 || uName.includes('EMIRATES') || uName.includes('JFK')) {
+                  airportLogo = emiratesLogo;
+                }
+                return (
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-white flex-shrink-0">
+                    {airportLogo ? (
+                      <img src={airportLogo} alt={tile.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl">✈️</span>
+                    )}
+                  </div>
+                );
+              })()
             ) : tile.countryCode ? (
               <div className="w-6 h-6 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black/30">
                 <img

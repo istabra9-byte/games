@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <!-- Qatar Airways Emblem -->
+  <circle cx="50" cy="50" r="48" fill="#5C0632" stroke="#FFFFFF" stroke-width="2.5" />
+  <g fill="#FFFFFF">
+    <!-- Iconic Long Parallel Straight Horns of the Arabian Oryx -->
+    <path d="M 43 45 C 44 32, 53 16, 68 8 C 65 14, 56 28, 50 44 Z" />
+    <path d="M 48 44 C 50 31, 60 14, 76 6 C 72 13, 62 28, 56 42 Z" />
+    <!-- Oryx Ears -->
+    <path d="M 37 45 C 32 40, 26 38, 22 39 C 26 44, 32 47, 36 49 Z" />
+    <!-- Oryx Head & Profile -->
+    <path d="M 40 43 C 44 43, 53 45, 57 51 C 60 56, 58 64, 52 70 C 47 75, 38 78, 30 76 C 26 75, 23 71, 25 67 C 28 62, 33 58, 38 52 C 40 49, 40 45, 40 43 Z" />
+    <!-- Oryx Eye & Distinctive Facial Markings -->
+    <ellipse cx="44" cy="52" rx="2.5" ry="3.5" fill="#5C0632" />
+    <circle cx="44.5" cy="51.5" r="1" fill="#FFFFFF" />
+    <!-- Dark Muzzle Stripe -->
+    <path d="M 32 64 C 35 60, 40 57, 44 57 C 42 61, 38 65, 34 68 Z" fill="#5C0632" />
+  </g>
+  <!-- Brand Wordmark -->
+  <text x="50" y="91" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="900" fill="#FFFFFF" letter-spacing="1.5">QATAR</text>
+</svg>

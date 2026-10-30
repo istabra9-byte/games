@@ -71,10 +71,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 5: MAD Airport
+  // 5: Tunis-Carthage (Tunisia)
   {
     index: 5,
-    name: 'MAD Airport',
+    name: 'Tunis-Carthage',
+    country: 'Tunisia',
+    countryCode: 'tn',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -227,10 +229,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 80
   },
-  // 15: MUC Airport
+  // 15: Qatar Airways
   {
     index: 15,
-    name: 'MUC Airport',
+    name: 'Qatar Airways',
+    country: 'Qatar',
+    countryCode: 'qa',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -379,10 +383,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 120
   },
-  // 25: CDG Airport
+  // 25: Nouvelair (Tunisia)
   {
     index: 25,
-    name: 'CDG Airport',
+    name: 'Nouvelair',
+    country: 'Tunisia',
+    countryCode: 'tn',
     flag: '✈️',
     type: 'railroad',
     group: 'station',
@@ -535,10 +541,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 160
   },
-  // 35: JFK Airport
+  // 35: Emirates
   {
     index: 35,
-    name: 'JFK Airport',
+    name: 'Emirates',
+    country: 'UAE',
+    countryCode: 'ae',
     flag: '✈️',
     type: 'railroad',
     group: 'station',

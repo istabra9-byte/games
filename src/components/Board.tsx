@@ -6,6 +6,10 @@ import { sound } from '../services/sound';
 import { PlayerAvatar } from './PlayerAvatar';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
+import tunisairLogo from '../assets/tunisair.svg';
+import qatarLogo from '../assets/qatarairways.svg';
+import nouvelairLogo from '../assets/nouvelair.svg';
+import emiratesLogo from '../assets/emirates.svg';
 
 interface BoardProps {
   room: GameRoom;
@@ -369,29 +373,55 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     />
                   </div>
                 ) : tile.type === 'railroad' ? (
-                  <div
-                    className="rounded-full bg-slate-700/80 border-[1.5px] border-slate-400/60 shadow flex items-center justify-center flex-shrink-0 text-sky-200"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
-                  >
-                    <Plane
-                      className="w-[60%] h-[60%] text-sky-200"
-                      style={{
-                        transform:
-                          side === 'top' ? 'rotate(180deg)' :
-                          side === 'bottom' ? 'rotate(0deg)' :
-                          side === 'left' ? 'rotate(90deg)' : 'rotate(-90deg)'
-                      }}
-                    />
-                  </div>
+                  (() => {
+                    let airportLogo = null;
+                    const uName = tile.name.toUpperCase();
+                    if (tile.index === 5 || uName.includes('TUNIS') || uName.includes('CARTHAGE') || uName.includes('MAD')) {
+                      airportLogo = tunisairLogo;
+                    } else if (tile.index === 15 || uName.includes('QATAR') || uName.includes('MUC')) {
+                      airportLogo = qatarLogo;
+                    } else if (tile.index === 25 || uName.includes('NOUVELAIR') || uName.includes('CDG')) {
+                      airportLogo = nouvelairLogo;
+                    } else if (tile.index === 35 || uName.includes('EMIRATES') || uName.includes('JFK')) {
+                      airportLogo = emiratesLogo;
+                    }
+
+                    return (
+                      <div
+                        className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center flex-shrink-0 bg-white"
+                        style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                      >
+                        {airportLogo ? (
+                          <img
+                            src={airportLogo}
+                            alt={tile.name}
+                            className="w-full h-full object-cover select-none pointer-events-none"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                            <Plane className="w-[60%] h-[60%] text-sky-200" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
                 ) : tile.type === 'utility' ? (
                   <div
-                    className="rounded-full bg-teal-800/80 border-[1.5px] border-teal-400/70 shadow flex items-center justify-center flex-shrink-0"
+                    className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center flex-shrink-0 bg-white p-0.5"
                     style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
                   >
                     {tile.name.toUpperCase().includes('POWER') || tile.name.toUpperCase().includes('STEG') ? (
-                      <Zap className="w-[60%] h-[60%] text-yellow-300 fill-yellow-300" />
+                      <img
+                        src={stegLogo}
+                        alt="STEG"
+                        className="w-full h-full object-contain select-none pointer-events-none"
+                      />
                     ) : (
-                      <Droplets className="w-[60%] h-[60%] text-sky-300 fill-sky-300" />
+                      <img
+                        src={sonedeLogo}
+                        alt="SONEDE"
+                        className="w-full h-full object-contain select-none pointer-events-none"
+                      />
                     )}
                   </div>
                 ) : tile.type === 'chest' ? (
