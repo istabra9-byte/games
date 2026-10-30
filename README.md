@@ -4,10 +4,8 @@
 [![React](https://img.shields.io/badge/React-18.x-61dafb?style=flat-square&logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
-[![Firebase](https://img.shields.io/badge/Firebase-Realtime%20Database-ffca28?style=flat-square&logo=firebase)](https://firebase.google.com)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
-A high-performance, responsive, **100% serverless** real-time multiplayer board game inspired by **[Richup.io](https://richup.io)** and classic property-trading games.
 
 🎮 **Play Live:** [https://istabra9-byte.github.io/games/](https://istabra9-byte.github.io/games/)
 
