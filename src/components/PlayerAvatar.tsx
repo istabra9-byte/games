@@ -32,9 +32,24 @@ export const SHOP_APPEARANCES: AppearanceOption[] = [
   { id: 'donut', name: 'Donut', color: '#ec4899', style: 'donut', price: 300, description: 'Glazed with colorful sprinkles' },
 ];
 
+// Profile Pictures (Illustrated character portraits) available in the Shop
+export const PROFILE_PICTURES: AppearanceOption[] = [
+  { id: 'king', name: 'The Sovereign King', color: '#8b5cf6', style: 'king', price: 150, description: 'Golden royal crown & imperial velvet mantle' },
+  { id: 'tycoon', name: 'Wall St. Tycoon', color: '#1e293b', style: 'tycoon', price: 150, description: 'Billionaire top hat, monocle & golden bowtie' },
+  { id: 'detective', name: 'Secret Agent', color: '#334155', style: 'detective', price: 180, description: 'Shadow fedora & dark sunglasses' },
+  { id: 'cyborg', name: 'Cyber 2077', color: '#06b6d4', style: 'cyborg', price: 200, description: 'Futuristic android with neon cyber-visor' },
+  { id: 'memecat', name: 'Giga Meme Cat', color: '#6366f1', style: 'memecat', price: 200, description: 'Legendary feline with pixel sunglasses' },
+  { id: 'astronaut', name: 'Cosmic Explorer', color: '#f8fafc', style: 'astronaut', price: 220, description: 'Space helmet with reflective gold visor' },
+  { id: 'ninja', name: 'Shadow Shinobi', color: '#0f172a', style: 'ninja', price: 240, description: 'Midnight mask with piercing red gaze' },
+  { id: 'footballer', name: 'Ballon d\'Or MVP', color: '#3b82f6', style: 'footballer', price: 260, description: 'Champion jersey, captain armband & gold medal' },
+  { id: 'wizard', name: 'Crypto Alchemist', color: '#7c3aed', style: 'wizard', price: 280, description: 'Mystic wizard with glowing star hat' },
+  { id: 'wolf', name: 'Diamond Wolf', color: '#64748b', style: 'wolf', price: 300, description: 'Sharp suit wolf with diamond sparkle' },
+];
+
 export const ALL_APPEARANCES: AppearanceOption[] = [
   ...BASE_APPEARANCES,
-  ...SHOP_APPEARANCES
+  ...SHOP_APPEARANCES,
+  ...PROFILE_PICTURES
 ];
 
 // For lobby selection: only base appearances unless unlocked
@@ -327,6 +342,216 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
             {/* Head */}
             <ellipse cx="50" cy="56" rx="38" ry="32" fill={color || '#10b981'} stroke="#047857" strokeWidth="2" />
             <GooglyEyes x1={39} y1={56} x2={61} y2={56} r={9.5} pupilR={4.8} look="left" />
+          </>
+        );
+
+      case 'king':
+        return (
+          <>
+            {/* Royal Velvet Cape */}
+            <path d="M16 92 C16 66 32 60 50 60 C68 60 84 66 84 92 Z" fill={color || '#7c3aed'} stroke="#5b21b6" strokeWidth="2" />
+            {/* Ermine Fur Collar */}
+            <path d="M28 66 Q50 78 72 66 Q50 58 28 66" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+            <circle cx="38" cy="69" r="1.5" fill="#1e1b4b" />
+            <circle cx="50" cy="71" r="1.5" fill="#1e1b4b" />
+            <circle cx="62" cy="69" r="1.5" fill="#1e1b4b" />
+            {/* Head */}
+            <circle cx="50" cy="50" r="28" fill="#fde047" stroke="#ca8a04" strokeWidth="2" />
+            {/* Golden Crown */}
+            <path d="M24 34 L30 12 L41 24 L50 8 L59 24 L70 12 L76 34 Z" fill="#fbbf24" stroke="#b45309" strokeWidth="2" strokeLinejoin="round" />
+            {/* Crown Jewels */}
+            <circle cx="30" cy="14" r="2.5" fill="#ef4444" />
+            <circle cx="50" cy="10" r="3" fill="#3b82f6" />
+            <circle cx="70" cy="14" r="2.5" fill="#ef4444" />
+            <rect x="25" y="31" width="50" height="4" rx="1" fill="#f59e0b" />
+            <GooglyEyes x1={41} y1={52} x2={59} y2={52} r={8} pupilR={4.2} look="left" />
+          </>
+        );
+
+      case 'tycoon':
+        return (
+          <>
+            {/* Tuxedo Body */}
+            <path d="M20 92 C20 68 34 62 50 62 C66 62 80 68 80 92 Z" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* White Shirt Collar */}
+            <polygon points="42,62 58,62 50,74" fill="#ffffff" />
+            {/* Red Bowtie */}
+            <polygon points="43,64 57,64 50,68" fill="#ef4444" />
+            <polygon points="43,72 57,72 50,68" fill="#ef4444" />
+            <circle cx="50" cy="68" r="2" fill="#b91c1c" />
+            {/* Head */}
+            <circle cx="50" cy="50" r="27" fill={color || '#38bdf8'} stroke="#0284c7" strokeWidth="2" />
+            {/* Top Hat Brim */}
+            <ellipse cx="50" cy="28" rx="38" ry="6" fill="#1e293b" stroke="#0f172a" strokeWidth="2" />
+            {/* Top Hat Cylinder */}
+            <path d="M28 28 L32 6 L68 6 L72 28 Z" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* Red Silk Ribbon on Hat */}
+            <path d="M29 27 L30 22 L70 22 L71 27 Z" fill="#ef4444" />
+            {/* Eyes + Golden Monocle on right eye */}
+            <GooglyEyes x1={40} y1={52} x2={60} y2={52} r={7.5} pupilR={3.8} look="left" />
+            <circle cx="60" cy="52" r="9.5" fill="none" stroke="#fbbf24" strokeWidth="2" />
+            <line x1="69" y1="56" x2="78" y2="76" stroke="#fbbf24" strokeWidth="1.5" />
+          </>
+        );
+
+      case 'detective':
+        return (
+          <>
+            {/* Trench Coat */}
+            <path d="M18 92 C18 68 32 62 50 62 C68 62 82 68 82 92 Z" fill="#334155" stroke="#1e293b" strokeWidth="2" />
+            {/* Crimson Tie */}
+            <polygon points="48,62 52,62 54,78 50,84 46,78" fill="#dc2626" />
+            {/* Head */}
+            <circle cx="50" cy="52" r="27" fill={color || '#fbbf24'} stroke="#d97706" strokeWidth="2" />
+            {/* Fedora Hat Brim */}
+            <path d="M14 36 Q50 26 86 36 Q50 32 14 36" fill="#1e293b" stroke="#0f172a" strokeWidth="2.5" />
+            {/* Fedora Crown */}
+            <path d="M28 32 C30 14 42 12 50 16 C58 12 70 14 72 32 Z" fill="#334155" stroke="#1e293b" strokeWidth="2" />
+            {/* Black Hat Ribbon */}
+            <path d="M28 32 Q50 28 72 32 Q50 30 28 32" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* Cool Detective Sunglasses */}
+            <rect x="30" y="46" width="18" height="12" rx="3" fill="#0f172a" stroke="#020617" strokeWidth="1.5" />
+            <rect x="52" y="46" width="18" height="12" rx="3" fill="#0f172a" stroke="#020617" strokeWidth="1.5" />
+            <line x1="48" y1="50" x2="52" y2="50" stroke="#020617" strokeWidth="2" />
+            <line x1="32" y1="48" x2="42" y2="48" stroke="#38bdf8" strokeWidth="1" strokeLinecap="round" />
+            <line x1="54" y1="48" x2="64" y2="48" stroke="#38bdf8" strokeWidth="1" strokeLinecap="round" />
+          </>
+        );
+
+      case 'cyborg':
+        return (
+          <>
+            {/* Metallic Head */}
+            <circle cx="50" cy="50" r="38" fill="#1e293b" stroke="#06b6d4" strokeWidth="2" />
+            {/* Cyber Circuit Lines */}
+            <path d="M20 50 L32 50 L38 38 L44 38" fill="none" stroke="#06b6d4" strokeWidth="1.5" opacity="0.8" />
+            <path d="M80 50 L68 50 L62 62 L56 62" fill="none" stroke="#06b6d4" strokeWidth="1.5" opacity="0.8" />
+            {/* High-tech Neon Visor */}
+            <rect x="22" y="42" width="56" height="16" rx="4" fill="#0891b2" stroke="#22d3ee" strokeWidth="2" />
+            {/* Visor scan line */}
+            <rect x="26" y="48" width="48" height="4" rx="2" fill="#67e8f9" />
+            {/* Audio Earpiece / Nodes */}
+            <rect x="10" y="44" width="6" height="12" rx="2" fill="#06b6d4" />
+            <rect x="84" y="44" width="6" height="12" rx="2" fill="#06b6d4" />
+          </>
+        );
+
+      case 'memecat':
+        return (
+          <>
+            {/* Cat Ears */}
+            <polygon points="26,38 18,12 40,24" fill={color || '#6366f1'} stroke="#4338ca" strokeWidth="2" />
+            <polygon points="28,34 22,18 36,26" fill="#f472b6" />
+            <polygon points="74,38 82,12 60,24" fill={color || '#6366f1'} stroke="#4338ca" strokeWidth="2" />
+            <polygon points="72,34 78,18 64,26" fill="#f472b6" />
+            {/* Head */}
+            <ellipse cx="50" cy="56" rx="34" ry="28" fill={color || '#6366f1'} stroke="#4338ca" strokeWidth="2" />
+            {/* Pixel Thug Life Sunglasses */}
+            <rect x="26" y="48" width="22" height="12" fill="#000000" stroke="#ffffff" strokeWidth="1" />
+            <rect x="52" y="48" width="22" height="12" fill="#000000" stroke="#ffffff" strokeWidth="1" />
+            <line x1="48" y1="52" x2="52" y2="52" stroke="#000000" strokeWidth="3" />
+            <rect x="30" y="50" width="4" height="4" fill="#ffffff" />
+            <rect x="56" y="50" width="4" height="4" fill="#ffffff" />
+            {/* Cute cat nose & mouth */}
+            <polygon points="48,68 52,68 50,71" fill="#f43f5e" />
+            <path d="M46 72 Q50 76 54 72" fill="none" stroke="#312e81" strokeWidth="1.5" />
+          </>
+        );
+
+      case 'astronaut':
+        return (
+          <>
+            {/* Helmet Body */}
+            <circle cx="50" cy="50" r="38" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2.5" />
+            {/* Gold Reflective Visor */}
+            <rect x="22" y="32" width="56" height="36" rx="14" fill="#f59e0b" stroke="#d97706" strokeWidth="2" />
+            {/* Sun glare reflection */}
+            <ellipse cx="36" cy="42" rx="10" ry="4" transform="rotate(-30 36 42)" fill="#ffffff" opacity="0.6" />
+            {/* Side Comms Antenna */}
+            <rect x="10" y="44" width="4" height="12" rx="2" fill="#64748b" />
+            <line x1="12" y1="44" x2="12" y2="28" stroke="#64748b" strokeWidth="2" />
+            <circle cx="12" cy="27" r="2.5" fill="#ef4444" />
+          </>
+        );
+
+      case 'ninja':
+        return (
+          <>
+            {/* Head Silhouette */}
+            <circle cx="50" cy="50" r="36" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* Crimson Headband */}
+            <rect x="14" y="26" width="72" height="12" rx="2" fill="#dc2626" />
+            <rect x="42" y="28" width="16" height="8" rx="1.5" fill="#cbd5e1" stroke="#64748b" strokeWidth="1" />
+            {/* Eye Slit Opening */}
+            <rect x="24" y="44" width="52" height="14" rx="4" fill="#fcd34d" stroke="#020617" strokeWidth="1.5" />
+            {/* Fierce Ninja Eyes */}
+            <ellipse cx="38" cy="51" rx="6" ry="3" fill="#dc2626" />
+            <circle cx="38" cy="51" r="2" fill="#020617" />
+            <ellipse cx="62" cy="51" rx="6" ry="3" fill="#dc2626" />
+            <circle cx="62" cy="51" r="2" fill="#020617" />
+            {/* Lower Face Mask Wrap */}
+            <path d="M16 58 Q50 68 84 58 L84 86 C84 86 50 94 16 86 Z" fill="#0f172a" />
+          </>
+        );
+
+      case 'footballer':
+        return (
+          <>
+            {/* Jersey */}
+            <path d="M18 92 C18 68 32 62 50 62 C68 62 82 68 82 92 Z" fill="#2563eb" stroke="#1d4ed8" strokeWidth="2" />
+            {/* Jersey Stripes */}
+            <rect x="36" y="66" width="6" height="26" fill="#ffffff" />
+            <rect x="58" y="66" width="6" height="26" fill="#ffffff" />
+            {/* Gold Medal on Ribbon */}
+            <line x1="42" y1="62" x2="50" y2="76" stroke="#ef4444" strokeWidth="2" />
+            <line x1="58" y1="62" x2="50" y2="76" stroke="#ef4444" strokeWidth="2" />
+            <circle cx="50" cy="78" r="5" fill="#fbbf24" stroke="#d97706" strokeWidth="1" />
+            {/* Head */}
+            <circle cx="50" cy="46" r="26" fill={color || '#f59e0b'} stroke="#b45309" strokeWidth="2" />
+            {/* Athletic Headband */}
+            <rect x="24" y="30" width="52" height="8" rx="2" fill="#1e293b" />
+            <GooglyEyes x1={41} y1={48} x2={59} y2={48} r={7.5} pupilR={3.8} look="left" />
+          </>
+        );
+
+      case 'wizard':
+        return (
+          <>
+            {/* Robe */}
+            <path d="M18 92 C18 66 32 62 50 62 C68 62 82 66 82 92 Z" fill="#6d28d9" stroke="#4c1d95" strokeWidth="2" />
+            {/* Head */}
+            <circle cx="50" cy="54" r="26" fill="#fde047" stroke="#ca8a04" strokeWidth="2" />
+            {/* Wizard Beard */}
+            <path d="M34 62 Q50 90 66 62 Q50 72 34 62" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.5" />
+            {/* Wizard Hat Brim */}
+            <ellipse cx="50" cy="38" rx="40" ry="8" fill="#4c1d95" stroke="#311042" strokeWidth="2" />
+            {/* Wizard Hat Cone */}
+            <path d="M26 36 L48 4 Q54 6 56 12 L74 36 Z" fill="#5b21b6" stroke="#311042" strokeWidth="2" />
+            {/* Hat Stars & Moon */}
+            <circle cx="48" cy="18" r="2" fill="#fbbf24" />
+            <circle cx="58" cy="26" r="1.5" fill="#fbbf24" />
+            <GooglyEyes x1={41} y1={52} x2={59} y2={52} r={7.5} pupilR={3.8} look="left" />
+          </>
+        );
+
+      case 'wolf':
+        return (
+          <>
+            {/* Wolf Ears */}
+            <polygon points="28,34 16,10 38,22" fill="#64748b" stroke="#334155" strokeWidth="2" />
+            <polygon points="30,30 22,16 36,24" fill="#f43f5e" />
+            <polygon points="72,34 84,10 62,22" fill="#64748b" stroke="#334155" strokeWidth="2" />
+            <polygon points="70,30 78,16 64,24" fill="#f472b6" />
+            {/* Wolf Head */}
+            <path d="M22 50 C22 36 34 32 50 32 C66 32 78 36 78 50 C78 68 64 78 50 82 C36 78 22 68 22 50 Z" fill="#64748b" stroke="#334155" strokeWidth="2" />
+            {/* Wolf Snout */}
+            <polygon points="46,62 54,62 50,68" fill="#0f172a" />
+            {/* Dark Sunglasses */}
+            <rect x="28" y="44" width="20" height="12" rx="3" fill="#0f172a" stroke="#020617" strokeWidth="1.5" />
+            <rect x="52" y="44" width="20" height="12" rx="3" fill="#0f172a" stroke="#020617" strokeWidth="1.5" />
+            <line x1="48" y1="48" x2="52" y2="48" stroke="#020617" strokeWidth="2" />
+            {/* Diamond Hand Pin in lapel */}
+            <polygon points="50,76 54,80 50,86 46,80" fill="#38bdf8" stroke="#0284c7" strokeWidth="1" />
           </>
         );
 

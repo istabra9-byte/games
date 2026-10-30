@@ -5,6 +5,7 @@ import { calculateRent } from '../services/gameEngine';
 import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent, ShoppingCart, Check } from 'lucide-react';
 import { sound } from '../services/sound';
 import { PlayerAvatar } from './PlayerAvatar';
+import { getBoardTheme } from '../config/boardThemes';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
 import tunisairLogo from '../assets/tunisair.svg';
@@ -16,6 +17,7 @@ import mornaguiaJailImg from '../assets/mornaguia_jail.png';
 interface BoardProps {
   room: GameRoom;
   currentPlayerId?: string;
+  boardThemeId?: string;
   onTileClick?: (tile: Tile) => void;
   centerContent?: React.ReactNode | ((props: { isPieceMoving: boolean }) => React.ReactNode);
 }
@@ -40,8 +42,9 @@ export function getGridPosition(index: number) {
   }
 }
 
-export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick, centerContent }) => {
+export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeId, onTileClick, centerContent }) => {
   const { tiles, players } = room;
+  const currentTheme = getBoardTheme(boardThemeId || (typeof window !== 'undefined' ? localStorage.getItem('richup_selected_board_theme') || 'midnight' : 'midnight'));
 
   const [visualPositions, setVisualPositions] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
@@ -278,14 +281,20 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
   return (
     <div
-      className="responsive-board-wrapper max-h-full relative bg-[#171328] rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-[#261f3e] select-none flex flex-col justify-center m-auto"
+      className="responsive-board-wrapper max-h-full relative rounded-2xl p-1 sm:p-1.5 md:p-2 border select-none flex flex-col justify-center m-auto transition-colors duration-500"
+      style={{
+        backgroundColor: currentTheme.colors.wrapperBg,
+        borderColor: currentTheme.colors.wrapperBorder,
+        boxShadow: `0 20px 50px rgba(0,0,0,0.9), 0 0 35px ${currentTheme.colors.accentGlow}`
+      }}
     >
       <div
-        className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
+        className="w-full h-full gap-[2px] sm:gap-[3px] rounded-xl p-0.5 sm:p-1 relative transition-colors duration-500"
         style={{
           display: 'grid',
           gridTemplateColumns: '2.8fr repeat(9, 1fr) 2.8fr',
-          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr'
+          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr',
+          backgroundColor: currentTheme.colors.gridBg
         }}
       >
         {tiles.map((tile) => {
@@ -302,8 +311,13 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               <div
                 key={tile.index}
                 onClick={() => onTileClick && onTileClick(tile)}
-                className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer bg-[#262a4c] border border-purple-900/40 p-1 shadow-inner hover:border-purple-400/60 transition-all select-none"
-                style={{ gridRowStart: row, gridColumnStart: col }}
+                className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer p-1 shadow-inner hover:border-purple-400/60 transition-all select-none border"
+                style={{
+                  gridRowStart: row,
+                  gridColumnStart: col,
+                  backgroundColor: currentTheme.colors.cornerBg,
+                  borderColor: currentTheme.colors.borderColor
+                }}
               >
                 {/* 0: START */}
                 {cornerType === 'start' && (
@@ -661,10 +675,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             <div
               key={tile.index}
               onClick={() => onTileClick && onTileClick(tile)}
-              className="relative rounded-[7px] flex overflow-hidden cursor-pointer transition-all duration-150 select-none bg-[#262a4c] border border-purple-900/40 hover:border-purple-400/60 shadow-sm"
+              className="relative rounded-[7px] flex overflow-hidden cursor-pointer transition-all duration-150 select-none border hover:border-purple-400/60 shadow-sm"
               style={{
                 gridRowStart: row,
                 gridColumnStart: col,
+                backgroundColor: currentTheme.colors.tileBg,
+                borderColor: currentTheme.colors.borderColor,
                 ...(isOwned && owner
                   ? {
                       boxShadow: `inset 0 0 25px 2px ${owner.color}35`,
@@ -733,7 +749,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         })}
 
         {/* Center Board Stage */}
-        <div className="col-start-2 col-end-11 row-start-2 row-end-11 bg-[#130f1d] rounded-xl flex flex-col items-center justify-center p-1.5 sm:p-2 pb-0.5 sm:pb-1 relative overflow-hidden shadow-inner">
+        <div
+          className="col-start-2 col-end-11 row-start-2 row-end-11 rounded-xl flex flex-col items-center justify-center p-1.5 sm:p-2 pb-0.5 sm:pb-1 relative overflow-hidden shadow-inner transition-colors duration-500"
+          style={{ backgroundColor: currentTheme.colors.centerBg }}
+        >
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">
             {typeof centerContent === 'function' ? centerContent({ isPieceMoving }) : centerContent}
           </div>

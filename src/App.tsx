@@ -32,8 +32,9 @@ import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
+import { ShopModal } from './components/ShopModal';
 import { PlayerAvatar, PLAYER_COLORS, COLOR_HEXES } from './components/PlayerAvatar';
-import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
+import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw, ShoppingBag } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Generate random 5-letter alphanumeric code matching Richup
@@ -96,6 +97,8 @@ export const App: React.FC = () => {
   const [dismissedTradeOfferKey, setDismissedTradeOfferKey] = useState<string | null>(null);
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [showShopModal, setShowShopModal] = useState<boolean>(false);
+  const [boardTheme, setBoardTheme] = useState<string>(() => localStorage.getItem('richup_selected_board_theme') || 'midnight');
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isMemeSound, setIsMemeSound] = useState<boolean>(sound.isMemeSoundsEnabled());
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
@@ -667,6 +670,8 @@ export const App: React.FC = () => {
         <Lobby
           room={room}
           currentPlayer={currentPlayer}
+          currentBoardTheme={boardTheme}
+          onSelectBoardTheme={(themeId) => setBoardTheme(themeId)}
           onUpdatePlayer={(name, avatar, color) => {
             setCurrentPlayer(prev => ({ ...prev, name, avatar, color }));
             if (room.players[currentPlayer.id]) {
@@ -760,6 +765,16 @@ export const App: React.FC = () => {
             <span className="hidden sm:inline">Players</span>
           </button>
 
+          {/* Shop button */}
+          <button
+            onClick={() => setShowShopModal(true)}
+            title="Open Monopoly Store (Profile Pictures & Board Styles)"
+            className="px-2 py-1 bg-gradient-to-r from-amber-500/20 via-purple-600/30 to-pink-500/20 hover:from-amber-500/35 hover:to-pink-500/35 border border-amber-400/50 text-amber-300 hover:text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95"
+          >
+            <ShoppingBag className="w-3 h-3 text-amber-300" />
+            <span className="hidden sm:inline">Shop</span>
+          </button>
+
           {/* Restart match button */}
           <button
             onClick={handleRestartRoom}
@@ -822,6 +837,7 @@ export const App: React.FC = () => {
           <Board
             room={room}
             currentPlayerId={currentPlayer.id}
+            boardThemeId={boardTheme}
             onTileClick={(tile) => setSelectedTile(tile)}
             centerContent={({ isPieceMoving }) => (
               <CenterControls
@@ -1005,6 +1021,26 @@ export const App: React.FC = () => {
             multiplayer.updateRoom(updated);
             setSelectedTile(updated.tiles[idx]);
           }}
+        />
+      )}
+
+      {showShopModal && (
+        <ShopModal
+          currentAvatar={currentPlayer.avatar || 'navy'}
+          onSelectAvatar={(style, color) => {
+            setCurrentPlayer(prev => ({ ...prev, avatar: style, color: color || prev.color }));
+            if (room && room.players[currentPlayer.id]) {
+              const updated = JSON.parse(JSON.stringify(room));
+              updated.players[currentPlayer.id].avatar = style;
+              if (color) updated.players[currentPlayer.id].color = color;
+              multiplayer.updateRoom(updated);
+            }
+          }}
+          currentBoardTheme={boardTheme}
+          onSelectBoardTheme={(themeId) => {
+            setBoardTheme(themeId);
+          }}
+          onClose={() => setShowShopModal(false)}
         />
       )}
     </div>

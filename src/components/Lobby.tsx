@@ -14,6 +14,8 @@ interface LobbyProps {
   onStartGame: () => void;
   onOpenFirebaseConfig: () => void;
   isFirebaseActive: boolean;
+  currentBoardTheme?: string;
+  onSelectBoardTheme?: (themeId: string) => void;
 }
 
 const RANDOM_NAMES = ['Investor', 'Tycoon', 'Broker', 'Mogul', 'Banker', 'Baron', 'Trader', 'Capitalist', 'Wolf', 'Whale'];
@@ -26,7 +28,9 @@ export const Lobby: React.FC<LobbyProps> = ({
   onAddBot,
   onStartGame,
   onOpenFirebaseConfig,
-  isFirebaseActive
+  isFirebaseActive,
+  currentBoardTheme,
+  onSelectBoardTheme
 }) => {
   const [copied, setCopied] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -436,6 +440,8 @@ export const Lobby: React.FC<LobbyProps> = ({
             onUpdatePlayer(name, style, currentPlayer.color);
             refreshUnlocked();
           }}
+          currentBoardTheme={currentBoardTheme}
+          onSelectBoardTheme={onSelectBoardTheme}
           onClose={() => {
             setShowShopModal(false);
             refreshUnlocked();
