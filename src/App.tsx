@@ -31,6 +31,9 @@ import { Leaderboard } from './components/Leaderboard';
 import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
+import { GameOverModal } from './components/GameOverModal';
+import { ShopModal } from './components/ShopModal';
+import { secureStorage } from './services/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PlayerAvatar, PLAYER_COLORS, COLOR_HEXES } from './components/PlayerAvatar';
 import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
@@ -96,6 +99,10 @@ export const App: React.FC = () => {
   const [dismissedTradeOfferKey, setDismissedTradeOfferKey] = useState<string | null>(null);
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+  const [showGameOverModal, setShowGameOverModal] = useState<boolean>(true);
+  const [showShopModal, setShowShopModal] = useState<boolean>(false);
+  const [earnedCoins, setEarnedCoins] = useState<number>(0);
+  const [coinRewardToast, setCoinRewardToast] = useState<{ amount: number; reason: string } | null>(null);
   const [boardTheme, setBoardTheme] = useState<string>(() => localStorage.getItem('richup_selected_board_theme') || 'midnight');
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isMemeSound, setIsMemeSound] = useState<boolean>(sound.isMemeSoundsEnabled());
@@ -274,8 +281,16 @@ export const App: React.FC = () => {
 
       setRoom(updatedRoom);
       if (updatedRoom.winnerId && updatedRoom.status === 'ended' && prevRoomStatusRef.current !== 'ended') {
-        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
         sound.playWinner();
+        setShowGameOverModal(true);
+
+        const isMeWinner = updatedRoom.winnerId === currentPlayer.id;
+        const reward = isMeWinner ? 50 : 20;
+        const reason = isMeWinner ? 'Championship Victory' : 'Match Runner-up Prize';
+        const { earned } = secureStorage.earnCoins(reward, reason);
+        setEarnedCoins(earned);
+        setCoinRewardToast({ amount: earned, reason: isMeWinner ? '🏆 Championship Victory Bonus!' : '🥈 Match Runner-up Prize!' });
       }
     });
 
@@ -296,6 +311,15 @@ export const App: React.FC = () => {
       clearTimeout(initTimer);
     };
   }, [roomId, currentPlayer.id]);
+
+  // Floating Coin Reward Toast Auto-Dismiss
+  useEffect(() => {
+    if (coinRewardToast) {
+      try { sound.playCash(); } catch {}
+      const timer = setTimeout(() => setCoinRewardToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [coinRewardToast]);
 
   // Reset phase start timestamp whenever turn player, turn phase, or dice changes
   useEffect(() => {
@@ -1190,9 +1214,14 @@ export const App: React.FC = () => {
             setSelectedTile(updated.tiles[idx]);
           }}
           onBuildHouse={(idx) => {
+            const currentHouses = room.tiles[idx]?.houses || 0;
             const updated = buildHouse(room, currentPlayer.id, idx);
             multiplayer.updateRoom(updated);
             setSelectedTile(updated.tiles[idx]);
+            if (currentHouses === 4) {
+              const { earned } = secureStorage.earnCoins(10, 'Hotel Built');
+              setCoinRewardToast({ amount: earned, reason: '🏨 Built a Grand Luxury Hotel!' });
+            }
           }}
           onSellHouse={(idx) => {
             const updated = sellHouse(room, currentPlayer.id, idx);
@@ -1212,6 +1241,62 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Floating Coin Reward Toast */}
+      {coinRewardToast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[110] bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-purple-950 font-black px-4 py-2 rounded-2xl shadow-[0_6px_30px_rgba(245,158,11,0.65)] flex items-center gap-2.5 border-2 border-yellow-200 animate-in slide-in-from-top-4 fade-in duration-300 pointer-events-none">
+          <span className="text-xl leading-none">🪙</span>
+          <div className="flex flex-col leading-tight">
+            <span className="text-xs font-black">+{coinRewardToast.amount} Free Coins Earned!</span>
+            <span className="text-[10px] font-bold opacity-85">{coinRewardToast.reason}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Game Over Victory Modal */}
+      {room && room.status === 'ended' && room.winnerId && showGameOverModal && (
+        <GameOverModal
+          room={room}
+          currentPlayerId={currentPlayer.id}
+          earnedCoins={earnedCoins}
+          onPlayAgain={() => {
+            const nextRoom = createInitialRoom(room.id, currentPlayer);
+            multiplayer.updateRoom(nextRoom);
+            setShowGameOverModal(false);
+          }}
+          onReturnHome={() => {
+            setRoomId('');
+            setRoom(null);
+            setShowGameOverModal(false);
+            window.location.hash = '';
+          }}
+          onOpenShop={() => {
+            setShowShopModal(true);
+          }}
+        />
+      )}
+
+      {/* Character & Board Theme Shop Modal */}
+      {showShopModal && (
+        <ShopModal
+          currentAvatar={currentPlayer.avatar}
+          onSelectAvatar={(style, color) => {
+            const chosenColor = color || currentPlayer.color;
+            setCurrentPlayer(prev => ({ ...prev, avatar: style, color: chosenColor }));
+            if (room && room.players[currentPlayer.id]) {
+              const updated = JSON.parse(JSON.stringify(room));
+              updated.players[currentPlayer.id].avatar = style;
+              updated.players[currentPlayer.id].color = chosenColor;
+              multiplayer.updateRoom(updated);
+            }
+          }}
+          currentBoardTheme={boardTheme}
+          onSelectBoardTheme={(themeId) => {
+            setBoardTheme(themeId);
+            localStorage.setItem('richup_selected_board_theme', themeId);
+          }}
+          onClose={() => setShowShopModal(false)}
+        />
+      )}
 
     </div>
   );

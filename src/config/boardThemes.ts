@@ -150,6 +150,45 @@ export const BOARD_THEMES: BoardTheme[] = [
       primaryAccent: '#eab308'
     }
   }
+,
+  {
+    id: 'cyber_matrix',
+    name: 'Cyber Matrix Terminal',
+    description: 'Phosphor green digital rain terminal with pitch black obsidian panels',
+    price: 260,
+    badge: 'CYBER',
+    colors: {
+      wrapperBg: '#05130b',
+      gridBg: '#020b06',
+      centerBg: '#041009',
+      tileBg: '#0c2e1b',
+      cornerBg: '#113e25',
+      borderColor: 'rgba(34, 197, 94, 0.45)',
+      wrapperBorder: '#15803d',
+      accentGlow: 'rgba(34, 197, 94, 0.4)',
+      previewGradient: 'from-[#05130b] via-[#0c2e1b] to-[#020b06]',
+      primaryAccent: '#22c55e'
+    }
+  },
+  {
+    id: 'magma_volcano',
+    name: 'Molten Magma Core',
+    description: 'Blazing volcanic obsidian with molten crimson lava veins and amber embers',
+    price: 280,
+    badge: 'HOT',
+    colors: {
+      wrapperBg: '#240808',
+      gridBg: '#140303',
+      centerBg: '#1c0505',
+      tileBg: '#421111',
+      cornerBg: '#571616',
+      borderColor: 'rgba(239, 68, 68, 0.5)',
+      wrapperBorder: '#991b1b',
+      accentGlow: 'rgba(249, 115, 22, 0.45)',
+      previewGradient: 'from-[#240808] via-[#421111] to-[#140303]',
+      primaryAccent: '#f97316'
+    }
+  }
 ];
 
 export const DEFAULT_BOARD_THEME = BOARD_THEMES[0];

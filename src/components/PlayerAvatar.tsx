@@ -30,6 +30,11 @@ export const SHOP_APPEARANCES: AppearanceOption[] = [
   { id: 'cat', name: 'Cat', color: '#4f46e5', style: 'cat', price: 250, description: 'Curious feline with whiskers' },
   { id: 'alien', name: 'Alien', color: '#10b981', style: 'alien', price: 280, description: 'Visitor from deep space' },
   { id: 'donut', name: 'Donut', color: '#ec4899', style: 'donut', price: 300, description: 'Glazed with colorful sprinkles' },
+  { id: 'clover', name: 'Lucky Clover', color: '#10b981', style: 'clover', price: 190, description: 'Four-leaf charm of golden fortune' },
+  { id: 'panda', name: 'Zen Panda', color: '#f8fafc', style: 'panda', price: 210, description: 'Chilled bamboo master' },
+  { id: 'robot', name: 'Retro Mecha', color: '#06b6d4', style: 'robot', price: 230, description: 'Vintage 8-bit automaton with glowing antenna' },
+  { id: 'skull', name: 'Pirate Skull', color: '#e2e8f0', style: 'skull', price: 260, description: 'Corsair captain with golden tooth' },
+  { id: 'phoenix', name: 'Mythic Phoenix', color: '#f97316', style: 'phoenix', price: 320, description: 'Blazing plumage reborn in flames' },
 ];
 
 // Profile Pictures (Illustrated character portraits) available in the Shop
@@ -44,6 +49,9 @@ export const PROFILE_PICTURES: AppearanceOption[] = [
   { id: 'footballer', name: 'Ballon d\'Or MVP', color: '#3b82f6', style: 'footballer', price: 260, description: 'Champion jersey, captain armband & gold medal' },
   { id: 'wizard', name: 'Crypto Alchemist', color: '#7c3aed', style: 'wizard', price: 280, description: 'Mystic wizard with glowing star hat' },
   { id: 'wolf', name: 'Diamond Wolf', color: '#64748b', style: 'wolf', price: 300, description: 'Sharp suit wolf with diamond sparkle' },
+  { id: 'vampire', name: 'Count Dracula', color: '#881337', style: 'vampire', price: 290, description: 'Gothic night aristocrat with scarlet cape' },
+  { id: 'samurai', name: 'Ronin Samurai', color: '#dc2626', style: 'samurai', price: 320, description: 'Honor blade master with golden kabuto' },
+  { id: 'pharaoh', name: 'King Tutankhamun', color: '#eab308', style: 'pharaoh', price: 350, description: 'Eternal golden ruler with lapis royal nemes' },
 ];
 
 export const ALL_APPEARANCES: AppearanceOption[] = [
@@ -569,6 +577,159 @@ export const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
             <line x1="72" y1="52" x2="78" y2="52" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" />
             <line x1="22" y1="52" x2="28" y2="56" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" />
             <GooglyEyes x1={42} y1={36} x2={58} y2={36} r={6.5} pupilR={3.2} look="left" />
+          </>
+        );
+
+      case 'clover':
+        return (
+          <>
+            {/* 4-leaf clover petals */}
+            <circle cx="36" cy="36" r="18" fill={color || '#10b981'} stroke="#047857" strokeWidth="2" />
+            <circle cx="64" cy="36" r="18" fill={color || '#10b981'} stroke="#047857" strokeWidth="2" />
+            <circle cx="36" cy="64" r="18" fill={color || '#10b981'} stroke="#047857" strokeWidth="2" />
+            <circle cx="64" cy="64" r="18" fill={color || '#10b981'} stroke="#047857" strokeWidth="2" />
+            {/* Center stem */}
+            <path d="M50 50 Q50 92 68 96" stroke="#047857" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <circle cx="50" cy="50" r="16" fill={color || '#10b981'} />
+            <GooglyEyes x1={42} y1={50} x2={58} y2={50} r={7.5} pupilR={3.8} look="left" />
+          </>
+        );
+
+      case 'panda':
+        return (
+          <>
+            {/* Panda ears */}
+            <circle cx="24" cy="24" r="14" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            <circle cx="76" cy="24" r="14" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* White face */}
+            <circle cx="50" cy="54" r="38" fill={color || '#ffffff'} stroke="#cbd5e1" strokeWidth="2" />
+            {/* Black eye patches */}
+            <ellipse cx="36" cy="52" rx="12" ry="10" transform="rotate(-15 36 52)" fill="#0f172a" />
+            <ellipse cx="64" cy="52" rx="12" ry="10" transform="rotate(15 64 52)" fill="#0f172a" />
+            {/* Cute nose */}
+            <ellipse cx="50" cy="68" rx="6" ry="4" fill="#0f172a" />
+            <GooglyEyes x1={36} y1={52} x2={64} y2={52} r={7} pupilR={3.5} look="left" />
+          </>
+        );
+
+      case 'robot':
+        return (
+          <>
+            {/* Antenna */}
+            <line x1="50" y1="22" x2="50" y2="10" stroke="#94a3b8" strokeWidth="3" />
+            <circle cx="50" cy="8" r="5" fill="#ef4444" className="animate-pulse" />
+            {/* Ears/bolts */}
+            <rect x="10" y="44" width="6" height="14" rx="2" fill="#64748b" />
+            <rect x="84" y="44" width="6" height="14" rx="2" fill="#64748b" />
+            {/* Head block */}
+            <rect x="16" y="22" width="68" height="58" rx="10" fill={color || '#0891b2'} stroke="#0e7490" strokeWidth="2.5" />
+            {/* Visor area */}
+            <rect x="24" y="34" width="52" height="26" rx="6" fill="#042f2e" stroke="#14b8a6" strokeWidth="1.5" />
+            {/* Speaker mouth */}
+            <g fill="#94a3b8">
+              <rect x="34" y="66" width="6" height="6" rx="1" />
+              <rect x="44" y="66" width="6" height="6" rx="1" />
+              <rect x="54" y="66" width="6" height="6" rx="1" />
+              <rect x="64" y="66" width="6" height="6" rx="1" />
+            </g>
+            <GooglyEyes x1={38} y1={47} x2={62} y2={47} r={8} pupilR={4} look="left" />
+          </>
+        );
+
+      case 'skull':
+        return (
+          <>
+            {/* Skull cranium */}
+            <path
+              d="M20 46 C20 28 32 14 50 14 C68 14 80 28 80 46 C80 58 74 66 68 70 L68 84 C68 86 64 88 50 88 C36 88 32 86 32 84 L32 70 C26 66 20 58 20 46 Z"
+              fill={color || '#f1f5f9'}
+              stroke="#94a3b8"
+              strokeWidth="2.5"
+            />
+            {/* Teeth slots */}
+            <g fill="#475569">
+              <rect x="36" y="74" width="5" height="10" rx="1" />
+              <rect x="44" y="74" width="5" height="10" rx="1" />
+              <rect x="52" y="74" width="5" height="10" rx="1" fill="#eab308" /> {/* Gold tooth */}
+              <rect x="60" y="74" width="5" height="10" rx="1" />
+            </g>
+            {/* Pirate eye patch over right eye */}
+            <circle cx="62" cy="46" r="13" fill="#0f172a" stroke="#020617" strokeWidth="1.5" />
+            <line x1="36" y1="28" x2="80" y2="58" stroke="#0f172a" strokeWidth="2.5" />
+            {/* Left eye socket with googly eye */}
+            <circle cx="38" cy="46" r="11" fill="#0f172a" />
+            <GooglyEyes x1={38} y1={46} x2={38} y2={46} r={8.5} pupilR={4.2} look="left" />
+          </>
+        );
+
+      case 'phoenix':
+        return (
+          <>
+            {/* Fiery wings */}
+            <path d="M50 75 C10 65 6 30 18 18 C22 35 34 50 50 60 Z" fill="#ef4444" opacity="0.9" />
+            <path d="M50 75 C90 65 94 30 82 18 C78 35 66 50 50 60 Z" fill="#ef4444" opacity="0.9" />
+            {/* Body */}
+            <path d="M50 14 C32 26 30 68 50 88 C70 68 68 26 50 14 Z" fill={color || '#f97316'} stroke="#c2410c" strokeWidth="2" />
+            {/* Flame crown */}
+            <polygon points="50,4 56,16 50,14 44,16" fill="#fbbf24" />
+            <polygon points="38,8 46,18 40,18" fill="#fbbf24" />
+            <polygon points="62,8 54,18 60,18" fill="#fbbf24" />
+            <GooglyEyes x1={42} y1={48} x2={58} y2={48} r={8} pupilR={4} look="left" />
+          </>
+        );
+
+      case 'samurai':
+        return (
+          <>
+            {/* Kabuto Helmet dome */}
+            <path d="M18 48 C18 20 32 12 50 12 C68 12 82 20 82 48 Z" fill="#0f172a" stroke="#dc2626" strokeWidth="2" />
+            {/* Golden Shikoro Neck Guards */}
+            <path d="M14 48 C20 54 22 70 18 84 L28 80 C30 68 28 54 24 48 Z" fill="#dc2626" stroke="#991b1b" strokeWidth="1.5" />
+            <path d="M86 48 C80 54 78 70 82 84 L72 80 C70 68 72 54 76 48 Z" fill="#dc2626" stroke="#991b1b" strokeWidth="1.5" />
+            {/* Golden Maedate Horn Crest */}
+            <path d="M50 16 L38 2 Q50 6 50 18 Q50 6 62 2 Z" fill="#eab308" stroke="#ca8a04" strokeWidth="1.5" />
+            {/* Face plate */}
+            <rect x="28" y="44" width="44" height="38" rx="6" fill="#1e293b" />
+            {/* Menpo mustache mask */}
+            <path d="M30 64 Q50 74 70 64 L68 80 Q50 86 32 80 Z" fill="#dc2626" />
+            <GooglyEyes x1={40} y1={54} x2={60} y2={54} r={6.5} pupilR={3.2} look="left" />
+          </>
+        );
+
+      case 'pharaoh':
+        return (
+          <>
+            {/* Striped Nemes Headdress */}
+            <path d="M20 50 C20 22 32 14 50 14 C68 14 80 22 80 50 L84 82 L72 82 L70 54 L30 54 L28 82 L16 82 Z" fill="#eab308" stroke="#ca8a04" strokeWidth="2" />
+            {/* Lapis Lazuli Blue Stripes */}
+            <path d="M26 30 C34 22 44 20 50 20 C56 20 66 22 74 30" stroke="#1d4ed8" strokeWidth="4" fill="none" />
+            <path d="M22 42 C32 36 42 34 50 34 C58 34 68 36 78 42" stroke="#1d4ed8" strokeWidth="4" fill="none" />
+            {/* Golden Face */}
+            <ellipse cx="50" cy="56" rx="20" ry="24" fill="#fde047" stroke="#ca8a04" strokeWidth="1.5" />
+            {/* Golden Beard */}
+            <rect x="46" y="78" width="8" height="16" rx="2" fill="#1d4ed8" stroke="#eab308" strokeWidth="1.5" />
+            {/* Cobra Uraeus on forehead */}
+            <circle cx="50" cy="18" r="4" fill="#ef4444" stroke="#eab308" strokeWidth="1.5" />
+            <GooglyEyes x1={42} y1={56} x2={58} y2={56} r={6.5} pupilR={3.2} look="left" />
+          </>
+        );
+
+      case 'vampire':
+        return (
+          <>
+            {/* High vampire cape collar */}
+            <polygon points="12,18 28,40 16,84" fill="#991b1b" stroke="#7f1d1d" strokeWidth="2" />
+            <polygon points="88,18 72,40 84,84" fill="#991b1b" stroke="#7f1d1d" strokeWidth="2" />
+            {/* Black cape body */}
+            <circle cx="50" cy="54" r="36" fill="#0f172a" stroke="#020617" strokeWidth="2" />
+            {/* Pale skin face */}
+            <ellipse cx="50" cy="52" rx="24" ry="26" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="1.5" />
+            {/* Widow's peak black hair */}
+            <path d="M26 44 C28 28 40 24 50 36 C60 24 72 28 74 44 C72 32 60 28 50 30 C40 28 28 32 26 44 Z" fill="#020617" />
+            {/* Vampire Fangs */}
+            <polygon points="42,66 45,74 48,66" fill="#ffffff" />
+            <polygon points="52,66 55,74 58,66" fill="#ffffff" />
+            <GooglyEyes x1={41} y1={52} x2={59} y2={52} r={7.5} pupilR={3.8} look="left" />
           </>
         );
 

@@ -532,7 +532,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
       <footer className="h-12 px-4 sm:px-8 bg-[#140e24] border-t border-purple-900/50 flex items-center justify-between text-xs text-gray-400 flex-shrink-0">
         <div className="flex items-center gap-2 text-purple-300 font-semibold">
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Equip unlocked profile pictures and board themes to stand out in your Monopoly matches!</span>
+          <span>Earn coins by winning matches (+50🪙), match finishes (+20🪙), and building hotels (+10🪙)!</span>
         </div>
 
         <button

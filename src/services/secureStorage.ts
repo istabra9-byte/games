@@ -163,6 +163,17 @@ export const secureStorage = {
   },
 
   /**
+   * Safely awards coins from gameplay milestones (winning, building hotels, monopolies)
+   */
+  earnCoins(amount: number, reason: string): { newTotal: number; earned: number } {
+    const current = this.getCoins();
+    const safeAdd = Math.max(1, Math.min(100, Math.floor(amount)));
+    const newTotal = Math.min(MAX_SAFE_COINS, current + safeAdd);
+    this.setCoins(newTotal);
+    return { newTotal, earned: safeAdd };
+  },
+
+  /**
    * Retrieves unlocked avatar styles, always ensuring 'navy' is present.
    */
   getUnlockedAvatars(): string[] {

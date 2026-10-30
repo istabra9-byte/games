@@ -161,7 +161,7 @@ export const Lobby: React.FC<LobbyProps> = ({
 
             {/* Available Appearances (Only Navy is free by default, others require purchase) */}
             <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
-              {ALL_APPEARANCES.slice(0, 15).map((app) => {
+              {ALL_APPEARANCES.map((app) => {
                 const isNavy = app.style === 'navy';
                 const isUnlocked = isNavy || unlockedAvatars.includes(app.style);
                 const isSelected = (currentPlayer.avatar || 'navy') === app.style;
