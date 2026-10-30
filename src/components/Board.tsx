@@ -672,7 +672,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             );
           };
 
-          // 3. Title / City Name (Dynamic scaling & letter-spacing so all names fit with 0 clipping)
+          // 3. Title / City Name (High-visibility, prominent font scaling & crisp outline shadow)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
@@ -688,47 +688,48 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             if (isTopOrBottom) {
               if (longestWordLen >= 9) {
                 // Barcelona (9), Nouvelair (9)
-                fontSize = 'clamp(7.5px, 1.05cqi, 9.5px)';
-                letterSpacing = '-0.04em';
+                fontSize = 'clamp(9px, 1.25cqi, 11px)';
+                letterSpacing = '-0.035em';
               } else if (longestWordLen >= 7) {
                 // Salvador (8), Surprise (8), Carthage (8), Toulouse (8), Shenzhen (8), Shanghai (8), Beijing (7), Seville (7)
-                fontSize = 'clamp(8.5px, 1.2cqi, 10.5px)';
+                fontSize = 'clamp(10px, 1.4cqi, 12px)';
                 letterSpacing = '-0.025em';
               } else {
                 // Paris (5), Lyon (4), Rio (3), Bank (4), Madrid (6), SONEDE (6)
-                fontSize = 'clamp(10px, 1.4cqi, 12px)';
+                fontSize = 'clamp(11px, 1.6cqi, 13.5px)';
                 letterSpacing = '-0.015em';
               }
             } else {
-              // Left/Right tiles
+              // Left/Right tiles (much wider 2.3fr space)
               if (longestWordLen >= 10) {
                 // Manchester (10)
-                fontSize = 'clamp(8px, 1.15cqi, 10px)';
-                letterSpacing = '-0.035em';
+                fontSize = 'clamp(10.5px, 1.45cqi, 13px)';
+                letterSpacing = '-0.025em';
               } else if (longestWordLen >= 9) {
                 // Liverpool (9), Francisco (9), Frankfurt (9)
-                fontSize = 'clamp(8.5px, 1.22cqi, 10.5px)';
-                letterSpacing = '-0.03em';
+                fontSize = 'clamp(11px, 1.55cqi, 13.5px)';
+                letterSpacing = '-0.02em';
               } else if (longestWordLen >= 7) {
                 // Surprise (8), Treasure (8), Emirates (8), Airways (7)
-                fontSize = 'clamp(9.5px, 1.35cqi, 11.5px)';
-                letterSpacing = '-0.02em';
+                fontSize = 'clamp(11.5px, 1.65cqi, 14px)';
+                letterSpacing = '-0.015em';
               } else {
                 // London (6), Venice (6), Munich (6), Berlin (6), Milan (5), Rome (4), Poste (5), STEG (4), New (3), York (4)
-                fontSize = 'clamp(10.5px, 1.5cqi, 12.5px)';
-                letterSpacing = '-0.015em';
+                fontSize = 'clamp(12px, 1.8cqi, 15px)';
+                letterSpacing = '-0.01em';
               }
             }
 
             return (
-              <div className="flex-1 min-w-0 min-h-0 flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-hidden">
+              <div className="flex-1 min-w-0 min-h-0 flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-visible">
                 <span
-                  className="font-sans font-black text-white select-none text-center leading-[1.08] w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
+                  className="font-sans font-black text-white select-none text-center leading-[1.08] w-full flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
                     letterSpacing,
-                    lineHeight: 1.08
+                    lineHeight: 1.08,
+                    textShadow: '0 1px 3px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,0.95), 0 0 1px rgba(0,0,0,1)'
                   }}
                   title={tile.name}
                 >

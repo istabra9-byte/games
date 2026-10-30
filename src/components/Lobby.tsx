@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GameRoom, Player, GameSettings } from '../types/game';
-import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, ShoppingBag, Lock } from 'lucide-react';
+import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock } from 'lucide-react';
 import { sound } from '../services/sound';
 import { PlayerAvatar, PLAYER_COLORS, ALL_APPEARANCES, BASE_APPEARANCES } from './PlayerAvatar';
-import { ShopModal } from './ShopModal';
-import { AuthStatus } from './AuthStatus';
 
 interface LobbyProps {
   room: GameRoom;
@@ -35,7 +33,6 @@ export const Lobby: React.FC<LobbyProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showShopModal, setShowShopModal] = useState(false);
   const [name, setName] = useState(currentPlayer.name);
   const isHost = room.hostId === currentPlayer.id;
 
@@ -120,7 +117,6 @@ export const Lobby: React.FC<LobbyProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <AuthStatus compact />
             <button
               onClick={handleCopyLink}
               className="flex items-center gap-1.5 px-3 py-1 bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white rounded-lg text-xs font-bold transition-all border border-purple-500/30 cursor-pointer"
@@ -165,19 +161,11 @@ export const Lobby: React.FC<LobbyProps> = ({
               <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">
                 Player Appearance
               </span>
-              <button
-                onClick={() => setShowShopModal(true)}
-                className="px-2.5 py-1 bg-gradient-to-r from-amber-500/20 via-purple-600/30 to-pink-500/20 hover:from-amber-500/30 hover:to-pink-500/30 border border-amber-400/50 rounded-xl text-xs font-bold text-amber-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Shop</span>
-                <span className="text-[10px] bg-amber-400/25 px-1 py-0.2 rounded font-mono">🪙</span>
-              </button>
             </div>
 
-            {/* Available Appearances (Navy + Any purchased from Shop) */}
+            {/* Available Appearances (All Character Styles Unlocked) */}
             <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
-              {ALL_APPEARANCES.filter(a => unlockedAvatars.includes(a.style) || a.style === 'navy').map((app) => {
+              {ALL_APPEARANCES.slice(0, 15).map((app) => {
                 const isSelected = (currentPlayer.avatar || 'navy') === app.style;
                 return (
                   <button
@@ -201,20 +189,6 @@ export const Lobby: React.FC<LobbyProps> = ({
                   </button>
                 );
               })}
-
-              {/* Shop Prompt Card to Browse More Characters */}
-              <button
-                onClick={() => setShowShopModal(true)}
-                className="p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border border-dashed border-purple-700/60 bg-[#160f25]/50 hover:bg-[#201633] hover:border-purple-500 min-w-[72px] sm:min-w-[80px] opacity-75 hover:opacity-100"
-                title="Browse Character Shop"
-              >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-purple-900/40 flex items-center justify-center text-purple-300">
-                  <Plus className="w-5 h-5 text-amber-400" />
-                </div>
-                <span className="text-[9.5px] font-bold text-amber-300">
-                  More
-                </span>
-              </button>
             </div>
 
             {/* Choose Player Color (8 Unique Colors, Only One Player Per Color) */}
@@ -436,22 +410,7 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       )}
 
-      {/* Character Shop Modal */}
-      {showShopModal && (
-        <ShopModal
-          currentAvatar={currentPlayer.avatar || 'navy'}
-          onSelectAvatar={(style) => {
-            onUpdatePlayer(name, style, currentPlayer.color);
-            refreshUnlocked();
-          }}
-          currentBoardTheme={currentBoardTheme}
-          onSelectBoardTheme={onSelectBoardTheme}
-          onClose={() => {
-            setShowShopModal(false);
-            refreshUnlocked();
-          }}
-        />
-      )}
+
     </div>
   );
 };
