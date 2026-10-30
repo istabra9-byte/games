@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { GameRoom, Player, Tile } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { PlayerAvatar } from './PlayerAvatar';
-import { TurnTimerPill } from './TurnTimerPill';
 import { HouseIcon, HotelIcon } from './HouseIcons';
 import { Crown, Flag, Plus, ArrowLeftRight, ShieldAlert, Home, DollarSign, X } from 'lucide-react';
 import { useCashDeltas } from '../hooks/useCashDeltas';
@@ -133,12 +132,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                 </div>
 
-                {/* Right: Cash & Trade Action & Turn Timer Pill */}
+                {/* Right: Cash & Trade Action */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  {room.turnTimer?.active && room.turnTimer.forPlayerId === player.id && (
-                    <TurnTimerPill timer={room.turnTimer} onGrantTime={onGrantTime} />
-                  )}
-
                   <span className="text-xs font-black font-mono text-emerald-400">
                     ${player.cash}
                   </span>
