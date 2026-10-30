@@ -10,6 +10,7 @@ import tunisairLogo from '../assets/tunisair.svg';
 import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
+import mornaguiaJailImg from '../assets/mornaguia_jail.png';
 
 interface BoardProps {
   room: GameRoom;
@@ -200,13 +201,13 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                   </div>
                 )}
 
-                {/* 10: PASSING BY / IN PRISON */}
+                {/* 10: PASSING BY / IN PRISON (Mornaguia Prison) */}
                 {cornerType === 'jail' && (
                   <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center relative">
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center z-10">
                       <span
                         className="font-black text-gray-300 uppercase tracking-tight"
-                        style={{ fontSize: 'clamp(9.5px, 1.35cqi, 13px)' }}
+                        style={{ fontSize: 'clamp(9px, 1.3cqi, 12.5px)' }}
                       >
                         Passing by
                       </span>
@@ -218,15 +219,30 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       )}
                     </div>
 
-                    <div className="w-[88%] h-[58%] bg-[#1d192d] rounded border border-purple-500/40 flex flex-col items-center justify-center p-0.5 shadow-inner relative overflow-hidden">
+                    <div className="w-[90%] h-[62%] rounded-md border border-purple-400/60 shadow-inner relative overflow-hidden flex flex-col items-center justify-center">
+                      {/* Real Mornaguia Civil Prison Photo */}
+                      <img
+                        src={mornaguiaJailImg}
+                        alt="Mornaguia Prison"
+                        className="absolute inset-0 w-full h-full object-cover brightness-[0.72] contrast-[1.1]"
+                      />
+                      {/* Dark gradient overlay for text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/60" />
                       {/* Prison Bars Overlay */}
-                      <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#cbd5e1_3px,#cbd5e1_5px)]" />
+                      <div className="absolute inset-0 opacity-25 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#cbd5e1_4px,#cbd5e1_6px)]" />
+
                       <span
-                        className="font-black text-purple-200 uppercase z-10 leading-none drop-shadow"
-                        style={{ fontSize: 'clamp(10.5px, 1.5cqi, 15px)' }}
+                        className="font-black text-amber-200 uppercase z-10 leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
+                        style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
                       >
                         In Prison
                       </span>
+                      <span
+                        className="text-[7.5px] sm:text-[8.5px] font-bold text-white/95 z-10 drop-shadow mt-0.5 tracking-tight font-sans"
+                      >
+                        المرناقية
+                      </span>
+
                       {/* In Prison tokens */}
                       {playersHere.filter(p => p.inJail).length > 0 && (
                         <div className="flex items-center justify-center -space-x-2 mt-0.5 z-20">
@@ -261,14 +277,21 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
                 {/* 30: GO TO PRISON */}
                 {cornerType === 'go_to_jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
-                    <Skull
-                      className="text-white drop-shadow"
-                      style={{ width: 'clamp(20px, 3.4cqi, 38px)', height: 'clamp(20px, 3.4cqi, 38px)' }}
-                    />
+                  <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-1">
+                    <div
+                      className="rounded-full overflow-hidden border-[1.5px] border-red-500/80 shadow-[0_2px_8px_rgba(239,68,68,0.5)] flex items-center justify-center bg-black/60 flex-shrink-0 relative"
+                      style={{ width: 'clamp(28px, 4.2cqi, 46px)', height: 'clamp(28px, 4.2cqi, 46px)' }}
+                    >
+                      <img
+                        src={mornaguiaJailImg}
+                        alt="Mornaguia Prison"
+                        className="w-full h-full object-cover brightness-95"
+                      />
+                      <div className="absolute inset-0 bg-red-950/20" />
+                    </div>
                     <span
                       className="font-black text-white uppercase font-heading leading-tight tracking-wider"
-                      style={{ fontSize: 'clamp(10px, 1.45cqi, 16px)' }}
+                      style={{ fontSize: 'clamp(9.5px, 1.35cqi, 15px)' }}
                     >
                       Go to prison
                     </span>

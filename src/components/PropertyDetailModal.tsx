@@ -8,6 +8,7 @@ import tunisairLogo from '../assets/tunisair.svg';
 import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
+import mornaguiaJailImg from '../assets/mornaguia_jail.png';
 
 interface PropertyDetailModalProps {
   tile: Tile | null;
@@ -137,6 +138,10 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                       : { transform: 'scale(1.15)' }
                   }
                 />
+              </div>
+            ) : tile.type === 'jail' || tile.type === 'go_to_jail' ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black flex-shrink-0">
+                <img src={mornaguiaJailImg} alt="Mornaguia Prison" className="w-full h-full object-cover" />
               </div>
             ) : tile.flag ? (
               <span className="text-2xl drop-shadow">{tile.flag}</span>
