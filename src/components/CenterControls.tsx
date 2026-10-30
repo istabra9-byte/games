@@ -18,6 +18,24 @@ interface CenterControlsProps {
   onTileClick?: (tile: Tile) => void;
 }
 
+// Helper to format log text: replaces country names in parentheses with their flag
+export const formatLogText = (rawText: string) => {
+  let text = rawText.replace(/^[^\w\s]+/, '').trim();
+  return text
+    .replace(/\(Spain\)/gi, '🇪🇸')
+    .replace(/\(Brazil\)/gi, '🇧🇷')
+    .replace(/\(Italy\)/gi, '🇮🇹')
+    .replace(/\(Germany\)/gi, '🇩🇪')
+    .replace(/\(China\)/gi, '🇨🇳')
+    .replace(/\(France\)/gi, '🇫🇷')
+    .replace(/\(United Kingdom\)/gi, '🇬🇧')
+    .replace(/\(United States\)/gi, '🇺🇸')
+    .replace(/\(Tunisia\)/gi, '🇹🇳')
+    .replace(/\(Qatar\)/gi, '🇶🇦')
+    .replace(/\(UAE\)/gi, '🇦🇪')
+    .replace(/\s+/g, ' ');
+};
+
 export const CenterControls: React.FC<CenterControlsProps> = ({
   room,
   currentPlayerId,
@@ -102,13 +120,13 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   if (!turnPlayer) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full max-w-sm px-2 py-1 select-none gap-2">
-      {/* 0. Top Action Notification Banner (On Top of Dominos) */}
-      <div className="min-h-[34px] flex items-center justify-center w-full">
+    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm px-2 py-1.5 select-none relative">
+      {/* 0. Top Action Notification Banner (Elevated Higher to Top of Center Stage) */}
+      <div className="w-full flex items-center justify-center min-h-[38px] pt-1 mb-1">
         {latestActionLog ? (
           <div
             key={latestActionLog.id}
-            className="flex items-center gap-2 px-3.5 py-1.5 bg-[#1e1333]/95 hover:bg-[#281a44] border border-purple-500/40 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md max-w-[340px] sm:max-w-[380px] transition-all animate-in fade-in slide-in-from-top-2 duration-300"
+            className="flex items-center gap-2 px-4 py-1.5 bg-[#1e1333]/95 hover:bg-[#281a44] border border-purple-500/40 rounded-full shadow-[0_6px_20px_rgba(0,0,0,0.65)] backdrop-blur-md max-w-[340px] sm:max-w-[380px] transition-all animate-in fade-in slide-in-from-top-3 duration-300"
           >
             {actionPlayer ? (
               <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-black/40 border border-white/30">
@@ -117,137 +135,139 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             ) : (
               <span className="text-xs flex-shrink-0">🔔</span>
             )}
-            <span className="text-[11px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide">
-              {latestActionLog.text.replace(/^[^\w\s]+/, '').trim()}
+            <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide">
+              {formatLogText(latestActionLog.text)}
             </span>
           </div>
         ) : (
-          <div className="h-6" />
+          <div className="h-7" />
         )}
       </div>
 
-      {/* 1. Large 3D Dice with Realistic Shake & Tumble in Center */}
-      <div className="flex flex-col items-center justify-center">
-        <DiceView values={room.dice} isRolling={isRolling} />
-      </div>
+      {/* 1. Large 3D Dice with Realistic Shake & Tumble + Turn Action Controls */}
+      <div className="flex flex-col items-center justify-center my-auto gap-2">
+        <div className="flex flex-col items-center justify-center">
+          <DiceView values={room.dice} isRolling={isRolling} />
+        </div>
 
-      {/* 2. Turn Status / Action Controls (Directly Under Dice) */}
-      <div className="flex flex-col items-center justify-center min-h-[48px]">
-        {isPieceMoving ? (
-          <div className="flex items-center gap-2 px-3.5 py-1.5 bg-black/30 rounded-full border border-purple-500/30">
-            <span
-              className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
-              style={{ backgroundColor: turnPlayer.color }}
-            />
-            <span className="text-xs font-bold text-purple-200">
-              {turnPlayer.name} is moving...
-            </span>
-          </div>
-        ) : (
-          <>
-            {/* Phase 1: ROLL DICE */}
-            {room.turnPhase === 'roll' && (
-              <div className="flex flex-col items-center gap-1.5">
-                {turnPlayer.inJail && isMyTurn && (
-                  <button
-                    onClick={onPayBail}
-                    disabled={turnPlayer.cash < 50}
-                    className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
-                  >
-                    <ShieldAlert className="w-3.5 h-3.5" />
-                    <span>Pay $50 Bail</span>
-                  </button>
-                )}
-
-                {isMyTurn ? (
-                  <button
-                    onClick={handleRollClick}
-                    disabled={isRolling}
-                    className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
-                  >
-                    <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-                    <span>Roll dice</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
-                      style={{ backgroundColor: turnPlayer.color }}
-                    />
-                    <span className="text-xs font-bold text-gray-200">
-                      {turnPlayer.name} is playing...
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Phase 2: UNOWNED PROPERTY DECISION (Exact Richup 2 Side-by-Side Pill Buttons) */}
-            {room.turnPhase === 'action' && landedTile && (
-              <div className="flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-150">
-                {isMyTurn ? (
-                  <>
+        {/* 2. Turn Status / Action Controls (Directly Under Dice) */}
+        <div className="flex flex-col items-center justify-center min-h-[48px]">
+          {isPieceMoving ? (
+            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-black/30 rounded-full border border-purple-500/30">
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                style={{ backgroundColor: turnPlayer.color }}
+              />
+              <span className="text-xs font-bold text-purple-200">
+                {turnPlayer.name} is moving...
+              </span>
+            </div>
+          ) : (
+            <>
+              {/* Phase 1: ROLL DICE */}
+              {room.turnPhase === 'roll' && (
+                <div className="flex flex-col items-center gap-1.5">
+                  {turnPlayer.inJail && isMyTurn && (
                     <button
-                      onClick={onSkip}
-                      className="px-5 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
+                      onClick={onPayBail}
+                      disabled={turnPlayer.cash < 50}
+                      className="px-2.5 py-1 bg-amber-600/90 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all shadow border border-amber-400/40 cursor-pointer"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5" />
+                      <span>Pay $50 Bail</span>
+                    </button>
+                  )}
+
+                  {isMyTurn ? (
+                    <button
+                      onClick={handleRollClick}
+                      disabled={isRolling}
+                      className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
+                    >
+                      <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
+                      <span>Roll dice</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                        style={{ backgroundColor: turnPlayer.color }}
+                      />
+                      <span className="text-xs font-bold text-gray-200">
+                        {turnPlayer.name} is playing...
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Phase 2: UNOWNED PROPERTY DECISION (Exact Richup 2 Side-by-Side Pill Buttons) */}
+              {room.turnPhase === 'action' && landedTile && (
+                <div className="flex items-center gap-2.5 animate-in fade-in zoom-in-95 duration-150">
+                  {isMyTurn ? (
+                    <>
+                      <button
+                        onClick={onSkip}
+                        className="px-5 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        <span>End turn</span>
+                      </button>
+
+                      <button
+                        onClick={onBuy}
+                        disabled={turnPlayer.cash < landedTile.price}
+                        className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 disabled:opacity-40 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-lg border border-purple-400/50"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>Buy for ${landedTile.price}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                        style={{ backgroundColor: turnPlayer.color }}
+                      />
+                      <span className="text-xs font-bold text-gray-200">
+                        {turnPlayer.name} is playing...
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Phase 3: END TURN */}
+              {room.turnPhase === 'end' && (
+                <div className="flex flex-col items-center gap-2 animate-in fade-in duration-200">
+                  {isMyTurn ? (
+                    <button
+                      onClick={onEndTurn}
+                      className="px-6 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
                     >
                       <Check className="w-3.5 h-3.5" />
                       <span>End turn</span>
                     </button>
-
-                    <button
-                      onClick={onBuy}
-                      disabled={turnPlayer.cash < landedTile.price}
-                      className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 disabled:opacity-40 text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-lg border border-purple-400/50"
-                    >
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>Buy for ${landedTile.price}</span>
-                    </button>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
-                      style={{ backgroundColor: turnPlayer.color }}
-                    />
-                    <span className="text-xs font-bold text-gray-200">
-                      {turnPlayer.name} is playing...
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Phase 3: END TURN */}
-            {room.turnPhase === 'end' && (
-              <div className="flex flex-col items-center gap-2 animate-in fade-in duration-200">
-                {isMyTurn ? (
-                  <button
-                    onClick={onEndTurn}
-                    className="px-6 py-2.5 bg-[#4c3e72] hover:bg-[#5d4d8a] active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow border border-purple-500/30"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>End turn</span>
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
-                    <span
-                      className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
-                      style={{ backgroundColor: turnPlayer.color }}
-                    />
-                    <span className="text-xs font-bold text-gray-200">
-                      {turnPlayer.name} is playing...
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-black/25 rounded-full border border-purple-900/40">
+                      <span
+                        className="w-2 h-2 rounded-full flex-shrink-0 animate-ping"
+                        style={{ backgroundColor: turnPlayer.color }}
+                      />
+                      <span className="text-xs font-bold text-gray-200">
+                        {turnPlayer.name} is playing...
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* 3. Live Activity Feed (Under Buttons with Smooth Scroll) */}
-      <div className="w-full max-w-xs mt-1 flex flex-col">
+      <div className="w-full max-w-xs mt-auto flex flex-col pb-1">
         <div className="flex items-center justify-between px-1 mb-1">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -280,7 +300,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                   {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
                 </span>
                 <span className="break-words line-clamp-2">
-                  {log.text.replace(/^[^\w\s]+/, '').trim()}
+                  {formatLogText(log.text)}
                 </span>
               </div>
             );

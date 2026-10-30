@@ -305,9 +305,10 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   player.cash -= tile.price;
   tile.ownerId = playerId;
 
+  const placeFlag = tile.flag ? `${tile.flag} ` : '';
   newRoom.logs.push({
     id: `buy_${Date.now()}`,
-    text: `🏠 ${player.name} bought ${tile.name}${tile.country ? ` (${tile.country})` : ''} for $${tile.price}!`,
+    text: `🏠 ${player.name} bought ${placeFlag}${tile.name} for $${tile.price}!`,
     timestamp: Date.now(),
     type: 'buy',
     playerId: player.id
