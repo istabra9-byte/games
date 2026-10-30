@@ -618,25 +618,25 @@ export const App: React.FC = () => {
   return (
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col overflow-hidden text-white font-sans select-none">
       {/* Top Header Navigation matching Richup */}
-      <header className="h-12 border-b border-purple-900/40 bg-[#160f25] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
+      <header className="h-9 sm:h-10 border-b border-purple-900/40 bg-[#160f25] px-3 sm:px-4 flex items-center justify-between flex-shrink-0 z-30">
         {/* Left: Brand */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => setRoomId('')}
-            className="text-xl sm:text-2xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 hover:opacity-85 transition-opacity cursor-pointer flex-shrink-0"
+            className="text-lg sm:text-xl font-black font-heading tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 hover:opacity-85 transition-opacity cursor-pointer flex-shrink-0 leading-none"
           >
             MONOPOLY
           </button>
 
           {!isCurrentPlayerInGame && (
-            <span className="hidden sm:inline px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[10px] font-bold whitespace-nowrap">
+            <span className="hidden sm:inline px-1.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded text-[9px] font-bold whitespace-nowrap leading-none">
               Spectator
             </span>
           )}
         </div>
 
         {/* Right Actions: Clean minimal controls matching Richup */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Mobile Chat drawer toggle (< 1024px) */}
           <button
             onClick={() => {
@@ -644,16 +644,16 @@ export const App: React.FC = () => {
               if (!isChatOpen) setIsPlayersOpen(false);
             }}
             title="Chat"
-            className={`lg:hidden px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer relative ${
+            className={`lg:hidden px-2 py-1 border rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer relative ${
               isChatOpen 
                 ? 'bg-purple-600 text-white border-purple-400 shadow-md' 
                 : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3 h-3" />
             <span className="hidden sm:inline">Chat</span>
             {droppedMessages.length > 0 && !isChatOpen && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-pink-500 rounded-full animate-ping" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-pink-500 rounded-full animate-ping" />
             )}
           </button>
 
@@ -664,13 +664,13 @@ export const App: React.FC = () => {
               if (!isPlayersOpen) setIsChatOpen(false);
             }}
             title="Players & Standings"
-            className={`lg:hidden px-2.5 py-1 border rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`lg:hidden px-2 py-1 border rounded-lg text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
               isPlayersOpen
                 ? 'bg-purple-600 text-white border-purple-400 shadow-md'
                 : 'bg-[#21163b] hover:bg-[#2e1f52] border-purple-800/60 text-purple-200'
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
+            <Users className="w-3 h-3" />
             <span className="hidden sm:inline">Players</span>
           </button>
 
@@ -678,9 +678,9 @@ export const App: React.FC = () => {
           <button
             onClick={handleRestartRoom}
             title="Restart Match / New Game"
-            className="p-1.5 sm:px-2.5 sm:py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+            className="px-2 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3 h-3" />
             <span className="hidden sm:inline">Restart</span>
           </button>
 
@@ -688,25 +688,25 @@ export const App: React.FC = () => {
           <button
             onClick={() => setIsMuted(sound.toggleMute())}
             title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-            className="p-1.5 rounded-lg bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 transition-colors cursor-pointer"
+            className="p-1 rounded-lg bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 transition-colors cursor-pointer"
           >
-            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
+            {isMuted ? <VolumeX className="w-3 h-3 text-red-400" /> : <Volume2 className="w-3 h-3" />}
           </button>
 
           {/* Leave game to home */}
           <button
             onClick={() => setRoomId('')}
             title="Exit to Main Menu"
-            className="p-1 sm:px-2 sm:py-1 flex items-center gap-1 text-xs font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
+            className="px-1.5 py-1 flex items-center gap-1 text-[11px] font-bold text-gray-400 hover:text-red-400 transition-colors cursor-pointer"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-3 h-3" />
             <span className="hidden sm:inline">Exit</span>
           </button>
         </div>
       </header>
 
       {/* Main Screen 3-Column Area: LeftSidebar (Share & Chat), Board, RightSidebar (Players, Bankrupt, Trades, My Properties) */}
-      <div className="flex-1 w-full h-[calc(100vh-3rem)] px-2 sm:px-3 py-2 flex items-center justify-between gap-3 overflow-hidden relative">
+      <div className="flex-1 w-full min-h-0 px-2 sm:px-3 py-1 sm:py-1.5 flex items-center justify-between gap-2.5 sm:gap-3 overflow-hidden relative">
         {/* Desktop Left Sidebar: Share this game & Permanent Chat */}
         <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
           <LeftSidebar
@@ -718,7 +718,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden py-1 px-1">
           <Board
             room={room}
             currentPlayerId={currentPlayer.id}

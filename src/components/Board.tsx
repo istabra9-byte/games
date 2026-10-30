@@ -156,7 +156,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
   return (
     <div
-      className="responsive-board-wrapper relative bg-[#171328] rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-[#261f3e] select-none flex flex-col justify-center m-auto"
+      className="responsive-board-wrapper max-h-full relative bg-[#171328] rounded-2xl p-1 sm:p-1.5 md:p-2 shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-[#261f3e] select-none flex flex-col justify-center m-auto"
     >
       <div
         className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
