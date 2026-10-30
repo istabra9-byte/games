@@ -363,8 +363,13 @@ export const App: React.FC = () => {
           if (bestTileToBuild !== null) {
             actedRoom = buildHouse(actedRoom, turnPlayer.id, bestTileToBuild);
           }
-          const nextRoom = endTurn(actedRoom);
-          multiplayer.updateRoom(nextRoom);
+          if (actedRoom.turnPhase === 'end') {
+            const nextRoom = endTurn(actedRoom);
+            multiplayer.updateRoom(nextRoom);
+          } else {
+            // Bot rolled doubles or card granted extra roll: keep turnPhase as roll!
+            multiplayer.updateRoom(actedRoom);
+          }
         } else if (room.turnPhase === 'end') {
           let roomWithUpgrades = room;
           const bestTileToBuild = getBotHouseBuildTileIndex(roomWithUpgrades, turnPlayer.id);

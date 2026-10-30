@@ -46,8 +46,43 @@ export const CHANCE_CARDS = [
     id: 'ch_6',
     type: 'chance',
     title: 'Trip to New York',
-    description: 'Advance to New York.',
+    description: 'Advance to New York. If unowned, you may buy it. If owned, pay rent.',
     action: 'advance_to_39'
+  },
+  {
+    id: 'ch_7',
+    type: 'chance',
+    title: 'Take a Flight',
+    description: 'Advance to the nearest Airport. If unowned, you may buy it. If owned, pay rent.',
+    action: 'advance_to_nearest_airport'
+  },
+  {
+    id: 'ch_8',
+    type: 'chance',
+    title: 'Utility Inspection',
+    description: 'Advance to the nearest Utility (STEG / SONEDE). If unowned, you may buy it. If owned, pay rent.',
+    action: 'advance_to_nearest_utility'
+  },
+  {
+    id: 'ch_9',
+    type: 'chance',
+    title: 'Royal Visit',
+    description: 'Advance directly to London. If unowned, you may buy it. If owned, pay rent.',
+    action: 'advance_to_london'
+  },
+  {
+    id: 'ch_10',
+    type: 'chance',
+    title: 'Wrong Direction',
+    description: 'Go back 3 spaces and resolve that space.',
+    action: 'go_back_3'
+  },
+  {
+    id: 'ch_11',
+    type: 'chance',
+    title: 'Double Boost',
+    description: 'Velocity surge! Roll the dice again immediately!',
+    action: 'free_roll'
   }
 ];
 

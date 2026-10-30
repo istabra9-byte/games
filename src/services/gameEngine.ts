@@ -104,9 +104,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       (player as any).escapedJail = true;
       player.inJail = false;
       player.jailTurns = 0;
+      newRoom.consecutiveDoubles = 0;
+      // In official Monopoly rules, rolling doubles to escape jail moves player but does NOT grant a second turn
+      newRoom.isDoubles = false;
       newRoom.logs.push({
         id: `jail_free_${Date.now()}`,
-        text: `🎲 ${player.name} rolled doubles and escaped jail!`,
+        text: `🎲 ${player.name} rolled doubles (${d1}-${d2}) and escaped jail!`,
         timestamp: Date.now(),
         type: 'jail',
         playerId: player.id
@@ -140,23 +143,35 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     }
   }
 
-  // Handle consecutive doubles
+  // Handle consecutive doubles (Speeding rule)
   if (isDoubles) {
     newRoom.consecutiveDoubles += 1;
     if (newRoom.consecutiveDoubles >= 3) {
       player.position = 10;
       player.inJail = true;
+      player.jailTurns = 0;
       newRoom.consecutiveDoubles = 0;
+      newRoom.isDoubles = false;
       newRoom.turnPhase = 'end';
       newRoom.logs.push({
         id: `jail_3doubles_${Date.now()}`,
-        text: `🚨 ${player.name} rolled 3 consecutive doubles and was sent directly to Jail!`,
+        text: `🚨 ${player.name} rolled doubles 3 consecutive times! Sent directly to Jail for speeding!`,
         timestamp: Date.now(),
         type: 'jail',
         playerId: player.id
       });
+      sound.playPrison();
+      updateNetWorths(newRoom);
       return newRoom;
     }
+
+    newRoom.logs.push({
+      id: `doubles_${Date.now()}`,
+      text: `🎲 ${player.name} rolled DOUBLES (${d1}-${d2})! Takes turn & gets an extra roll!`,
+      timestamp: Date.now(),
+      type: 'system',
+      playerId: player.id
+    });
   } else {
     newRoom.consecutiveDoubles = 0;
   }
@@ -272,6 +287,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     player.inJail = true;
     player.jailTurns = 0;
     newRoom.consecutiveDoubles = 0;
+    newRoom.isDoubles = false;
     newRoom.turnPhase = 'end';
     newRoom.logs.push({
       id: `jail_land_${Date.now()}`,
@@ -280,11 +296,15 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       type: 'jail',
       playerId: player.id
     });
+    sound.playPrison();
   } else if (tile.type === 'chance' || tile.type === 'chest') {
     const cardDeck = tile.type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
     const card = cardDeck[Math.floor(Math.random() * cardDeck.length)];
-    applyCardEffect(newRoom, player, card);
-    newRoom.turnPhase = isDoubles ? 'roll' : 'end';
+    applyCardEffect(newRoom, player, card, isDoubles);
+    // If the card did not trigger action or an extra roll, finalize turnPhase according to isDoubles
+    if (newRoom.turnPhase !== 'action' && newRoom.turnPhase !== 'roll') {
+      newRoom.turnPhase = isDoubles ? 'roll' : 'end';
+    }
   } else {
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   }
@@ -706,7 +726,114 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
   });
 }
 
-function applyCardEffect(room: GameRoom, player: Player, card: any) {
+function handlePlayerRelocation(
+  room: GameRoom,
+  player: Player,
+  targetPos: number,
+  isDoubles: boolean,
+  passGoSalary: boolean = true
+) {
+  const oldPos = player.position;
+  player.position = targetPos;
+
+  // Passed GO?
+  if (passGoSalary && targetPos < oldPos && targetPos !== 10) {
+    player.cash += room.settings.salary;
+    room.logs.push({
+      id: `salary_${Date.now()}`,
+      text: `💰 ${player.name} passed START and collected $${room.settings.salary} salary.`,
+      timestamp: Date.now(),
+      type: 'system',
+      playerId: player.id
+    });
+  }
+
+  const destTile = room.tiles[targetPos];
+  if (!destTile) {
+    room.turnPhase = isDoubles ? 'roll' : 'end';
+    return;
+  }
+
+  if (destTile.type === 'property' || destTile.type === 'railroad' || destTile.type === 'utility') {
+    if (!destTile.ownerId) {
+      // Unowned: player can buy or skip!
+      room.turnPhase = 'action';
+    } else if (destTile.ownerId === player.id) {
+      room.turnPhase = isDoubles ? 'roll' : 'end';
+    } else {
+      // Owned by someone else -> pay rent!
+      const owner = room.players[destTile.ownerId];
+      if (owner && !owner.isBankrupt && !destTile.isMortgaged) {
+        if (!owner.inJail || !room.settings.noRentPaymentsWhileInPrison) {
+          const rentAmount = calculateRent(room, destTile, 7);
+          const prevCash = player.cash;
+          player.cash -= rentAmount;
+          owner.cash += rentAmount;
+          room.logs.push({
+            id: `rent_${Date.now()}`,
+            text: `💸 ${player.name} paid $${rentAmount} rent to ${owner.name}!`,
+            timestamp: Date.now(),
+            type: 'rent',
+            playerId: player.id
+          });
+          if (prevCash >= 0 && player.cash < 0) {
+            resolveDebtOrBankruptcy(room, player.id, owner.id);
+          }
+        }
+      }
+      room.turnPhase = isDoubles ? 'roll' : 'end';
+    }
+  } else if (destTile.type === 'tax') {
+    let taxAmount = destTile.price;
+    if (destTile.name.toLowerCase().includes('earnings') || destTile.index === 4) {
+      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
+    } else if (destTile.name.toLowerCase().includes('premium') || destTile.index === 38) {
+      taxAmount = 100;
+    }
+    const prevCash = player.cash;
+    player.cash -= taxAmount;
+    room.pot += taxAmount;
+    room.logs.push({
+      id: `tax_${Date.now()}`,
+      text: `💰 ${player.name} paid $${taxAmount} in ${destTile.name}!`,
+      timestamp: Date.now(),
+      type: 'rent',
+      playerId: player.id
+    });
+    if (prevCash >= 0 && player.cash < 0) {
+      resolveDebtOrBankruptcy(room, player.id, null);
+    }
+    room.turnPhase = isDoubles ? 'roll' : 'end';
+  } else if (destTile.type === 'vacation') {
+    if (room.settings.vacationCash && room.pot > 0) {
+      const potCash = room.pot;
+      player.cash += potCash;
+      room.pot = 0;
+      room.logs.push({
+        id: `pot_${Date.now()}`,
+        text: `🌴 ${player.name} won the $${potCash} Vacation Pot!`,
+        timestamp: Date.now(),
+        type: 'rent',
+        playerId: player.id
+      });
+    }
+    room.turnPhase = isDoubles ? 'roll' : 'end';
+  } else if (destTile.type === 'start') {
+    room.turnPhase = isDoubles ? 'roll' : 'end';
+  } else if (destTile.type === 'go_to_jail') {
+    player.position = 10;
+    player.inJail = true;
+    player.jailTurns = 0;
+    room.consecutiveDoubles = 0;
+    room.isDoubles = false;
+    room.turnPhase = 'end';
+    sound.playPrison();
+  } else {
+    room.turnPhase = isDoubles ? 'roll' : 'end';
+  }
+}
+
+function applyCardEffect(room: GameRoom, player: Player, card: any, isDoubles: boolean) {
   room.logs.push({
     id: `card_${Date.now()}`,
     text: `📜 ${player.name} drew: "${card.title}" - ${card.description}`,
@@ -716,11 +843,50 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
   });
 
   switch (card.action) {
-    case 'advance_to_go':
-      player.position = 0;
-      player.cash += room.settings.salary;
+    case 'advance_to_go': {
+      handlePlayerRelocation(room, player, 0, isDoubles, true);
       break;
-    case 'pay_pot_50':
+    }
+    case 'advance_to_nearest_airport': {
+      // Airports are at indices 5 (Tunis-Carthage), 15 (Qatar), 25 (Nouvelair), 35 (Emirates)
+      const airports = [5, 15, 25, 35];
+      const nextAirport = airports.find(a => a > player.position) ?? 5;
+      handlePlayerRelocation(room, player, nextAirport, isDoubles, true);
+      break;
+    }
+    case 'advance_to_nearest_utility': {
+      // Utilities are at indices 12 (STEG), 28 (SONEDE)
+      const utilities = [12, 28];
+      const nextUtility = utilities.find(u => u > player.position) ?? 12;
+      handlePlayerRelocation(room, player, nextUtility, isDoubles, true);
+      break;
+    }
+    case 'advance_to_london': {
+      handlePlayerRelocation(room, player, 32, isDoubles, player.position > 32);
+      break;
+    }
+    case 'advance_to_39': {
+      handlePlayerRelocation(room, player, 39, isDoubles, false);
+      break;
+    }
+    case 'go_back_3': {
+      const target = (player.position - 3 + 40) % 40;
+      handlePlayerRelocation(room, player, target, isDoubles, false);
+      break;
+    }
+    case 'free_roll': {
+      room.isDoubles = true;
+      room.turnPhase = 'roll';
+      room.logs.push({
+        id: `card_freeroll_${Date.now()}`,
+        text: `🎲 ${player.name} receives an immediate extra roll!`,
+        timestamp: Date.now(),
+        type: 'system',
+        playerId: player.id
+      });
+      break;
+    }
+    case 'pay_pot_50': {
       const prevCardCash = player.cash;
       player.cash -= 50;
       room.pot += 50;
@@ -728,30 +894,38 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
         resolveDebtOrBankruptcy(room, player.id, null);
       }
       break;
-    case 'receive_100':
+    }
+    case 'receive_100': {
       player.cash += 100;
       break;
-    case 'receive_200':
+    }
+    case 'receive_200': {
       player.cash += 200;
       break;
-    case 'receive_50':
+    }
+    case 'receive_50': {
       player.cash += 50;
       break;
-    case 'receive_75':
+    }
+    case 'receive_75': {
       player.cash += 75;
       break;
-    case 'go_to_jail':
+    }
+    case 'go_to_jail': {
       player.position = 10;
       player.inJail = true;
       player.jailTurns = 0;
+      room.consecutiveDoubles = 0;
+      room.isDoubles = false;
+      room.turnPhase = 'end';
+      sound.playPrison();
       break;
-    case 'jail_card':
+    }
+    case 'jail_card': {
       player.jailCards = (player.jailCards || 0) + 1;
       break;
-    case 'advance_to_39':
-      player.position = 39;
-      break;
-    case 'collect_from_all_20':
+    }
+    case 'collect_from_all_20': {
       Object.values(room.players).forEach(other => {
         if (other.id !== player.id && !other.isBankrupt) {
           other.cash -= 20;
@@ -759,6 +933,7 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
         }
       });
       break;
+    }
   }
 }
 

@@ -377,7 +377,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                         className="px-5 sm:px-6 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-pink-400/50 whitespace-nowrap min-w-[130px]"
                       >
                         <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
-                        <span>Roll dice</span>
+                        <span>{room.isDoubles ? 'Roll Again (Doubles!)' : 'Roll dice'}</span>
                       </button>
 
                       {turnPlayer.inJail && (
@@ -398,7 +398,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                         style={{ backgroundColor: turnPlayer.color }}
                       />
                       <span className="text-xs font-bold text-gray-200">
-                        {turnPlayer.name} is playing...
+                        {turnPlayer.name} {room.isDoubles ? 'rolled doubles! Rolling again...' : 'is playing...'}
                       </span>
                     </div>
                   )}
@@ -434,7 +434,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                         style={{ backgroundColor: turnPlayer.color }}
                       />
                       <span className="text-xs font-bold text-gray-200">
-                        {turnPlayer.name} is playing...
+                        {turnPlayer.name} is deciding...
                       </span>
                     </div>
                   )}
@@ -459,7 +459,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                         style={{ backgroundColor: turnPlayer.color }}
                       />
                       <span className="text-xs font-bold text-gray-200">
-                        {turnPlayer.name} is playing...
+                        {turnPlayer.name} is finishing turn...
                       </span>
                     </div>
                   )}
