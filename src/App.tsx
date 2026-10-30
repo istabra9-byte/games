@@ -102,6 +102,7 @@ export const App: React.FC = () => {
   const [isPlayersOpen, setIsPlayersOpen] = useState<boolean>(false);
   const [droppedMessages, setDroppedMessages] = useState<ChatMessage[]>([]);
   const lastMessageCountRef = useRef<number>(0);
+  const prevRoomStatusRef = useRef<string | null>(null);
 
   // Preload all meme audio clips into local browser memory on mount
   useEffect(() => {
@@ -241,6 +242,11 @@ export const App: React.FC = () => {
           }
         });
       }
+      if (prevRoomStatusRef.current === 'lobby' && updatedRoom.status === 'playing') {
+        sound.playMemeWelcome();
+      }
+      prevRoomStatusRef.current = updatedRoom.status;
+
       setRoom(updatedRoom);
       if (updatedRoom.winnerId && updatedRoom.status === 'ended') {
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
@@ -471,6 +477,7 @@ export const App: React.FC = () => {
   const handleStartGame = () => {
     if (!room) return;
     sound.preloadMemeSounds();
+    sound.playMemeWelcome();
     const started = startGame(room);
     multiplayer.updateRoom(started);
   };
