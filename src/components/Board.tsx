@@ -304,8 +304,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
         className="w-full h-full gap-[2px] sm:gap-[2.5px] relative transition-colors duration-500"
         style={{
           display: 'grid',
-          gridTemplateColumns: '2.3fr repeat(9, 1fr) 2.3fr',
-          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr'
+          gridTemplateColumns: 'minmax(0, 2.3fr) repeat(9, minmax(0, 1fr)) minmax(0, 2.3fr)',
+          gridTemplateRows: 'minmax(0, 1.85fr) repeat(9, minmax(0, 1fr)) minmax(0, 1.85fr)'
         }}
       >
         {tiles.map((tile) => {
@@ -331,7 +331,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               <div
                 key={tile.index}
                 onClick={() => onTileClick && onTileClick(tile)}
-                className={`relative ${cornerRadiusClass} flex flex-col items-center justify-between overflow-hidden cursor-pointer p-1 shadow-inner hover:border-purple-400/60 transition-all select-none border`}
+                className={`relative ${cornerRadiusClass} flex min-w-0 min-h-0 flex-col items-center justify-between overflow-hidden cursor-pointer p-1 shadow-inner hover:border-purple-400/60 transition-all select-none border`}
                 style={{
                   gridRowStart: row,
                   gridColumnStart: col,
@@ -504,19 +504,23 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               );
             }
 
-            // Tax spaces: Bank (10%) or Poste ($100 fee) - cannot be owned
+            // Tax spaces: Bank (19%) or Poste (no price badge, cannot be owned)
             if (tile.type === 'tax') {
               const isBank = tile.index === 4 || tile.name.toLowerCase().includes('bank') || tile.name.toLowerCase().includes('earnings');
-              return (
-                <div className={fixedSlotClass}>
-                  <div
-                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap shadow-sm"
-                    style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
-                  >
-                    {isBank ? '%10' : '$100'}
+              if (isBank) {
+                return (
+                  <div className={fixedSlotClass}>
+                    <div
+                      className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap shadow-sm"
+                      style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
+                    >
+                      %19
+                    </div>
                   </div>
-                </div>
-              );
+                );
+              }
+              // Poste has NO $100 price badge so players don't think it can be bought
+              return <div className={fixedSlotClass} />;
             }
 
             // Unowned purchasable property: translucent compact price badge
@@ -705,7 +709,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             <div
               key={tile.index}
               onClick={() => onTileClick && onTileClick(tile)}
-              className="relative rounded-[7px] flex overflow-visible cursor-pointer transition-all duration-150 select-none border hover:border-purple-400/60 shadow-sm"
+              className="relative rounded-[7px] flex min-w-0 min-h-0 overflow-visible cursor-pointer transition-all duration-150 select-none border hover:border-purple-400/60 shadow-sm"
               style={{
                 gridRowStart: row,
                 gridColumnStart: col,

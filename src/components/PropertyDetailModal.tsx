@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tile, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
-import { Home, X, DollarSign, AlertCircle, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
+import { Home, X, DollarSign, AlertCircle, Sparkles, Building2, CheckCircle2, HelpCircle, Gift } from 'lucide-react';
 import { HouseIcon, HotelIcon } from './HouseIcons';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
@@ -75,6 +75,26 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
   const sellToBankPrice = tile.isMortgaged ? tile.mortgageValue : Math.floor(tile.price * 0.7);
   const countryDisplayName = tile.country || groupMeta?.name || 'Country';
 
+  // Count airports owned by this airport's owner (if owned)
+  const ownedRailroadsCount = tile.ownerId
+    ? room.tiles.filter(t => t.type === 'railroad' && t.ownerId === tile.ownerId).length
+    : 0;
+
+  // Header subtitle label
+  const getSubtitle = () => {
+    if (tile.type === 'tax') {
+      return tile.index === 4 || tile.name.toLowerCase().includes('bank') ? 'Public Bank' : 'Public Service';
+    }
+    if (tile.type === 'chance') return 'Surprise Event';
+    if (tile.type === 'chest') return 'Treasure Event';
+    if (tile.type === 'railroad') return `Airport • $${tile.price}`;
+    if (tile.type === 'utility') return `Utility Service • $${tile.price}`;
+    if (tile.type === 'start') return 'Start Space';
+    if (tile.type === 'jail' || tile.type === 'go_to_jail') return 'Prison Space';
+    if (tile.type === 'vacation') return 'Vacation Space';
+    return `${countryDisplayName} ${tile.price > 0 ? `• $${tile.price}` : ''}`;
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 cursor-pointer"
@@ -113,6 +133,14 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-white flex-shrink-0 p-0.5">
                 <img src={bankLogo} alt="Bank" className="w-full h-full object-contain" />
               </div>
+            ) : tile.type === 'chance' ? (
+              <div className="w-8 h-8 rounded-full bg-fuchsia-600 border border-white/80 shadow flex items-center justify-center text-white font-black text-lg flex-shrink-0">
+                ?
+              </div>
+            ) : tile.type === 'chest' ? (
+              <div className="w-8 h-8 rounded-full bg-amber-500 border border-white/80 shadow flex items-center justify-center text-white text-lg flex-shrink-0">
+                🎁
+              </div>
             ) : tile.type === 'railroad' ? (
               (() => {
                 let airportLogo = null;
@@ -136,7 +164,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                   </div>
                 );
               })()
-            ) : tile.countryCode ? (
+            ) : tile.countryCode && tile.type === 'property' ? (
               <div className="w-6 h-6 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black/30">
                 <img
                   src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/flags/${tile.countryCode}.png`}
@@ -166,28 +194,72 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             </h2>
           </div>
           <span className="text-xs uppercase font-bold text-white/90 tracking-widest mt-0.5 block">
-            {tile.type === 'tax' ? 'Public Institution' : countryDisplayName} {tile.price > 0 ? `• $${tile.price}` : ''}
+            {getSubtitle()}
           </span>
         </div>
 
         {/* Card Body */}
         <div className="p-4 space-y-3 text-xs">
-          {/* Owner status */}
-          <div className="flex items-center justify-between pb-2 border-b border-purple-800/40">
-            <span className="text-gray-400">Ownership:</span>
-            <span className="font-bold flex items-center gap-1.5">
-              {tile.type === 'tax' ? (
-                <span className="text-amber-400 font-mono font-bold">Public Space (Cannot be owned)</span>
-              ) : owner ? (
-                <>
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: owner.color }} />
-                  <span>{owner.name} {isOwner ? '(You)' : ''}</span>
-                </>
-              ) : (
-                <span className="text-emerald-400 font-mono font-bold">Unowned (${tile.price})</span>
-              )}
-            </span>
-          </div>
+          {/* Owner status: only for buyable properties */}
+          {isBuyableType && (
+            <div className="flex items-center justify-between pb-2 border-b border-purple-800/40">
+              <span className="text-gray-400">Ownership:</span>
+              <span className="font-bold flex items-center gap-1.5">
+                {owner ? (
+                  <>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: owner.color }} />
+                    <span>{owner.name} {isOwner ? '(You)' : ''}</span>
+                  </>
+                ) : (
+                  <span className="text-emerald-400 font-mono font-bold">Unowned (${tile.price})</span>
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* Surprise Mystery Card explanation */}
+          {tile.type === 'chance' && (
+            <div className="p-3.5 bg-fuchsia-950/40 border border-fuchsia-500/40 rounded-xl space-y-2 text-xs">
+              <div className="font-bold text-fuchsia-300 flex items-center gap-1.5 text-sm">
+                <span>❓</span>
+                <span>Surprise Mystery Event</span>
+              </div>
+              <p className="text-[11px] text-gray-200 leading-relaxed">
+                Landing on a <span className="font-bold text-fuchsia-300">Surprise</span> tile draws a chance card with dynamic game events:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-300">
+                <li>Advance to next Airport or designated property</li>
+                <li>Cash prizes, rewards, and unexpected payouts</li>
+                <li>Property repair bills and general maintenance fees</li>
+                <li>Go directly to Mornaguia Prison without salary</li>
+              </ul>
+              <div className="text-[10px] text-fuchsia-400 font-mono pt-1 border-t border-fuchsia-900/40">
+                * Event tiles cannot be bought, mortgaged, or owned.
+              </div>
+            </div>
+          )}
+
+          {/* Treasure Vault Card explanation */}
+          {tile.type === 'chest' && (
+            <div className="p-3.5 bg-amber-950/40 border border-amber-500/40 rounded-xl space-y-2 text-xs">
+              <div className="font-bold text-amber-300 flex items-center gap-1.5 text-sm">
+                <span>🎁</span>
+                <span>Community Treasure Vault</span>
+              </div>
+              <p className="text-[11px] text-gray-200 leading-relaxed">
+                Landing on a <span className="font-bold text-amber-300">Treasure</span> tile draws a community chest card with fortune and fees:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-300">
+                <li>Bank error in your favor & inheritances</li>
+                <li>Consultancy fees, stock dividends, and tax refunds</li>
+                <li>Doctor bills, hospital charges, and schooling fees</li>
+                <li>Get out of Prison free card</li>
+              </ul>
+              <div className="text-[10px] text-amber-400 font-mono pt-1 border-t border-amber-900/40">
+                * Event tiles cannot be bought, mortgaged, or owned.
+              </div>
+            </div>
+          )}
 
           {/* Public space explanation for Bank and Poste */}
           {tile.type === 'tax' && (
@@ -198,11 +270,43 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               </div>
               <p className="text-[11px] text-gray-300 leading-relaxed">
                 {tile.index === 4 || tile.name.toLowerCase().includes('bank')
-                  ? 'Landing on Bank charges 10% tax of your current cash balance into the Vacation Pot.'
+                  ? 'Landing on Bank charges 19% tax of your current cash balance into the Vacation Pot.'
                   : 'Landing on Poste charges a flat $100 service fee into the Vacation Pot.'}
               </p>
               <div className="text-[10px] text-amber-400 font-mono">
                 * This location cannot be owned, traded, or mortgaged.
+              </div>
+            </div>
+          )}
+
+          {/* Airport Rent Schedule matching Photo 5 */}
+          {tile.type === 'railroad' && (
+            <div className="space-y-2 bg-[#150f24] p-3 rounded-xl border border-purple-900/50 text-xs">
+              <div className="flex justify-between items-center pb-1 border-b border-purple-800/40 text-gray-400 font-bold">
+                <span className="underline underline-offset-4 decoration-purple-500/50">when</span>
+                <span className="underline underline-offset-4 decoration-purple-500/50">get</span>
+              </div>
+              <div className="space-y-1.5 pt-0.5 text-[11px]">
+                <div className={`flex justify-between items-center ${ownedRailroadsCount === 1 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                  <span>one airport is owned</span>
+                  <span className="font-mono font-bold">$ 25</span>
+                </div>
+                <div className={`flex justify-between items-center ${ownedRailroadsCount === 2 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                  <span>2 airports are owned</span>
+                  <span className="font-mono font-bold">$ 50</span>
+                </div>
+                <div className={`flex justify-between items-center ${ownedRailroadsCount === 3 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                  <span>3 airports are owned</span>
+                  <span className="font-mono font-bold">$ 100</span>
+                </div>
+                <div className={`flex justify-between items-center ${ownedRailroadsCount === 4 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                  <span>4 airports are owned</span>
+                  <span className="font-mono font-bold">$ 200</span>
+                </div>
+              </div>
+              <div className="pt-2 mt-2 border-t border-purple-800/40 text-center">
+                <span className="text-gray-400 text-[11px] block">Price</span>
+                <span className="text-white font-bold font-mono text-sm">$ {tile.price}</span>
               </div>
             </div>
           )}
@@ -323,11 +427,13 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             </div>
           )}
 
-          {/* Mortgage Value */}
-          <div className="flex justify-between text-gray-400 text-xs">
-            <span>Mortgage Value:</span>
-            <span className="font-mono font-bold text-gray-200">${tile.mortgageValue}</span>
-          </div>
+          {/* Mortgage Value: only for buyable tiles with mortgageValue */}
+          {isBuyableType && tile.mortgageValue > 0 && (
+            <div className="flex justify-between text-gray-400 text-xs">
+              <span>Mortgage Value:</span>
+              <span className="font-mono font-bold text-gray-200">${tile.mortgageValue}</span>
+            </div>
+          )}
 
           {/* Owner Actions: Build, Sell House, Mortgage, Sell to Bank */}
           {isOwner && (

@@ -59,7 +59,7 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 30
   },
-  // 4: Bank (10% of player cash)
+  // 4: Bank (19% of player cash)
   {
     index: 4,
     name: 'Bank',

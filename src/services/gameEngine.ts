@@ -241,8 +241,8 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     let taxAmount = 100;
     const isBank = tile.index === 4 || tile.name.toLowerCase().includes('bank') || tile.name.toLowerCase().includes('earnings');
     if (isBank) {
-      // Bank: takes 10% of player cash
-      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
+      // Bank: takes 19% of player cash
+      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.19)) : 0;
     } else {
       // Poste: takes flat $100 fee
       taxAmount = 100;
@@ -254,7 +254,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     newRoom.logs.push({
       id: `tax_${Date.now()}`,
       text: isBank
-        ? `💰 ${player.name} paid $${taxAmount} tax at Bank!`
+        ? `💰 ${player.name} paid $${taxAmount} (19% tax) at Bank!`
         : `💰 ${player.name} paid $100 fee at Poste!`,
       timestamp: Date.now(),
       type: 'rent',
@@ -802,7 +802,7 @@ function handlePlayerRelocation(
     let taxAmount = 100;
     const isBank = destTile.index === 4 || destTile.name.toLowerCase().includes('bank') || destTile.name.toLowerCase().includes('earnings');
     if (isBank) {
-      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
+      taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.19)) : 0;
     } else {
       taxAmount = 100;
     }
@@ -812,7 +812,7 @@ function handlePlayerRelocation(
     room.logs.push({
       id: `tax_${Date.now()}`,
       text: isBank
-        ? `💰 ${player.name} paid $${taxAmount} tax at Bank!`
+        ? `💰 ${player.name} paid $${taxAmount} (19% tax) at Bank!`
         : `💰 ${player.name} paid $100 fee at Poste!`,
       timestamp: Date.now(),
       type: 'rent',
