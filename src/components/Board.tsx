@@ -82,13 +82,6 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           />
         )}
 
-        {/* Clear "YOU" indicator so player never loses their icon */}
-        {isMe && (
-          <span className="absolute -top-2.5 px-1 py-0.2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black text-[7.5px] sm:text-[8.5px] rounded-full shadow-lg border border-white tracking-wider leading-none z-40 pointer-events-none">
-            YOU
-          </span>
-        )}
-
         {/* Large, stable avatar (no bounce) */}
         <PlayerAvatar avatar={p.isBot ? 'navy' : p.avatar} color={p.color} size={size} />
       </div>

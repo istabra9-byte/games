@@ -8,6 +8,22 @@ class SoundService {
     : true;
   private volume: number = 0.45;
   private memeAudioCache: Record<string, HTMLAudioElement> = {};
+  private currentAudio: HTMLAudioElement | null = null;
+  private lastAudioStartTime: number = 0;
+
+  public stopCurrentSound() {
+    if (this.currentAudio) {
+      try {
+        this.currentAudio.pause();
+        this.currentAudio.currentTime = 0;
+      } catch (e) {}
+      this.currentAudio = null;
+    }
+  }
+
+  public isSoundPlaying(): boolean {
+    return Boolean(this.currentAudio && !this.currentAudio.paused && !this.currentAudio.ended);
+  }
 
   private initContext() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -40,7 +56,9 @@ class SoundService {
 
   // Helper to create a smooth, warm sine tone with gentle attack and release
   private playWarmTone(freq: number, startTime: number, duration: number, gainPeak: number, type: OscillatorType = 'sine') {
-    if (!this.ctx) return;
+    if (!this.ctx || !this.enabled) return;
+    // Suppress loud synth beeps/fanfares when a voice/meme sound is actively playing
+    if (this.isSoundPlaying() && gainPeak > 0.25) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
@@ -288,6 +306,17 @@ class SoundService {
     }
 
     try {
+      // Ensure two sounds never play simultaneously
+      if (this.currentAudio && !this.currentAudio.paused && !this.currentAudio.ended) {
+        const elapsed = Date.now() - this.lastAudioStartTime;
+        // If current sound started less than 1.6s ago, skip overlapping trigger so audio doesn't clash
+        if (elapsed < 1600) {
+          return;
+        }
+        // If it has been playing longer than 1.6s, cleanly stop it before starting the new one
+        this.stopCurrentSound();
+      }
+
       const url = this.getSoundUrl(soundFile);
       if (!this.memeAudioCache[soundFile]) {
         const audio = new Audio(url);
@@ -298,13 +327,28 @@ class SoundService {
       const audio = this.memeAudioCache[soundFile];
       audio.volume = Math.max(0, Math.min(1, this.volume * volumeMultiplier));
       audio.currentTime = 0;
+      this.currentAudio = audio;
+      this.lastAudioStartTime = Date.now();
+
+      const clearPlaying = () => {
+        if (this.currentAudio === audio) {
+          this.currentAudio = null;
+        }
+      };
+      audio.onended = clearPlaying;
+      audio.onpause = clearPlaying;
+
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
+          if (this.currentAudio === audio) {
+            this.currentAudio = null;
+          }
           if (fallbackSynth) fallbackSynth();
         });
       }
     } catch (e) {
+      this.currentAudio = null;
       if (fallbackSynth) fallbackSynth();
     }
   }
