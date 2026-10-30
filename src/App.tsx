@@ -206,6 +206,11 @@ export const App: React.FC = () => {
           nextRoom.hostId = currentPlayer.id;
         }
         nextRoom.players = { ...nextRoom.players, [currentPlayer.id]: playerToAdd };
+        Object.values(nextRoom.players).forEach(p => {
+          if (p.isBot && p.avatar !== 'navy') {
+            p.avatar = 'navy';
+          }
+        });
         if (!nextRoom.playerOrder.includes(currentPlayer.id)) {
           nextRoom.playerOrder = [...nextRoom.playerOrder, currentPlayer.id];
         }
@@ -223,6 +228,13 @@ export const App: React.FC = () => {
         return;
       }
 
+      if (updatedRoom.players) {
+        Object.values(updatedRoom.players).forEach(p => {
+          if (p.isBot && p.avatar !== 'navy') {
+            p.avatar = 'navy';
+          }
+        });
+      }
       setRoom(updatedRoom);
       if (updatedRoom.winnerId && updatedRoom.status === 'ended') {
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
@@ -417,14 +429,14 @@ export const App: React.FC = () => {
     const takenColors = new Set(Object.values(room.players).map(p => p.color.toLowerCase()));
     const availableColor = PLAYER_COLORS.find(c => !takenColors.has(c.hex.toLowerCase()))?.hex || PLAYER_COLORS[botNum % PLAYER_COLORS.length].hex;
 
-    // Pick cute googly-eyed avatar from shop appearances (never red_wine)
-    const botAvatars = ['fire', 'alien', 'bomb', 'strawberry', 'lemon', 'ghost', 'cat', 'cloud', 'donut', 'apple', 'star', 'heart'];
-    const chosenAvatar = botAvatars[(botNum - 2 + botAvatars.length) % botAvatars.length];
+    // All AI bots have the classic Navy character appearance with their distinct assigned color
+
+
 
     const newBot: Player = {
       id: botId,
       name: `AI_Bot_${botNum}`,
-      avatar: chosenAvatar,
+      avatar: 'navy',
       color: availableColor,
       cash: room.settings.startingCash,
       position: 0,
