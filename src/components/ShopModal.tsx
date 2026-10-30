@@ -605,16 +605,18 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
             <div className="flex items-center gap-2 text-amber-400 mb-2">
               <Crown className="w-6 h-6 fill-amber-400" />
-              <h3 className="text-base font-black tracking-wide">Owner Developer Mode</h3>
+              <h3 className="text-base font-black tracking-wide">Developer Verification</h3>
             </div>
 
             <p className="text-xs text-gray-300 mb-3">
-              Enter your owner passcode to grant developer coins or unlock all assets:
+              Enter secret security key to authenticate:
             </p>
 
             <input
               type="password"
-              placeholder="Enter passcode (e.g. istabra9)"
+              placeholder="••••••••"
+              autoComplete="off"
+              spellCheck={false}
               value={ownerPasscode}
               onChange={(e) => { setOwnerPasscode(e.target.value); setOwnerError(''); }}
               className="w-full bg-[#100a1c] border border-purple-800 rounded-xl px-3 py-2 text-sm text-white font-mono font-bold mb-2 outline-none focus:border-amber-400"
