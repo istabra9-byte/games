@@ -930,7 +930,7 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Screen 3-Column Area: LeftSidebar (Share & Chat), Board, RightSidebar (Players, Bankrupt, Trades, My Properties) */}
-      <div className="flex-1 w-full min-h-0 px-2 sm:px-3 py-1 sm:py-1.5 flex items-center justify-between gap-2.5 sm:gap-3 overflow-hidden relative">
+      <div className="flex-1 w-full min-h-0 px-2 sm:px-3 py-1 sm:py-1.5 flex items-center justify-center gap-2.5 sm:gap-3 overflow-hidden relative">
         {/* Desktop Left Sidebar: Share this game & Permanent Chat */}
         <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
           <LeftSidebar
@@ -942,7 +942,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* Center Hero: The Board with Embedded Center Controls */}
-        <div className="flex-1 w-full h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden py-1 px-1">
+        <div className="flex-1 h-full min-h-0 min-w-0 flex items-center justify-center overflow-hidden py-1 px-1 relative [container-type:size]">
           <Board
             room={room}
             currentPlayerId={currentPlayer.id}

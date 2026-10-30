@@ -293,20 +293,19 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
   return (
     <div
-      className="responsive-board-wrapper max-h-full relative rounded-2xl p-1 sm:p-1.5 md:p-2 border select-none flex flex-col justify-center m-auto transition-colors duration-500"
+      className="responsive-board-wrapper relative rounded-2xl p-1 sm:p-1.5 select-none flex flex-col justify-center transition-colors duration-500 border-[1.5px]"
       style={{
-        backgroundColor: currentTheme.colors.wrapperBg,
-        borderColor: currentTheme.colors.wrapperBorder,
-        boxShadow: `0 20px 50px rgba(0,0,0,0.9), 0 0 35px ${currentTheme.colors.accentGlow}`
+        backgroundColor: currentTheme.colors.gridBg,
+        borderColor: currentTheme.colors.borderColor || currentTheme.colors.wrapperBorder,
+        boxShadow: `0 20px 50px rgba(0,0,0,0.85), 0 0 30px ${currentTheme.colors.accentGlow}`
       }}
     >
       <div
-        className="w-full h-full gap-[2px] sm:gap-[3px] rounded-xl p-0.5 sm:p-1 relative transition-colors duration-500"
+        className="w-full h-full gap-[2px] sm:gap-[2.5px] relative transition-colors duration-500"
         style={{
           display: 'grid',
           gridTemplateColumns: '2.3fr repeat(9, 1fr) 2.3fr',
-          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr',
-          backgroundColor: currentTheme.colors.gridBg
+          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr'
         }}
       >
         {tiles.map((tile) => {
@@ -319,11 +318,20 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
           // Corner Tiles (Richup Exact Corners)
           if (isCorner) {
+            const cornerRadiusClass =
+              cornerType === 'start'
+                ? 'rounded-tl-xl rounded-tr-[6px] rounded-bl-[6px] rounded-br-[6px]'
+                : cornerType === 'jail'
+                ? 'rounded-tr-xl rounded-tl-[6px] rounded-bl-[6px] rounded-br-[6px]'
+                : cornerType === 'vacation'
+                ? 'rounded-br-xl rounded-tl-[6px] rounded-tr-[6px] rounded-bl-[6px]'
+                : 'rounded-bl-xl rounded-tl-[6px] rounded-tr-[6px] rounded-br-[6px]';
+
             return (
               <div
                 key={tile.index}
                 onClick={() => onTileClick && onTileClick(tile)}
-                className="relative rounded-lg flex flex-col items-center justify-between overflow-hidden cursor-pointer p-1 shadow-inner hover:border-purple-400/60 transition-all select-none border"
+                className={`relative ${cornerRadiusClass} flex flex-col items-center justify-between overflow-hidden cursor-pointer p-1 shadow-inner hover:border-purple-400/60 transition-all select-none border`}
                 style={{
                   gridRowStart: row,
                   gridColumnStart: col,
