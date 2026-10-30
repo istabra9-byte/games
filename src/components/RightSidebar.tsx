@@ -71,7 +71,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 {/* Left: Avatar & Name */}
                 <div className="flex items-center gap-2 min-w-0 pl-1.5">
                   <div className="w-7 h-7 relative flex items-center justify-center flex-shrink-0">
-                    <PlayerAvatar avatar={player.avatar} color={player.color} size={28} />
+                    <PlayerAvatar avatar={player.isBot ? 'navy' : player.avatar} color={player.color} size={28} />
                     {player.isHost && (
                       <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1.5 -right-1 drop-shadow" />
                     )}

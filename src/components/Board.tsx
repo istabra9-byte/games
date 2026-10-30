@@ -89,7 +89,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         )}
 
         {/* Large, stable avatar (no bounce) */}
-        <PlayerAvatar avatar={p.avatar} color={p.color} size={size} />
+        <PlayerAvatar avatar={p.isBot ? 'navy' : p.avatar} color={p.color} size={size} />
       </div>
     );
   };
@@ -161,7 +161,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
-          gridTemplateColumns: '1.53fr repeat(9, 1fr) 1.53fr',
+          gridTemplateColumns: '2.1fr repeat(9, 1fr) 2.1fr',
           gridTemplateRows: '1.53fr repeat(9, 1fr) 1.53fr'
         }}
       >
@@ -325,8 +325,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
                   <div
-                    className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: 'clamp(8.5px, 1.25cqi, 13px)' }}
+                    className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
+                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 1.1cqi, 11.5px)' : 'clamp(8.5px, 1.25cqi, 13px)' }}
                   >
                     {tile.price} $
                   </div>
@@ -338,8 +338,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
                   <div
-                    className="px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: 'clamp(8px, 1.15cqi, 12px)' }}
+                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
+                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 1.05cqi, 11px)' : 'clamp(8px, 1.15cqi, 12px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$75'}
                   </div>
@@ -352,12 +352,17 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
           // 2. Circular Flag or Special Space Icon (Inner Edge)
           const renderInnerIcon = () => {
+            const iconSizeStyle = {
+              width: isHorizontal ? 'clamp(19px, 2.6cqi, 28px)' : 'clamp(22px, 3.2cqi, 34px)',
+              height: isHorizontal ? 'clamp(19px, 2.6cqi, 28px)' : 'clamp(22px, 3.2cqi, 34px)'
+            };
+
             return (
               <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
                 {tile.countryCode && tile.type === 'property' ? (
                   <div
                     className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center bg-black/40 flex-shrink-0"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                    style={iconSizeStyle}
                   >
                     <img
                       src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
@@ -389,7 +394,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     return (
                       <div
                         className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center flex-shrink-0 bg-white"
-                        style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                        style={iconSizeStyle}
                       >
                         {airportLogo ? (
                           <img
@@ -408,7 +413,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 ) : tile.type === 'utility' ? (
                   <div
                     className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center flex-shrink-0 bg-white p-0.5"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                    style={iconSizeStyle}
                   >
                     {tile.name.toUpperCase().includes('POWER') || tile.name.toUpperCase().includes('STEG') ? (
                       <img
@@ -427,21 +432,21 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 ) : tile.type === 'chest' ? (
                   <div
                     className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-500/80 shadow flex items-center justify-center font-bold text-amber-300 flex-shrink-0"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                    style={iconSizeStyle}
                   >
                     🎁
                   </div>
                 ) : tile.type === 'chance' ? (
                   <div
                     className="rounded-full bg-pink-950/80 border-[1.5px] border-pink-500/80 shadow flex items-center justify-center font-black text-pink-300 flex-shrink-0"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                    style={iconSizeStyle}
                   >
                     ?
                   </div>
                 ) : tile.type === 'tax' ? (
                   <div
                     className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow flex items-center justify-center flex-shrink-0"
-                    style={{ width: 'clamp(22px, 3.2cqi, 34px)', height: 'clamp(22px, 3.2cqi, 34px)' }}
+                    style={iconSizeStyle}
                   >
                     {tile.name.includes('Earnings') ? (
                       <Percent className="w-[58%] h-[58%] text-amber-300" />
@@ -458,15 +463,16 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
           // 3. Title / City Name (Clean, Bold, Upright font matching Richup)
           const nameLabel = (
-            <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-1 w-full">
+            <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-0.5 w-full overflow-hidden">
               <span
-                className="font-heading font-black text-white select-none text-center leading-[1.1] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                className="font-heading font-black text-white select-none text-center leading-[1.05] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
                 style={{
                   fontSize: isHorizontal
-                    ? 'clamp(11px, 1.6cqi, 16px)'
-                    : 'clamp(11px, 1.55cqi, 15px)',
-                  whiteSpace: 'normal',
-                  textRendering: 'optimizeLegibility'
+                    ? 'clamp(10px, 1.4cqi, 15px)'
+                    : 'clamp(10.5px, 1.5cqi, 15px)',
+                  textRendering: 'optimizeLegibility',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word'
                 }}
                 title={tile.name}
               >

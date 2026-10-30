@@ -288,7 +288,7 @@ export const Lobby: React.FC<LobbyProps> = ({
                 className="bg-[#120c1d] p-2.5 rounded-xl border border-purple-950 flex items-center gap-2.5"
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center relative flex-shrink-0">
-                  <PlayerAvatar avatar={p.avatar} color={p.color} size={32} />
+                  <PlayerAvatar avatar={p.isBot ? 'navy' : p.avatar} color={p.color} size={32} />
                   {p.isHost && <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1 -right-1 drop-shadow" />}
                 </div>
 

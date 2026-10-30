@@ -40,13 +40,13 @@
   background: rgba(168, 85, 247, 0.8);
 }
 
-/* Authentic Richup Square Responsive Board Across All Screens */
+/* Authentic Richup Responsive Board Across All Screens (Wider Side Columns for Country Names) */
 .responsive-board-wrapper {
-  width: min(calc(100vw - 8px), calc(100vh - 3.5rem));
-  height: min(calc(100vw - 8px), calc(100vh - 3.5rem));
-  max-width: min(calc(100vw - 8px), calc(100vh - 3.5rem));
-  max-height: min(calc(100vh - 3.5rem), calc(100vw - 8px));
-  aspect-ratio: 1 / 1;
+  width: min(calc(100vw - 8px), calc((100vh - 3rem) * 1.08));
+  height: min(calc((100vw - 8px) / 1.08), calc(100vh - 3rem));
+  max-width: min(calc(100vw - 8px), calc((100vh - 3rem) * 1.08));
+  max-height: min(calc(100vh - 3rem), calc((100vw - 8px) / 1.08));
+  aspect-ratio: 1.08 / 1;
   flex-shrink: 0;
   container-type: inline-size;
   container-name: board;
@@ -57,18 +57,75 @@
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
-    height: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
-    max-width: min(calc(100vw - 36rem), calc(100vh - 3.5rem));
-    max-height: min(calc(100vh - 3.5rem), calc(100vw - 36rem));
+    width: min(calc(100vw - 33rem), calc((100vh - 3rem) * 1.08));
+    height: min(calc((100vw - 33rem) / 1.08), calc(100vh - 3rem));
+    max-width: min(calc(100vw - 33rem), calc((100vh - 3rem) * 1.08));
+    max-height: min(calc(100vh - 3rem), calc((100vw - 33rem) / 1.08));
   }
 }
 
 @media (min-width: 1280px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
-    height: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
-    max-width: min(calc(100vw - 38rem), calc(100vh - 3.5rem));
-    max-height: min(calc(100vh - 3.5rem), calc(100vw - 38rem));
+    width: min(calc(100vw - 36rem), calc((100vh - 3rem) * 1.1));
+    height: min(calc((100vw - 36rem) / 1.1), calc(100vh - 3rem));
+    max-width: min(calc(100vw - 36rem), calc((100vh - 3rem) * 1.1));
+    max-height: min(calc(100vh - 3rem), calc((100vw - 36rem) / 1.1));
   }
+}
+
+/* 3D Dice Realistic Shake & Tumbling Animations */
+@keyframes dice-shake-tumble-1 {
+  0% {
+    transform: perspective(700px) translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+  15% {
+    transform: perspective(700px) translateY(-22px) rotateX(-35deg) rotateY(40deg) rotateZ(-15deg) scale(1.12);
+  }
+  35% {
+    transform: perspective(700px) translateY(-32px) rotateX(50deg) rotateY(-55deg) rotateZ(28deg) scale(1.18);
+  }
+  55% {
+    transform: perspective(700px) translateY(-20px) rotateX(-45deg) rotateY(60deg) rotateZ(-20deg) scale(1.1);
+  }
+  75% {
+    transform: perspective(700px) translateY(-10px) rotateX(20deg) rotateY(-25deg) rotateZ(10deg) scale(1.05);
+  }
+  90% {
+    transform: perspective(700px) translateY(-3px) rotateX(-8deg) rotateY(8deg) rotateZ(-3deg) scale(1.02);
+  }
+  100% {
+    transform: perspective(700px) translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+}
+
+@keyframes dice-shake-tumble-2 {
+  0% {
+    transform: perspective(700px) translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+  15% {
+    transform: perspective(700px) translateY(-20px) rotateX(40deg) rotateY(-35deg) rotateZ(18deg) scale(1.12);
+  }
+  35% {
+    transform: perspective(700px) translateY(-30px) rotateX(-55deg) rotateY(45deg) rotateZ(-25deg) scale(1.18);
+  }
+  55% {
+    transform: perspective(700px) translateY(-18px) rotateX(45deg) rotateY(-50deg) rotateZ(22deg) scale(1.1);
+  }
+  75% {
+    transform: perspective(700px) translateY(-8px) rotateX(-22deg) rotateY(20deg) rotateZ(-8deg) scale(1.05);
+  }
+  90% {
+    transform: perspective(700px) translateY(-2px) rotateX(6deg) rotateY(-6deg) rotateZ(2deg) scale(1.02);
+  }
+  100% {
+    transform: perspective(700px) translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1);
+  }
+}
+
+.animate-dice-tumble-1 {
+  animation: dice-shake-tumble-1 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.animate-dice-tumble-2 {
+  animation: dice-shake-tumble-2 0.65s cubic-bezier(0.25, 1, 0.5, 1) 0.04s forwards;
 }

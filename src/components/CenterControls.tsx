@@ -1,7 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GameRoom, Tile } from '../types/game';
 import { DiceView } from './DiceView';
+import { PlayerAvatar } from './PlayerAvatar';
 import { Dices, Check, ShoppingCart, ShieldAlert } from 'lucide-react';
+import { sound } from '../services/sound';
 
 interface CenterControlsProps {
   room: GameRoom;
@@ -31,9 +33,58 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   const isMyTurn = turnPlayerId === currentPlayerId;
   const landedTile = turnPlayer ? room.tiles[turnPlayer.position] : null;
 
+  const [isRolling, setIsRolling] = useState(false);
+  const prevDiceRef = useRef(room.dice);
+
   const logsContainerRef = useRef<HTMLDivElement>(null);
 
-  if (!turnPlayer) return null;
+  // Trigger 3D tumble shake animation when dice change (e.g. Bot or other player rolls)
+  useEffect(() => {
+    if (
+      prevDiceRef.current[0] !== room.dice[0] ||
+      prevDiceRef.current[1] !== room.dice[1]
+    ) {
+      prevDiceRef.current = room.dice;
+      setIsRolling(true);
+      const timer = setTimeout(() => setIsRolling(false), 650);
+      return () => clearTimeout(timer);
+    }
+  }, [room.dice]);
+
+  const handleRollClick = () => {
+    if (isRolling) return;
+    setIsRolling(true);
+    sound.playDiceRoll();
+    setTimeout(() => {
+      onRoll();
+      setTimeout(() => setIsRolling(false), 300);
+    }, 450);
+  };
+
+  // Find the latest notable game action (buy, sell, rent, tax, trade, mortgage, jail, bankrupt)
+  const latestActionLog = [...(room.logs || [])].reverse().find(log => {
+    const text = log.text.toLowerCase();
+    return (
+      log.type === 'buy' ||
+      log.type === 'trade' ||
+      log.type === 'rent' ||
+      log.type === 'bankrupt' ||
+      log.type === 'jail' ||
+      text.includes('bought') ||
+      text.includes('sold') ||
+      text.includes('trade') ||
+      text.includes('paid $') ||
+      text.includes('rent') ||
+      text.includes('tax') ||
+      text.includes('mortgag') ||
+      text.includes('built a house') ||
+      text.includes('bankrupt')
+    );
+  });
+
+  const actionPlayer = latestActionLog?.playerId
+    ? room.players[latestActionLog.playerId]
+    : Object.values(room.players).find(p => latestActionLog?.text.includes(p.name));
 
   // Filter out noisy timer-tick logs
   const meaningfulLogs = (room.logs || []).filter(l => 
@@ -48,11 +99,36 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
     }
   }, [meaningfulLogs.length]);
 
+  if (!turnPlayer) return null;
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full max-w-sm px-2 py-1 select-none gap-2">
-      {/* 1. Large 3D Dice in Center */}
+      {/* 0. Top Action Notification Banner (On Top of Dominos) */}
+      <div className="min-h-[34px] flex items-center justify-center w-full">
+        {latestActionLog ? (
+          <div
+            key={latestActionLog.id}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-[#1e1333]/95 hover:bg-[#281a44] border border-purple-500/40 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.6)] backdrop-blur-md max-w-[340px] sm:max-w-[380px] transition-all animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            {actionPlayer ? (
+              <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-black/40 border border-white/30">
+                <PlayerAvatar avatar={actionPlayer.isBot ? 'navy' : actionPlayer.avatar} color={actionPlayer.color} size={18} />
+              </div>
+            ) : (
+              <span className="text-xs flex-shrink-0">🔔</span>
+            )}
+            <span className="text-[11px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide">
+              {latestActionLog.text.replace(/^[^\w\s]+/, '').trim()}
+            </span>
+          </div>
+        ) : (
+          <div className="h-6" />
+        )}
+      </div>
+
+      {/* 1. Large 3D Dice with Realistic Shake & Tumble in Center */}
       <div className="flex flex-col items-center justify-center">
-        <DiceView values={room.dice} isRolling={false} />
+        <DiceView values={room.dice} isRolling={isRolling} />
       </div>
 
       {/* 2. Turn Status / Action Controls (Directly Under Dice) */}
@@ -85,10 +161,11 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
 
                 {isMyTurn ? (
                   <button
-                    onClick={onRoll}
-                    className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
+                    onClick={handleRollClick}
+                    disabled={isRolling}
+                    className="px-7 py-2.5 bg-gradient-to-r from-red-600 via-pink-600 to-rose-600 hover:from-red-500 hover:to-rose-500 active:scale-95 disabled:opacity-50 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(236,72,153,0.5)] flex items-center gap-2 transition-all cursor-pointer border border-pink-400/50"
                   >
-                    <Dices className="w-4 h-4" />
+                    <Dices className={`w-4 h-4 ${isRolling ? 'animate-spin' : ''}`} />
                     <span>Roll dice</span>
                   </button>
                 ) : (
@@ -169,26 +246,45 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         )}
       </div>
 
-      {/* 3. Floating Clean Text Event Logs (Centered, Scrollable, Smooth Fading) */}
-      <div className="w-full max-w-[340px] mt-1 flex flex-col items-center">
+      {/* 3. Live Activity Feed (Under Buttons with Smooth Scroll) */}
+      <div className="w-full max-w-xs mt-1 flex flex-col">
+        <div className="flex items-center justify-between px-1 mb-1">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold">
+              Live Activity
+            </span>
+          </div>
+          <span className="text-[9px] text-gray-500 font-mono">buys • sells • trades</span>
+        </div>
+
         <div
           ref={logsContainerRef}
-          className="w-full max-h-32 sm:max-h-36 overflow-y-auto space-y-1 px-1 py-1 text-center select-text scroll-smooth"
+          className="h-16 overflow-y-auto pr-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans border-t border-purple-900/30 pt-1"
         >
-          {meaningfulLogs.length > 0 ? (
-            meaningfulLogs.map((log) => (
+          {meaningfulLogs.slice(-15).map((log) => {
+            const isBuy = log.type === 'buy';
+            const isRent = log.type === 'rent';
+            const isJail = log.type === 'jail';
+
+            return (
               <div
                 key={log.id}
-                className="text-[11px] text-gray-300 font-medium leading-snug drop-shadow-sm flex items-center justify-center gap-1.5 flex-wrap"
+                className={`flex items-start gap-1 py-0.5 px-1 rounded transition-colors ${
+                  isBuy ? 'text-emerald-300 bg-emerald-950/20' :
+                  isRent ? 'text-amber-300 bg-amber-950/20' :
+                  isJail ? 'text-red-300 bg-red-950/20' : 'text-gray-300'
+                }`}
               >
-                <span>{log.text}</span>
+                <span className="flex-shrink-0 opacity-70">
+                  {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
+                </span>
+                <span className="break-words line-clamp-2">
+                  {log.text.replace(/^[^\w\s]+/, '').trim()}
+                </span>
               </div>
-            ))
-          ) : (
-            <div className="text-[11px] text-gray-500 italic text-center">
-              Game started with a randomized players order. Good luck!
-            </div>
-          )}
+            );
+          })}
         </div>
       </div>
     </div>

@@ -100,7 +100,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     #{rank + 1}
                   </span>
                   <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center relative flex-shrink-0">
-                    <PlayerAvatar avatar={player.avatar} color={player.color} size={30} />
+                    <PlayerAvatar avatar={player.isBot ? 'navy' : player.avatar} color={player.color} size={30} />
                     {player.isHost && (
                       <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1.5 -right-1.5 drop-shadow" />
                     )}
