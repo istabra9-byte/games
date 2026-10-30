@@ -248,8 +248,9 @@ export const App: React.FC = () => {
       prevRoomStatusRef.current = updatedRoom.status;
 
       setRoom(updatedRoom);
-      if (updatedRoom.winnerId && updatedRoom.status === 'ended') {
+      if (updatedRoom.winnerId && updatedRoom.status === 'ended' && prevRoomStatusRef.current !== 'ended') {
         confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        sound.playWinner();
       }
     });
 
@@ -523,6 +524,9 @@ export const App: React.FC = () => {
     const receiver = room.players[trade.receiverId];
     if (!sender || !receiver) return;
 
+    const prevSenderCash = sender.cash;
+    const prevReceiverCash = receiver.cash;
+
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
     newRoom.players[trade.senderId].cash -= trade.senderCash;
     newRoom.players[trade.receiverId].cash += trade.senderCash;
@@ -542,7 +546,22 @@ export const App: React.FC = () => {
       timestamp: Date.now(),
       type: 'trade'
     });
-    sound.playTrade();
+
+    // Check debt cleared for either player
+    if (prevSenderCash < 0 && newRoom.players[trade.senderId].cash >= 0) {
+      sound.playDebtCleared();
+    } else if (prevReceiverCash < 0 && newRoom.players[trade.receiverId].cash >= 0) {
+      sound.playDebtCleared();
+    } else {
+      sound.playTrade();
+    }
+
+    // Check if either player now holds 2 of 3 in China (red group)
+    const chinaSender = newRoom.tiles.filter(t => t.group === 'red' && t.ownerId === trade.senderId).length;
+    const chinaReceiver = newRoom.tiles.filter(t => t.group === 'red' && t.ownerId === trade.receiverId).length;
+    if (chinaSender === 2 || chinaReceiver === 2) {
+      sound.playChinaNearMonopoly();
+    }
     newRoom.activeTrade = null;
     multiplayer.updateRoom(newRoom);
   };

@@ -1,3 +1,5 @@
+import { SOUND_EVENTS_REGISTRY, SoundEventId, ALL_REGISTERED_SOUND_FILES } from '../config/soundEvents';
+
 class SoundService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
@@ -142,8 +144,8 @@ class SoundService {
     });
   }
 
-  // 7. Tropical Vacation Island Oasis (Peaceful ocean breeze wind chimes & Major 7th chord)
-  public playVacation() {
+  // 7. Tropical Vacation Island Oasis (Peaceful ocean breeze wind chimes & Major 7th chord synth fallback)
+  public playVacationSynth() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
@@ -156,8 +158,8 @@ class SoundService {
     });
   }
 
-  // 8. Prison / Jail (Somber, deep acoustic cello / resonant gong tone)
-  public playPrison() {
+  // 8. Prison / Jail (Somber, deep acoustic cello / resonant gong tone synth fallback)
+  public playPrisonSynth() {
     if (!this.enabled) return;
     this.initContext();
     if (!this.ctx) return;
@@ -267,40 +269,19 @@ class SoundService {
     return `${cleanBase}sounds/${soundFile}`;
   }
 
-  // User-curated meme sound pools
-  private static MEME_POOLS: Record<string, string[]> = {
-    welcome: [
-      'welcome_merhba.mp3',
-      'welcome_meow.mp3',
-      'welcome_muhehehe.mp3',
-      'welcome_putin.mp3'
-    ],
-    earnings_tax: [
-      'tax_amoun.mp3',
-      'tax_wallahi.mp3'
-    ],
-    // Cleaned out old meme sounds per user instructions
-    prison: [],
-    surprise: [],
-    treasure: [],
-    airport: [],
-    bankrupt: []
-  };
-
-  private pickRandomFromPool(category: string): string {
-    const pool = SoundService.MEME_POOLS[category];
+  private pickRandomFromPool(eventId: SoundEventId, pool: string[]): string {
     if (!pool || pool.length === 0) return '';
     if (pool.length === 1) return pool[0];
 
-    const last = this.lastPlayed[category];
+    const last = this.lastPlayed[eventId];
     const available = pool.filter(s => s !== last);
     const chosen = available[Math.floor(Math.random() * available.length)] || pool[0];
-    this.lastPlayed[category] = chosen;
+    this.lastPlayed[eventId] = chosen;
     return chosen;
   }
 
   // 16. Meme Soundboard Engine (Ultra-low latency HTML5 Audio with graceful synth fallback)
-  private playMemeAudio(soundFile: string, fallbackSynth?: () => void) {
+  private playMemeAudio(soundFile: string, fallbackSynth?: () => void, volumeMultiplier: number = 1.15) {
     if (!this.enabled || !this.memeSoundsEnabled) {
       if (fallbackSynth) fallbackSynth();
       return;
@@ -315,7 +296,7 @@ class SoundService {
       }
 
       const audio = this.memeAudioCache[soundFile];
-      audio.volume = Math.min(1, this.volume * 1.15);
+      audio.volume = Math.max(0, Math.min(1, this.volume * volumeMultiplier));
       audio.currentTime = 0;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -328,12 +309,27 @@ class SoundService {
     }
   }
 
-  // Preload all active meme audio clips on first user interaction so no repeated network requests happen during gameplay
+  // Unified trigger method for any registered sound event
+  public trigger(eventId: SoundEventId, fallbackSynth?: () => void) {
+    const config = SOUND_EVENTS_REGISTRY[eventId];
+    if (!config || !config.files || config.files.length === 0) {
+      if (fallbackSynth) fallbackSynth();
+      return;
+    }
+
+    const chosenFile = this.pickRandomFromPool(eventId, config.files);
+    if (chosenFile) {
+      const volMultiplier = config.volumeMultiplier ?? 1.15;
+      this.playMemeAudio(chosenFile, fallbackSynth, volMultiplier);
+    } else if (fallbackSynth) {
+      fallbackSynth();
+    }
+  }
+
+  // Preload all registered sound files on first user interaction so no repeated network requests happen during gameplay
   public preloadMemeSounds() {
     if (typeof window === 'undefined') return;
-    const allSounds = Object.values(SoundService.MEME_POOLS).flat();
-    const uniqueSounds = Array.from(new Set(allSounds));
-    uniqueSounds.forEach(s => {
+    ALL_REGISTERED_SOUND_FILES.forEach(s => {
       try {
         const url = this.getSoundUrl(s);
         if (!this.memeAudioCache[s]) {
@@ -357,75 +353,80 @@ class SoundService {
     return this.memeSoundsEnabled;
   }
 
-  // 17. Meme Event Triggers (randomly picked without consecutive repeats)
+  // 17. Semantic Event Triggers (Single, clean entry points)
   private lastWelcomeTime = 0;
-  public playMemeWelcome() {
+  public playWelcome() {
     const now = Date.now();
     if (now - this.lastWelcomeTime < 2500) return;
     this.lastWelcomeTime = now;
-    const soundFile = this.pickRandomFromPool('welcome');
-    if (soundFile) {
-      this.playMemeAudio(soundFile);
-    }
+    this.trigger('WELCOME', () => this.playWinFanfare());
   }
 
-  public playMemeTax() {
-    const soundFile = this.pickRandomFromPool('earnings_tax');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playTax());
-    } else {
-      this.playTax();
-    }
+  public playEarningsTax() {
+    this.trigger('EARNINGS_TAX', () => this.playTax());
   }
 
-  public playMemeEarningsTax() {
-    this.playMemeTax();
+  public playPremiumTax() {
+    this.trigger('PREMIUM_TAX', () => this.playTax());
   }
 
-  public playMemePrison() {
-    const soundFile = this.pickRandomFromPool('prison');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playPrison());
-    } else {
-      this.playPrison();
-    }
+  public playPrison() {
+    this.trigger('PRISON', () => this.playPrisonSynth());
   }
 
-  public playMemeSurprise() {
-    const soundFile = this.pickRandomFromPool('surprise');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playSelect());
-    } else {
-      this.playSelect();
-    }
+  public playPrisonEscapeFirstRoll() {
+    this.trigger('PRISON_ESCAPE_FIRST_ROLL', () => this.playUpgrade());
   }
 
-  public playMemeTreasure() {
-    const soundFile = this.pickRandomFromPool('treasure');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playCash());
-    } else {
-      this.playCash();
-    }
+  public playVacation() {
+    this.trigger('VACATION', () => this.playVacationSynth());
   }
 
-  public playMemeAirport() {
-    const soundFile = this.pickRandomFromPool('airport');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playTurnChime());
-    } else {
-      this.playTurnChime();
-    }
+  public playLandOnStart() {
+    this.trigger('LAND_ON_START', () => this.playCash());
   }
 
-  public playMemeBankrupt() {
-    const soundFile = this.pickRandomFromPool('bankrupt');
-    if (soundFile) {
-      this.playMemeAudio(soundFile, () => this.playPrison());
-    } else {
-      this.playPrison();
-    }
+  public playChinaNearMonopoly() {
+    this.trigger('CHINA_NEAR_MONOPOLY', () => this.playBuy());
   }
+
+  public playNegativeBalance() {
+    this.trigger('NEGATIVE_BALANCE', () => this.playTax());
+  }
+
+  public playDebtCleared() {
+    this.trigger('DEBT_CLEARED', () => this.playCash());
+  }
+
+  public playBadSurprise() {
+    this.trigger('BAD_SURPRISE', () => this.playSelect());
+  }
+
+  public playBigLoss() {
+    this.trigger('BIG_LOSS_500', () => this.playTax());
+  }
+
+  public playBigRentCollect() {
+    this.trigger('BIG_RENT_COLLECT_400', () => this.playCash());
+  }
+
+  public playBankrupt() {
+    this.trigger('BANKRUPT', () => this.playPrison());
+  }
+
+  public playWinner() {
+    this.trigger('WINNER', () => this.playWinFanfare());
+  }
+
+  // Backward compatibility aliases
+  public playMemeWelcome() { this.playWelcome(); }
+  public playMemeTax() { this.playEarningsTax(); }
+  public playMemeEarningsTax() { this.playEarningsTax(); }
+  public playMemePrison() { this.playPrison(); }
+  public playMemeSurprise() { this.playBadSurprise(); }
+  public playMemeTreasure() { this.playCash(); }
+  public playMemeAirport() { this.playTurnChime(); }
+  public playMemeBankrupt() { this.playBankrupt(); }
 }
 
 export const sound = new SoundService();

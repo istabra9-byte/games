@@ -420,7 +420,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         {/* 3. Activity Feed Logs (Placed EXACTLY Under the Action Button with No Header) */}
         <div
           ref={logsContainerRef}
-          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 no-scrollbar"
+          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {meaningfulLogs.slice(-15).map((log) => {
@@ -441,7 +441,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                   {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
                 </span>
                 <span className="break-words line-clamp-2 inline-flex items-center flex-wrap">
-                  {renderLogContent(log.text, false)}
+                  {renderNotificationText(log.text, room.players)}
                 </span>
               </div>
             );

@@ -94,16 +94,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
 
   sound.playDiceRoll();
 
-  newRoom.logs.push({
-    id: `roll_${Date.now()}`,
-    text: `${player.name} rolled ${d1} and ${d2} (${rollTotal})${isDoubles ? ' - DOUBLES!' : ''}`,
-    timestamp: Date.now(),
-    type: 'roll'
-  });
+  // (Roll announcement logs are omitted from activity feed per user request)
 
   // Handle player in Jail
   if (player.inJail) {
     if (isDoubles) {
+      const wasFirstAttempt = player.jailTurns === 0;
       player.inJail = false;
       player.jailTurns = 0;
       newRoom.logs.push({
@@ -112,7 +108,11 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         timestamp: Date.now(),
         type: 'jail'
       });
-      sound.playBuy();
+      if (wasFirstAttempt) {
+        sound.playPrisonEscapeFirstRoll();
+      } else {
+        sound.playBuy();
+      }
     } else {
       player.jailTurns += 1;
       if (player.jailTurns >= 3) {
@@ -202,6 +202,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
           });
         } else {
           const rentAmount = calculateRent(newRoom, tile, rollTotal);
+          const prevCash = player.cash;
           player.cash -= rentAmount;
           owner.cash += rentAmount;
           newRoom.logs.push({
@@ -212,7 +213,15 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
             playerId: player.id
           });
 
-          if (player.cash < 0) {
+          // Large payment sound triggers
+          if (rentAmount >= 500) {
+            sound.playBigLoss();
+          } else if (rentAmount >= 400) {
+            sound.playBigRentCollect();
+          }
+
+          if (prevCash >= 0 && player.cash < 0) {
+            sound.playNegativeBalance();
             resolveDebtOrBankruptcy(newRoom, player.id, owner.id);
           }
         }
@@ -229,6 +238,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       taxAmount = 100;
     }
 
+    const prevCash = player.cash;
     player.cash -= taxAmount;
     newRoom.pot += taxAmount;
     newRoom.logs.push({
@@ -238,7 +248,11 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       type: 'rent',
       playerId: player.id
     });
-    if (player.cash < 0) {
+    if (taxAmount >= 500) {
+      sound.playBigLoss();
+    }
+    if (prevCash >= 0 && player.cash < 0) {
+      sound.playNegativeBalance();
       resolveDebtOrBankruptcy(newRoom, player.id, null);
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
@@ -324,6 +338,12 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
         playerId: player.id
       });
       sound.playMonopoly();
+    } else if (tile.group === 'red') {
+      // China: red group (Shanghai, Beijing, Shenzhen)
+      const chinaOwned = groupTiles.filter(t => t.ownerId === playerId).length;
+      if (chinaOwned === 2) {
+        sound.playChinaNearMonopoly();
+      }
     }
   }
 
@@ -406,6 +426,7 @@ export function sellHouse(room: GameRoom, playerId: string, tileIndex: number): 
   const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[tileIndex];
+  const prevCash = player.cash;
 
   const refund = Math.floor((tile.houseCost || 0) / 2);
   player.cash += refund;
@@ -418,7 +439,11 @@ export function sellHouse(room: GameRoom, playerId: string, tileIndex: number): 
     type: 'system'
   });
 
-  sound.playCash();
+  if (prevCash < 0 && player.cash >= 0) {
+    sound.playDebtCleared();
+  } else {
+    sound.playCash();
+  }
   updateNetWorths(newRoom);
   return newRoom;
 }
@@ -442,6 +467,7 @@ export function mortgageProperty(room: GameRoom, playerId: string, tileIndex: nu
   const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[tileIndex];
+  const prevCash = player.cash;
 
   tile.isMortgaged = true;
   player.cash += tile.mortgageValue;
@@ -453,7 +479,11 @@ export function mortgageProperty(room: GameRoom, playerId: string, tileIndex: nu
     type: 'system'
   });
 
-  sound.playCash();
+  if (prevCash < 0 && player.cash >= 0) {
+    sound.playDebtCleared();
+  } else {
+    sound.playCash();
+  }
   updateNetWorths(newRoom);
   return newRoom;
 }
@@ -518,13 +548,7 @@ export function endTurn(room: GameRoom): GameRoom {
   newRoom.consecutiveDoubles = 0;
   newRoom.isDoubles = false;
 
-  const nextPlayer = newRoom.players[newRoom.playerOrder[nextIdx]];
-  newRoom.logs.push({
-    id: `turn_${Date.now()}`,
-    text: `It's now ${nextPlayer.name}'s turn!`,
-    timestamp: Date.now(),
-    type: 'system'
-  });
+  // (Turn announcement logs are omitted from feed per user request)
 
   sound.playTurnChime();
 
@@ -539,7 +563,7 @@ export function endTurn(room: GameRoom): GameRoom {
       timestamp: Date.now(),
       type: 'system'
     });
-    sound.playWinFanfare();
+    sound.playWinner();
   }
 
   return newRoom;
@@ -631,8 +655,10 @@ export function resolveDebtOrBankruptcy(room: GameRoom, debtorId: string, credit
     }
   }
 
-  // 3. If after selling and mortgaging everything the player is STILL negative:
-  if (debtor.cash < 0) {
+  // 3. Check if debt was successfully resolved or bankruptcy is required:
+  if (debtor.cash >= 0) {
+    sound.playDebtCleared();
+  } else {
     handleBankruptcy(room, debtorId, creditorId);
   }
 }
@@ -664,6 +690,7 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
     timestamp: Date.now(),
     type: 'bankrupt'
   });
+  sound.playBankrupt();
 }
 
 function applyCardEffect(room: GameRoom, player: Player, card: any) {
@@ -678,33 +705,43 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
     case 'advance_to_go':
       player.position = 0;
       player.cash += room.settings.salary;
+      sound.playCash();
       break;
     case 'pay_pot_50':
+      const prevCardCash = player.cash;
       player.cash -= 50;
       room.pot += 50;
-      if (player.cash < 0) {
+      sound.playBadSurprise();
+      if (prevCardCash >= 0 && player.cash < 0) {
+        sound.playNegativeBalance();
         resolveDebtOrBankruptcy(room, player.id, null);
       }
       break;
     case 'receive_100':
       player.cash += 100;
+      sound.playCash();
       break;
     case 'receive_200':
       player.cash += 200;
+      sound.playCash();
       break;
     case 'receive_50':
       player.cash += 50;
+      sound.playCash();
       break;
     case 'receive_75':
       player.cash += 75;
+      sound.playCash();
       break;
     case 'go_to_jail':
       player.position = 10;
       player.inJail = true;
       player.jailTurns = 0;
+      sound.playBadSurprise();
       break;
     case 'jail_card':
       player.jailCards = (player.jailCards || 0) + 1;
+      sound.playCash();
       break;
     case 'advance_to_39':
       player.position = 39;
@@ -716,6 +753,7 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
           player.cash += 20;
         }
       });
+      sound.playCash();
       break;
   }
 }
@@ -790,6 +828,7 @@ export function surrenderBankruptcy(room: GameRoom, playerId: string): GameRoom 
       timestamp: Date.now(),
       type: 'system'
     });
+    sound.playWinner();
     return newRoom;
   }
 

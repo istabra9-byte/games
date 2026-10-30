@@ -136,20 +136,27 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
               // Trigger soundboard memes strictly upon landing in position!
               if (p.isBankrupt) {
-                sound.playMemeBankrupt();
+                sound.playBankrupt();
+              } else if (targetPos === 0) {
+                // Stopped directly on Start (Tile 0), not just passing by
+                sound.playLandOnStart();
               } else {
                 const landedTile = tiles[targetPos];
                 if (landedTile) {
                   if (landedTile.type === 'tax') {
-                    sound.playMemeTax();
+                    if (targetPos === 38 || landedTile.name.toLowerCase().includes('premium')) {
+                      sound.playPremiumTax();
+                    } else {
+                      sound.playEarningsTax();
+                    }
                   } else if (landedTile.type === 'go_to_jail') {
-                    sound.playMemePrison();
+                    sound.playPrison();
                   } else if (landedTile.type === 'chance') {
-                    sound.playMemeSurprise();
+                    // Chance card drawn - sound triggered upon drawing
                   } else if (landedTile.type === 'chest') {
-                    sound.playMemeTreasure();
+                    sound.playCash();
                   } else if (landedTile.type === 'railroad') {
-                    sound.playMemeAirport();
+                    sound.playTurnChime();
                   } else if (landedTile.type === 'vacation') {
                     sound.playVacation();
                   } else if (landedTile.type === 'property' || landedTile.type === 'utility') {
@@ -263,10 +270,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       {/* Prison Bars Overlay */}
                       <div className="absolute inset-0 opacity-25 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#cbd5e1_4px,#cbd5e1_6px)]" />
 
-                      <div className="flex flex-col items-center z-10 -translate-y-1">
+                      <div className="flex flex-col items-center z-10 -translate-y-2.5">
                         <span
-                          className="font-black text-amber-200 uppercase leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] tracking-wide"
-                          style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
+                          className="font-black text-amber-200 uppercase leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] tracking-wide"
+                          style={{ fontSize: 'clamp(9.5px, 1.35cqi, 13.5px)' }}
                         >
                           In Prison
                         </span>
