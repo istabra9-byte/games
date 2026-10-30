@@ -161,8 +161,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
-          gridTemplateColumns: '2.1fr repeat(9, 1fr) 2.1fr',
-          gridTemplateRows: '1.53fr repeat(9, 1fr) 1.53fr'
+          gridTemplateColumns: '2.15fr repeat(9, 1fr) 2.15fr',
+          gridTemplateRows: '1.75fr repeat(9, 1fr) 1.75fr'
         }}
       >
         {tiles.map((tile) => {
@@ -323,10 +323,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             // Unowned: Translucent price badge
             if (tile.price > 0) {
               return (
-                <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
+                <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: isHorizontal ? 'clamp(9.5px, 1.35cqi, 13px)' : 'clamp(10px, 1.4cqi, 13.5px)' }}
+                    className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
+                    style={{ fontSize: isHorizontal ? 'clamp(9px, 1.25cqi, 12px)' : 'clamp(8.5px, 1.15cqi, 11.5px)' }}
                   >
                     {tile.price} $
                   </div>
@@ -336,10 +336,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
             if (tile.type === 'tax') {
               return (
-                <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
+                <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: isHorizontal ? 'clamp(9.5px, 1.35cqi, 13px)' : 'clamp(10px, 1.4cqi, 13.5px)' }}
+                    className="px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
+                    style={{ fontSize: isHorizontal ? 'clamp(9px, 1.25cqi, 12px)' : 'clamp(8.5px, 1.15cqi, 11.5px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$75'}
                   </div>
@@ -353,8 +353,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           // 2. Circular Flag or Special Space Icon (Inner Edge)
           const renderInnerIcon = () => {
             const iconSizeStyle = {
-              width: isHorizontal ? 'clamp(19px, 2.6cqi, 28px)' : 'clamp(22px, 3.2cqi, 34px)',
-              height: isHorizontal ? 'clamp(19px, 2.6cqi, 28px)' : 'clamp(22px, 3.2cqi, 34px)'
+              width: isHorizontal ? 'clamp(18px, 2.4cqi, 26px)' : 'clamp(17px, 2.2cqi, 25px)',
+              height: isHorizontal ? 'clamp(18px, 2.4cqi, 26px)' : 'clamp(17px, 2.2cqi, 25px)'
             };
 
             return (
@@ -461,25 +461,52 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             );
           };
 
-          // 3. Title / City Name (Bold, Open, Highly Legible font on PC and Mobile)
-          const nameLabel = (
-            <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-0.5 w-full overflow-hidden">
-              <span
-                className="font-sans font-extrabold text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
-                style={{
-                  fontSize: isHorizontal
-                    ? 'clamp(12px, 1.85cqi, 16px)'
-                    : 'clamp(12.5px, 1.9cqi, 16.5px)',
-                  textRendering: 'optimizeLegibility',
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word'
-                }}
-                title={tile.name}
-              >
-                {tile.name}
-              </span>
-            </div>
-          );
+          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography)
+          const renderNameLabel = () => {
+            // Split name into logical words preserving hyphens so words never break mid-word
+            const words = tile.name.includes('-')
+              ? tile.name.split('-').map((w, idx, arr) => (idx < arr.length - 1 ? `${w}-` : w))
+              : tile.name.split(' ');
+
+            const maxWordLen = Math.max(...words.map(w => w.length));
+
+            // Dynamic font size clamp based on orientation and word length
+            const fontSize = isHorizontal
+              ? maxWordLen >= 10
+                ? 'clamp(9.5px, 1.25cqi, 12px)'
+                : maxWordLen >= 8
+                ? 'clamp(10.5px, 1.35cqi, 13px)'
+                : 'clamp(11.5px, 1.5cqi, 14.5px)'
+              : maxWordLen >= 9
+                ? 'clamp(8.5px, 1.12cqi, 11px)'
+                : maxWordLen >= 7
+                ? 'clamp(9.5px, 1.25cqi, 12px)'
+                : 'clamp(10.5px, 1.38cqi, 13px)';
+
+            return (
+              <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center text-center z-10 px-0.5 w-full overflow-hidden">
+                <span
+                  className="font-sans font-extrabold text-white select-none text-center leading-[1.12] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                  style={{
+                    fontSize,
+                    textRendering: 'optimizeLegibility',
+                    wordBreak: 'keep-all',
+                    overflowWrap: 'normal',
+                    hyphens: 'none',
+                    letterSpacing: maxWordLen >= 8 ? '-0.025em' : 'normal'
+                  }}
+                  title={tile.name}
+                >
+                  {words.map((word, idx) => (
+                    <React.Fragment key={idx}>
+                      <span className="inline-block whitespace-nowrap">{word}</span>
+                      {idx < words.length - 1 && ' '}
+                    </React.Fragment>
+                  ))}
+                </span>
+              </div>
+            );
+          };
 
           return (
             <div
@@ -497,23 +524,33 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                   : {})
               }}
             >
-              {isHorizontal ? (
-                /* Horizontal Layout for Left & Right Column Tiles */
-                <div className={`w-full h-full flex items-center justify-between z-10 ${
-                  side === 'left' ? 'flex-row' : 'flex-row-reverse'
-                }`}>
+              {side === 'left' ? (
+                /* Left Column: Outer edge (price/owner) on left, inner edge (flag) on right */
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10">
                   {renderOuterEdge()}
-                  {nameLabel}
+                  {renderNameLabel()}
+                  {renderInnerIcon()}
+                </div>
+              ) : side === 'right' ? (
+                /* Right Column: Inner edge (flag) on left, outer edge (price/owner) on right */
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10">
+                  {renderInnerIcon()}
+                  {renderNameLabel()}
+                  {renderOuterEdge()}
+                </div>
+              ) : side === 'top' ? (
+                /* Top Row: Outer edge (price/owner) at top, inner edge (flag) at bottom */
+                <div className="w-full h-full flex flex-col items-center justify-between py-1 px-0.5 z-10">
+                  {renderOuterEdge()}
+                  {renderNameLabel()}
                   {renderInnerIcon()}
                 </div>
               ) : (
-                /* Vertical Layout for Top & Bottom Row Tiles */
-                <div className={`w-full h-full flex items-center justify-between z-10 ${
-                  side === 'top' ? 'flex-col' : 'flex-col-reverse'
-                }`}>
-                  {renderOuterEdge()}
-                  {nameLabel}
+                /* Bottom Row: Inner edge (flag) at top, outer edge (price/owner) at bottom */
+                <div className="w-full h-full flex flex-col items-center justify-between py-1 px-0.5 z-10">
                   {renderInnerIcon()}
+                  {renderNameLabel()}
+                  {renderOuterEdge()}
                 </div>
               )}
 

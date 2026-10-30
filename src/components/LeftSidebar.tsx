@@ -114,7 +114,7 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
               const isMe = msg.senderId === currentPlayer.id;
               const sender = room.players[msg.senderId];
               const senderColor = msg.senderColor || sender?.color || '#ff4081';
-              const senderAvatar = sender?.avatar || 'navy';
+              const senderAvatar = sender?.isBot ? 'navy' : (sender?.avatar || 'navy');
 
               return (
                 <div key={msg.id} className="flex items-start gap-2 text-xs leading-relaxed animate-in fade-in duration-100">
