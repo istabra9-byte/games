@@ -53,11 +53,11 @@
 
 /* Authentic Richup Responsive Board Across All Screens (Wider Side Columns for Country Names) */
 .responsive-board-wrapper {
-  width: min(calc(100vw - 8px), calc((100vh - 4.5rem) * 1.08));
-  height: min(calc((100vw - 8px) / 1.08), calc(100vh - 4.5rem));
-  max-width: min(calc(100vw - 8px), calc((100vh - 4.5rem) * 1.08));
-  max-height: min(calc(100vh - 4.5rem), calc((100vw - 8px) / 1.08));
-  aspect-ratio: 1.08 / 1;
+  width: min(calc(100vw - 8px), calc((100vh - 4.5rem) * 1.12));
+  height: min(calc((100vw - 8px) / 1.12), calc(100vh - 4.5rem));
+  max-width: min(calc(100vw - 8px), calc((100vh - 4.5rem) * 1.12));
+  max-height: min(calc(100vh - 4.5rem), calc((100vw - 8px) / 1.12));
+  aspect-ratio: 1.12 / 1;
   flex-shrink: 0;
   container-type: inline-size;
   container-name: board;

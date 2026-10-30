@@ -201,7 +201,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
-          gridTemplateColumns: '2.15fr repeat(9, 1fr) 2.15fr',
+          gridTemplateColumns: '2.45fr repeat(9, 1fr) 2.45fr',
           gridTemplateRows: '1.75fr repeat(9, 1fr) 1.75fr'
         }}
       >
@@ -367,7 +367,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 >
                   {/* House Cubes (sitting right on the owner bar) */}
                   {tile.houses > 0 && (
-                    <div className="flex items-center gap-0.5">
+                    <div className={`flex items-center gap-0.5 ${isHorizontal ? 'flex-col' : 'flex-row'}`}>
                       {tile.houses < 5 ? (
                         Array.from({ length: tile.houses }).map((_, h) => (
                           <div key={h} className="w-1.5 h-1.5 bg-emerald-300 rounded-[1px] shadow-sm border border-emerald-900" />
@@ -383,15 +383,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               );
             }
 
-            // Unowned: Translucent price badge
+            // Unowned: Translucent compact price badge
             if (tile.price > 0) {
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1.5 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: isHorizontal ? 'clamp(9px, 1.25cqi, 12px)' : 'clamp(8.5px, 1.15cqi, 11.5px)' }}
+                    className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
+                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 0.95cqi, 9.5px)' : 'clamp(8px, 1.05cqi, 10.5px)' }}
                   >
-                    {tile.price} $
+                    {tile.price}$
                   </div>
                 </div>
               );
@@ -401,10 +401,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1.5 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: isHorizontal ? 'clamp(9px, 1.25cqi, 12px)' : 'clamp(8.5px, 1.15cqi, 11.5px)' }}
+                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
+                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 0.95cqi, 9.5px)' : 'clamp(8px, 1.05cqi, 10.5px)' }}
                   >
-                    {tile.name.includes('Earnings') ? '%10' : '$75'}
+                    {tile.name.includes('Earnings') ? '%10' : '$100'}
                   </div>
                 </div>
               );
@@ -416,8 +416,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           // 2. Circular Flag or Special Space Icon (Inner Edge)
           const renderInnerIcon = () => {
             const iconSizeStyle = {
-              width: isHorizontal ? 'clamp(18px, 2.4cqi, 26px)' : 'clamp(17px, 2.2cqi, 25px)',
-              height: isHorizontal ? 'clamp(18px, 2.4cqi, 26px)' : 'clamp(17px, 2.2cqi, 25px)'
+              width: isHorizontal ? 'clamp(14px, 1.8cqi, 20px)' : 'clamp(16px, 2.1cqi, 24px)',
+              height: isHorizontal ? 'clamp(14px, 1.8cqi, 20px)' : 'clamp(16px, 2.1cqi, 24px)'
             };
 
             return (
@@ -539,35 +539,33 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             // Dynamic font size clamp based on orientation and word length
             const fontSize = isHorizontal
               ? maxWordLen >= 10
-                ? 'clamp(9.5px, 1.25cqi, 12px)'
+                ? 'clamp(7.5px, 0.95cqi, 9.5px)'
                 : maxWordLen >= 8
-                ? 'clamp(10.5px, 1.35cqi, 13px)'
-                : 'clamp(11.5px, 1.5cqi, 14.5px)'
+                ? 'clamp(8px, 1.05cqi, 10.5px)'
+                : maxWordLen >= 6
+                ? 'clamp(8.5px, 1.15cqi, 11px)'
+                : 'clamp(9.5px, 1.25cqi, 12px)'
               : maxWordLen >= 9
-                ? 'clamp(8.5px, 1.12cqi, 11px)'
+                ? 'clamp(7.5px, 0.95cqi, 9.5px)'
                 : maxWordLen >= 7
-                ? 'clamp(9.5px, 1.25cqi, 12px)'
-                : 'clamp(10.5px, 1.38cqi, 13px)';
+                ? 'clamp(8px, 1.05cqi, 10.5px)'
+                : 'clamp(8.5px, 1.15cqi, 11.5px)';
 
             return (
-              <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center text-center z-10 px-0.5 w-full overflow-hidden">
+              <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center text-center z-10 px-0.5 max-w-full">
                 <span
-                  className="font-sans font-extrabold text-white select-none text-center leading-[1.12] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                  className="font-sans font-extrabold text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    wordBreak: 'keep-all',
-                    overflowWrap: 'normal',
-                    hyphens: 'none',
-                    letterSpacing: maxWordLen >= 8 ? '-0.025em' : 'normal'
+                    letterSpacing: maxWordLen >= 8 ? '-0.035em' : '-0.015em'
                   }}
                   title={tile.name}
                 >
                   {words.map((word, idx) => (
-                    <React.Fragment key={idx}>
-                      <span className="inline-block whitespace-nowrap">{word}</span>
-                      {idx < words.length - 1 && ' '}
-                    </React.Fragment>
+                    <span key={idx} className="block whitespace-nowrap leading-[1.08] max-w-full">
+                      {word}
+                    </span>
                   ))}
                 </span>
               </div>
@@ -592,14 +590,14 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             >
               {side === 'left' ? (
                 /* Left Column: Outer edge (price/owner) on left, inner edge (flag) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10">
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-1">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   {renderInnerIcon()}
                 </div>
               ) : side === 'right' ? (
                 /* Right Column: Inner edge (flag) on left, outer edge (price/owner) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10">
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-1">
                   {renderInnerIcon()}
                   {renderNameLabel()}
                   {renderOuterEdge()}
