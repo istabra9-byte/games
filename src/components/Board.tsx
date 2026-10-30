@@ -486,7 +486,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm whitespace-nowrap"
-                    style={{ fontSize: isHorizontal ? 'clamp(8px, 1.1cqi, 10.5px)' : 'clamp(8.5px, 1.2cqi, 11px)' }}
+                    style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
                   >
                     ${tile.price}
                   </div>
@@ -499,7 +499,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap"
-                    style={{ fontSize: isHorizontal ? 'clamp(8px, 1.1cqi, 10.5px)' : 'clamp(8.5px, 1.2cqi, 11px)' }}
+                    style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$100'}
                   </div>
@@ -513,8 +513,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
           // 2. Circular Flag or Special Space Icon (Inner Edge)
           const renderInnerIcon = () => {
             const iconSizeStyle = {
-              width: isHorizontal ? 'clamp(14px, 1.7cqi, 19px)' : 'clamp(16px, 2.1cqi, 24px)',
-              height: isHorizontal ? 'clamp(14px, 1.7cqi, 19px)' : 'clamp(16px, 2.1cqi, 24px)'
+              width: 'clamp(14px, 1.7cqi, 19px)',
+              height: 'clamp(14px, 1.7cqi, 19px)'
             };
 
             return (
@@ -624,7 +624,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             );
           };
 
-          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, highly readable font size)
+          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, identical prominent font size on all 4 sides)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
@@ -633,25 +633,17 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
             const maxWordLen = Math.max(...words.map(w => w.length));
 
-            // Generous, prominent font size clamp so players never have to squint or lean forward
-            const fontSize = isHorizontal
-              ? maxWordLen >= 10
-                ? 'clamp(10px, 1.35cqi, 13px)'
-                : maxWordLen >= 8
-                ? 'clamp(11px, 1.5cqi, 14.5px)'
-                : maxWordLen >= 6
-                ? 'clamp(12px, 1.65cqi, 16px)'
-                : 'clamp(13px, 1.85cqi, 18px)'
-              : maxWordLen >= 9
-                ? 'clamp(8.5px, 1.2cqi, 12px)'
-                : maxWordLen >= 7
-                ? 'clamp(9.5px, 1.35cqi, 13.5px)'
-                : maxWordLen >= 5
-                ? 'clamp(10.5px, 1.5cqi, 14.5px)'
-                : 'clamp(11.5px, 1.65cqi, 16px)';
+            // Generous, prominent font size clamp matching bottom and top to right and left exactly
+            const fontSize = maxWordLen >= 10
+              ? 'clamp(10px, 1.35cqi, 13px)'
+              : maxWordLen >= 8
+              ? 'clamp(11px, 1.5cqi, 14.5px)'
+              : maxWordLen >= 6
+              ? 'clamp(12px, 1.65cqi, 16px)'
+              : 'clamp(13px, 1.85cqi, 18px)';
 
             return (
-              <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center text-center z-10 px-0.5 max-w-full">
+              <div className="flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center text-center z-10 px-0.5">
                 <span
                   className="font-sans font-black text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
