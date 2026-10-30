@@ -410,9 +410,10 @@ export const App: React.FC = () => {
       p.jailTurns = 0;
       newRoom.logs.push({
         id: `bail_${Date.now()}`,
-        text: `${p.name} paid $50 bail and was released!`,
+        text: `⚖️ ${p.name} paid $50 bail and was released!`,
         timestamp: Date.now(),
-        type: 'jail'
+        type: 'jail',
+        playerId: p.id
       });
       sound.playBuy();
       multiplayer.updateRoom(newRoom);
@@ -510,7 +511,8 @@ export const App: React.FC = () => {
       id: `trade_off_${Date.now()}`,
       text: `🤝 ${currentPlayer.name} proposed a trade to ${room.players[offer.receiverId]?.name}!`,
       timestamp: Date.now(),
-      type: 'trade'
+      type: 'trade',
+      playerId: currentPlayer.id
     });
     sound.playTurnChime();
     multiplayer.updateRoom(newRoom);
@@ -544,7 +546,8 @@ export const App: React.FC = () => {
       id: `trade_done_${Date.now()}`,
       text: `✅ Trade completed between ${sender.name} and ${receiver.name}!`,
       timestamp: Date.now(),
-      type: 'trade'
+      type: 'trade',
+      playerId: sender.id
     });
 
     // Check debt cleared for either player

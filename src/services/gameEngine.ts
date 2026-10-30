@@ -107,9 +107,10 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       player.jailTurns = 0;
       newRoom.logs.push({
         id: `jail_free_${Date.now()}`,
-        text: `${player.name} rolled doubles and escaped jail!`,
+        text: `🎲 ${player.name} rolled doubles and escaped jail!`,
         timestamp: Date.now(),
-        type: 'jail'
+        type: 'jail',
+        playerId: player.id
       });
     } else {
       player.jailTurns += 1;
@@ -121,16 +122,18 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         player.jailTurns = 0;
         newRoom.logs.push({
           id: `jail_pay_${Date.now()}`,
-          text: `${player.name} served 3 turns, paid $50 bail and was released.`,
+          text: `⚖️ ${player.name} served 3 turns, paid $50 bail and was released.`,
           timestamp: Date.now(),
-          type: 'jail'
+          type: 'jail',
+          playerId: player.id
         });
       } else {
         newRoom.logs.push({
           id: `jail_stay_${Date.now()}`,
-          text: `${player.name} remains in jail (Turn ${player.jailTurns}/3).`,
+          text: `⚖️ ${player.name} remains in jail (Turn ${player.jailTurns}/3).`,
           timestamp: Date.now(),
-          type: 'jail'
+          type: 'jail',
+          playerId: player.id
         });
         newRoom.turnPhase = 'end';
         return newRoom;
@@ -148,9 +151,10 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       newRoom.turnPhase = 'end';
       newRoom.logs.push({
         id: `jail_3doubles_${Date.now()}`,
-        text: `${player.name} rolled 3 consecutive doubles and was sent directly to Jail!`,
+        text: `🚨 ${player.name} rolled 3 consecutive doubles and was sent directly to Jail!`,
         timestamp: Date.now(),
-        type: 'jail'
+        type: 'jail',
+        playerId: player.id
       });
       return newRoom;
     }
@@ -168,9 +172,10 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     player.cash += newRoom.settings.salary;
     newRoom.logs.push({
       id: `salary_${Date.now()}`,
-      text: `${player.name} passed START and collected $${newRoom.settings.salary} salary.`,
+      text: `💰 ${player.name} passed START and collected $${newRoom.settings.salary} salary.`,
       timestamp: Date.now(),
-      type: 'system'
+      type: 'system',
+      playerId: player.id
     });
   }
 
@@ -271,9 +276,10 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     newRoom.turnPhase = 'end';
     newRoom.logs.push({
       id: `jail_land_${Date.now()}`,
-      text: `${player.name} landed on GO TO JAIL! Off to jail!`,
+      text: `🚨 ${player.name} landed on GO TO JAIL! Off to jail!`,
       timestamp: Date.now(),
-      type: 'jail'
+      type: 'jail',
+      playerId: player.id
     });
   } else if (tile.type === 'chance' || tile.type === 'chest') {
     const cardDeck = tile.type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
@@ -421,7 +427,8 @@ export function sellHouse(room: GameRoom, playerId: string, tileIndex: number): 
     id: `sell_house_${Date.now()}`,
     text: `🏚️ ${player.name} sold a house on ${tile.name} for $${refund}.`,
     timestamp: Date.now(),
-    type: 'system'
+    type: 'buy',
+    playerId: player.id
   });
 
   if (prevCash < 0 && player.cash >= 0) {
@@ -461,7 +468,8 @@ export function mortgageProperty(room: GameRoom, playerId: string, tileIndex: nu
     id: `mortgage_${Date.now()}`,
     text: `📜 ${player.name} mortgaged ${tile.name} for $${tile.mortgageValue}!`,
     timestamp: Date.now(),
-    type: 'system'
+    type: 'buy',
+    playerId: player.id
   });
 
   if (prevCash < 0 && player.cash >= 0) {
@@ -495,7 +503,8 @@ export function unmortgageProperty(room: GameRoom, playerId: string, tileIndex: 
     id: `unmortgage_${Date.now()}`,
     text: `🏛️ ${player.name} unmortgaged ${tile.name} for $${cost}!`,
     timestamp: Date.now(),
-    type: 'system'
+    type: 'buy',
+    playerId: player.id
   });
 
   sound.playBuy();
@@ -673,7 +682,8 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
     id: `bankrupt_${Date.now()}`,
     text: `💥 ${debtor.name} went bankrupt to ${creditorName}!`,
     timestamp: Date.now(),
-    type: 'bankrupt'
+    type: 'bankrupt',
+    playerId: debtor.id
   });
 }
 
@@ -682,7 +692,8 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
     id: `card_${Date.now()}`,
     text: `📜 ${player.name} drew: "${card.title}" - ${card.description}`,
     timestamp: Date.now(),
-    type: 'card'
+    type: 'card',
+    playerId: player.id
   });
 
   switch (card.action) {
@@ -773,7 +784,8 @@ export function sellPropertyToBank(room: GameRoom, playerId: string, tileIndex: 
     id: `sell_prop_${Date.now()}`,
     text: `🏛️ ${player.name} sold ${placeFlag}${tile.name} to the Bank for $${sellPrice}!`,
     timestamp: Date.now(),
-    type: 'buy'
+    type: 'buy',
+    playerId: player.id
   });
 
   sound.playCash();

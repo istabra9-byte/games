@@ -147,7 +147,7 @@ export const formatLogText = renderLogContent;
 
 // Helper to render notification banner with player name in their chosen color
 const renderNotificationText = (rawText: string, players: Record<string, any>): React.ReactNode => {
-  let text = rawText.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜)\s*/u, '').trim();
+  let text = rawText.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜|🤝|✅|❌|🎲|🏚️|🛡️|🏆|🎁)\s*/u, '').trim();
 
   // Find all players sorted by name length descending
   const playerList = Object.values(players)
@@ -246,24 +246,51 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
 
   const shouldShowNotification = !isRollDismissed && !isRolling && !isPieceMoving;
 
-  // Find the latest notable game action (buy, sell, rent, tax, trade, mortgage, jail, bankrupt)
+  // Find the latest notable game action (treasure, taxes, prison, vacation, buys, sales, trades, rent, bankrupt)
   const latestActionLog = shouldShowNotification ? [...currentRollLogs].reverse().find(log => {
+    if (!log || !log.text) return false;
     const text = log.text.toLowerCase();
+
+    // Exclude noisy roll, turn-announcement, and timer-tick logs
+    if (log.type === 'roll' || text.includes(' rolled ') || text.includes('roll total')) return false;
+    if (text.includes("'s turn") || text.includes('turn of') || text.startsWith("it's now ")) return false;
+    if (text.includes('turn limit expired') || text.includes('time has expired')) return false;
+    if (text.includes('game has started') || text.includes('rule the economy')) return false;
+    if (text.includes('passed on buying')) return false;
+
+    // Include all requested categories: treasure, taxes, prison, vacation, buys, sales, trades, rent, bankrupt, salary
     return (
       log.type === 'buy' ||
-      log.type === 'trade' ||
       log.type === 'rent' ||
-      log.type === 'bankrupt' ||
+      log.type === 'trade' ||
+      log.type === 'card' ||
       log.type === 'jail' ||
-      text.includes('bought') ||
-      text.includes('sold') ||
-      text.includes('trade') ||
-      text.includes('paid $') ||
-      text.includes('rent') ||
+      log.type === 'bankrupt' ||
+      text.includes('drew:') ||
+      text.includes('treasure') ||
+      text.includes('chance') ||
+      text.includes('surprise') ||
+      text.includes('card') ||
       text.includes('tax') ||
+      text.includes('paid $') ||
+      text.includes('vacation') ||
+      text.includes('pot') ||
+      text.includes('jail') ||
+      text.includes('prison') ||
+      text.includes('bail') ||
+      text.includes('bought') ||
+      text.includes('upgraded') ||
+      text.includes('hotel') ||
+      text.includes('house') ||
+      text.includes('sold') ||
       text.includes('mortgag') ||
-      text.includes('built a house') ||
-      text.includes('bankrupt')
+      text.includes('unmortgag') ||
+      text.includes('trade') ||
+      text.includes('rent') ||
+      text.includes('bankrupt') ||
+      text.includes('won the') ||
+      text.includes('passed start') ||
+      text.includes('salary')
     );
   }) : null;
 
@@ -303,7 +330,12 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                 <PlayerAvatar avatar={actionPlayer.isBot ? 'navy' : actionPlayer.avatar} color={actionPlayer.color} size={18} />
               </div>
             ) : (
-              <span className="text-xs flex-shrink-0">🔔</span>
+              <span className="text-xs flex-shrink-0">
+                {latestActionLog.type === 'card' ? '🎁' :
+                 latestActionLog.type === 'jail' ? '⚖️' :
+                 latestActionLog.type === 'trade' ? '🤝' :
+                 latestActionLog.type === 'rent' ? '💰' : '🔔'}
+              </span>
             )}
             <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide inline-flex items-center">
               {renderNotificationText(latestActionLog.text, room.players)}
