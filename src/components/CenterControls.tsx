@@ -187,9 +187,49 @@ const renderNotificationText = (rawText: string, players: Record<string, any>): 
   );
 };
 
-// Helper to render activity feed logs in uniform grey color
+const FLAG_TO_COUNTRY_NAME: Record<string, string> = {
+  es: 'Spain',
+  br: 'Brazil',
+  it: 'Italy',
+  de: 'Germany',
+  cn: 'China',
+  fr: 'France',
+  gb: 'UK',
+  us: 'USA',
+  tn: 'Tunisia',
+  qa: 'Qatar',
+  ae: 'UAE'
+};
+
+// Helper to convert flags to clean country name text without flag images in activity logs
+const convertFlagsToCountryNames = (rawText: string): string => {
+  let text = rawText;
+
+  // Replace [flag:xx] tags with country name
+  text = text.replace(/\[flag:([a-z]{2})\]/gi, (_, code) => {
+    const c = code.toLowerCase();
+    return FLAG_TO_COUNTRY_NAME[c] ? `${FLAG_TO_COUNTRY_NAME[c]} ` : '';
+  });
+
+  // Replace Unicode regional indicator flag pairs with country name
+  text = text.replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, (match) => {
+    const codePoints = Array.from(match).map(c => c.codePointAt(0) || 0);
+    if (codePoints.length === 2) {
+      const c1 = String.fromCharCode(65 + codePoints[0] - 0x1F1E6);
+      const c2 = String.fromCharCode(65 + codePoints[1] - 0x1F1E6);
+      const code = (c1 + c2).toLowerCase();
+      return FLAG_TO_COUNTRY_NAME[code] ? `${FLAG_TO_COUNTRY_NAME[code]} ` : '';
+    }
+    return match;
+  });
+
+  return text.replace(/\s{2,}/g, ' ').trim();
+};
+
+// Helper to render activity feed logs in uniform grey color without flag images (country names kept as text)
 const renderGreyLogContent = (rawText: string, players: Record<string, any>): React.ReactNode => {
   let text = rawText.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜|🤝|✅|❌|🎲|🏚️|🛡️|🏆|🎁)\s*/u, '').trim();
+  text = convertFlagsToCountryNames(text);
 
   // Find all players sorted by name length descending
   const playerList = Object.values(players)
@@ -197,7 +237,7 @@ const renderGreyLogContent = (rawText: string, players: Record<string, any>): Re
     .sort((a: any, b: any) => b.name.length - a.name.length);
 
   if (playerList.length === 0) {
-    return renderLogContent(text, false);
+    return text;
   }
 
   // Create case-insensitive regex matching any player name
@@ -220,7 +260,7 @@ const renderGreyLogContent = (rawText: string, players: Record<string, any>): Re
             </span>
           );
         }
-        return <React.Fragment key={idx}>{renderLogContent(part, false)}</React.Fragment>;
+        return <React.Fragment key={idx}>{part}</React.Fragment>;
       })}
     </>
   );
@@ -365,7 +405,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         {latestActionLog ? (
           <div
             key={latestActionLog.id}
-            className="flex items-center gap-2 px-4 py-1.5 bg-[#1e1333]/95 hover:bg-[#281a44] border border-purple-500/40 rounded-full shadow-[0_6px_20px_rgba(0,0,0,0.65)] backdrop-blur-md max-w-[340px] sm:max-w-[380px] transition-all animate-in fade-in slide-in-from-top-3 duration-300"
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-[#1e1333]/95 hover:bg-[#281a44] border border-purple-500/40 rounded-full shadow-[0_6px_20px_rgba(0,0,0,0.65)] backdrop-blur-md max-w-[96%] sm:max-w-[460px] w-auto transition-all animate-in fade-in slide-in-from-top-3 duration-300"
           >
             {actionPlayer ? (
               <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 bg-black/40 border border-white/30">
@@ -379,7 +419,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                  latestActionLog.type === 'rent' ? '💰' : '🔔'}
               </span>
             )}
-            <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide inline-flex items-center">
+            <span className="text-[11px] sm:text-xs font-semibold text-purple-100 tracking-wide inline-flex items-center flex-wrap leading-tight text-center">
               {renderNotificationText(latestActionLog.text, room.players)}
             </span>
           </div>

@@ -97,10 +97,27 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
             >
               <div className="flex items-center justify-between">
                 {/* Left: Rank, Avatar & Name */}
-                <div className="flex items-center gap-2 overflow-hidden">
+                <div className="flex items-center gap-1.5 overflow-hidden">
                   <span className="text-[10px] font-mono font-bold text-gray-500 w-3">
                     #{rank + 1}
                   </span>
+
+                  {/* Cash change notification: on the left of player icon, stays 5 seconds */}
+                  {cashDeltas[player.id] && (
+                    <span
+                      key={cashDeltas[player.id].key}
+                      className={`text-xs font-black font-mono select-none flex-shrink-0 animate-in fade-in zoom-in-75 duration-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${
+                        cashDeltas[player.id].delta > 0
+                          ? 'text-emerald-400'
+                          : 'text-red-400'
+                      }`}
+                    >
+                      {cashDeltas[player.id].delta > 0
+                        ? `+$${cashDeltas[player.id].delta}`
+                        : `-$${Math.abs(cashDeltas[player.id].delta)}`}
+                    </span>
+                  )}
+
                   <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center relative flex-shrink-0">
                     <PlayerAvatar avatar={player.isBot ? 'navy' : player.avatar} color={player.color} size={30} />
                     {player.isHost && (
@@ -118,20 +135,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
 
                   <div className="flex flex-col leading-tight overflow-hidden">
                     <div className="flex items-center gap-1.5 truncate">
-                      {cashDeltas[player.id] && (
-                        <span
-                          key={cashDeltas[player.id].key}
-                          className={`text-xs font-black font-mono select-none flex-shrink-0 animate-in fade-in zoom-in-75 duration-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${
-                            cashDeltas[player.id].delta > 0
-                              ? 'text-emerald-400'
-                              : 'text-red-400'
-                          }`}
-                        >
-                          {cashDeltas[player.id].delta > 0
-                            ? `+$${cashDeltas[player.id].delta}`
-                            : `-$${Math.abs(cashDeltas[player.id].delta)}`}
-                        </span>
-                      )}
                       <span className="text-xs font-bold flex items-center gap-1 truncate text-white">
                         {player.name} {isMe ? '(You)' : ''}
                         {player.isBot && <Bot className="w-3 h-3 text-cyan-400 flex-shrink-0" />}

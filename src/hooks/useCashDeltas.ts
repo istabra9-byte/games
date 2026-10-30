@@ -54,7 +54,7 @@ export function useCashDeltas(players?: Record<string, Player>): Record<string, 
     }
   }, [players]);
 
-  // Keep notification active for exactly 3 seconds (3000ms), then remove it
+  // Keep notification active for exactly 5 seconds (5000ms), then remove it
   useEffect(() => {
     const activeEntries = Object.entries(cashDeltas);
     if (activeEntries.length === 0) return;
@@ -69,7 +69,7 @@ export function useCashDeltas(players?: Record<string, Player>): Record<string, 
           }
           return prev;
         });
-      }, 3000);
+      }, 5000);
     });
 
     return () => {
