@@ -122,6 +122,7 @@ export interface GameRoom {
   dice: [number, number];
   isDoubles: boolean;
   consecutiveDoubles: number;
+  lastRollLogIndex?: number;
   pot: number;
   tiles: Tile[];
   auction: AuctionState | null;

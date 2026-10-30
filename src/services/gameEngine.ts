@@ -91,6 +91,8 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
 
   newRoom.dice = [d1, d2];
   newRoom.isDoubles = isDoubles;
+  // Mark log cutoff index so notifications from prior turns disappear the moment roll is triggered
+  newRoom.lastRollLogIndex = newRoom.logs ? newRoom.logs.length : 0;
 
   sound.playDiceRoll();
 

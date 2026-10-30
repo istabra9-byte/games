@@ -201,6 +201,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   const landedTile = turnPlayer ? room.tiles[turnPlayer.position] : null;
 
   const [isRolling, setIsRolling] = useState(false);
+  const [isRollDismissed, setIsRollDismissed] = useState(false);
   const prevDiceRef = useRef(room.dice);
 
   const logsContainerRef = useRef<HTMLDivElement>(null);
@@ -212,14 +213,24 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
       prevDiceRef.current[1] !== room.dice[1]
     ) {
       prevDiceRef.current = room.dice;
+      setIsRollDismissed(true);
       setIsRolling(true);
       const timer = setTimeout(() => setIsRolling(false), 650);
       return () => clearTimeout(timer);
     }
   }, [room.dice]);
 
+  // Reset roll dismissal once piece movement has finished so post-landing notifications can show
+  useEffect(() => {
+    if (!isPieceMoving && !isRolling) {
+      setIsRollDismissed(false);
+    }
+  }, [isPieceMoving, isRolling, room.logs?.length]);
+
   const handleRollClick = () => {
     if (isRolling) return;
+    // Disappear the top player notification banner the EXACT MOMENT the roll dice button is hit
+    setIsRollDismissed(true);
     setIsRolling(true);
     sound.playDiceRoll();
     setTimeout(() => {
@@ -228,8 +239,15 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
     }, 450);
   };
 
+  // Only consider logs from the current roll onwards (prior turn notifications disappear when next player rolls)
+  const currentRollLogs = room.lastRollLogIndex !== undefined && room.lastRollLogIndex >= 0
+    ? (room.logs || []).slice(room.lastRollLogIndex)
+    : (room.logs || []);
+
+  const shouldShowNotification = !isRollDismissed && !isRolling && !isPieceMoving;
+
   // Find the latest notable game action (buy, sell, rent, tax, trade, mortgage, jail, bankrupt)
-  const latestActionLog = [...(room.logs || [])].reverse().find(log => {
+  const latestActionLog = shouldShowNotification ? [...currentRollLogs].reverse().find(log => {
     const text = log.text.toLowerCase();
     return (
       log.type === 'buy' ||
@@ -247,7 +265,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
       text.includes('built a house') ||
       text.includes('bankrupt')
     );
-  });
+  }) : null;
 
   const actionPlayer = latestActionLog?.playerId
     ? room.players[latestActionLog.playerId]
