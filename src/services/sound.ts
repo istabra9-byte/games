@@ -306,14 +306,8 @@ class SoundService {
     }
 
     try {
-      // Ensure two sounds never play simultaneously
-      if (this.currentAudio && !this.currentAudio.paused && !this.currentAudio.ended) {
-        const elapsed = Date.now() - this.lastAudioStartTime;
-        // If current sound started less than 1.6s ago, skip overlapping trigger so audio doesn't clash
-        if (elapsed < 1600) {
-          return;
-        }
-        // If it has been playing longer than 1.6s, cleanly stop it before starting the new one
+      // Ensure two sounds never play simultaneously - cleanly stop any active audio before starting the next
+      if (this.currentAudio) {
         this.stopCurrentSound();
       }
 

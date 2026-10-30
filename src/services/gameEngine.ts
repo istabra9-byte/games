@@ -100,6 +100,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   if (player.inJail) {
     if (isDoubles) {
       const wasFirstAttempt = player.jailTurns === 0;
+      (player as any).escapedJailFirstRoll = wasFirstAttempt;
       player.inJail = false;
       player.jailTurns = 0;
       newRoom.logs.push({
@@ -108,11 +109,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         timestamp: Date.now(),
         type: 'jail'
       });
-      if (wasFirstAttempt) {
-        sound.playPrisonEscapeFirstRoll();
-      } else {
-        sound.playBuy();
-      }
     } else {
       player.jailTurns += 1;
       if (player.jailTurns >= 3) {
@@ -174,7 +170,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       timestamp: Date.now(),
       type: 'system'
     });
-    sound.playCash();
   }
 
   // Handle Landing on Tile
@@ -213,15 +208,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
             playerId: player.id
           });
 
-          // Large payment sound triggers
-          if (rentAmount >= 500) {
-            sound.playBigLoss();
-          } else if (rentAmount >= 400) {
-            sound.playBigRentCollect();
-          }
-
           if (prevCash >= 0 && player.cash < 0) {
-            sound.playNegativeBalance();
             resolveDebtOrBankruptcy(newRoom, player.id, owner.id);
           }
         }
@@ -248,11 +235,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       type: 'rent',
       playerId: player.id
     });
-    if (taxAmount >= 500) {
-      sound.playBigLoss();
-    }
     if (prevCash >= 0 && player.cash < 0) {
-      sound.playNegativeBalance();
       resolveDebtOrBankruptcy(newRoom, player.id, null);
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
@@ -690,7 +673,6 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
     timestamp: Date.now(),
     type: 'bankrupt'
   });
-  sound.playBankrupt();
 }
 
 function applyCardEffect(room: GameRoom, player: Player, card: any) {
@@ -705,43 +687,34 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
     case 'advance_to_go':
       player.position = 0;
       player.cash += room.settings.salary;
-      sound.playCash();
       break;
     case 'pay_pot_50':
       const prevCardCash = player.cash;
       player.cash -= 50;
       room.pot += 50;
-      sound.playBadSurprise();
       if (prevCardCash >= 0 && player.cash < 0) {
-        sound.playNegativeBalance();
         resolveDebtOrBankruptcy(room, player.id, null);
       }
       break;
     case 'receive_100':
       player.cash += 100;
-      sound.playCash();
       break;
     case 'receive_200':
       player.cash += 200;
-      sound.playCash();
       break;
     case 'receive_50':
       player.cash += 50;
-      sound.playCash();
       break;
     case 'receive_75':
       player.cash += 75;
-      sound.playCash();
       break;
     case 'go_to_jail':
       player.position = 10;
       player.inJail = true;
       player.jailTurns = 0;
-      sound.playBadSurprise();
       break;
     case 'jail_card':
       player.jailCards = (player.jailCards || 0) + 1;
-      sound.playCash();
       break;
     case 'advance_to_39':
       player.position = 39;
@@ -753,7 +726,6 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
           player.cash += 20;
         }
       });
-      sound.playCash();
       break;
   }
 }

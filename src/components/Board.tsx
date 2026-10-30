@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Tile, Player, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
+import { calculateRent } from '../services/gameEngine';
 import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent, ShoppingCart, Check } from 'lucide-react';
 import { sound } from '../services/sound';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -94,8 +95,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
       const targetPos = p.position;
 
       if (currentVisual !== targetPos) {
-        // Direct teleportation to jail
-        if (p.inJail && targetPos === 10) {
+        // If player landed on Tile 30 (Go to Prison), walk them to 30 first so they see arrival,
+        // then send them to Jail (10) and play the jail meme!
+        const isJailFromTile30 = p.inJail && targetPos === 10 && currentVisual > 10;
+        const actualWalkTarget = isJailFromTile30 ? 30 : targetPos;
+
+        if (p.inJail && targetPos === 10 && !isJailFromTile30) {
           if (animTimers.current[p.id]) {
             clearInterval(animTimers.current[p.id]);
             delete animTimers.current[p.id];
@@ -106,7 +111,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             next.delete(p.id);
             return next;
           });
-          sound.playMemePrison();
+          sound.playPrison();
           return;
         }
 
@@ -118,9 +123,24 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             sound.playStep();
             setVisualPositions(prev => ({ ...prev, [p.id]: currentStep }));
 
-            if (currentStep === targetPos) {
+            if (currentStep === actualWalkTarget) {
               clearInterval(animTimers.current[p.id]);
               delete animTimers.current[p.id];
+
+              if (isJailFromTile30) {
+                // Stopped strictly on tile 30 "Go to Prison"!
+                sound.playPrison();
+                setTimeout(() => {
+                  setVisualPositions(prev => ({ ...prev, [p.id]: 10 }));
+                  setMovingPlayerIds(prev => {
+                    const next = new Set(prev);
+                    next.delete(p.id);
+                    return next;
+                  });
+                }, 850);
+                return;
+              }
+
               setMovingPlayerIds(prev => {
                 const next = new Set(prev);
                 next.delete(p.id);
@@ -128,43 +148,102 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               });
 
               // Trigger soundboard memes strictly upon landing in position!
+              // 1. Bankrupt?
               if (p.isBankrupt) {
                 sound.playBankrupt();
-              } else if (targetPos === 0) {
-                // Stopped directly on Start (Tile 0), not just passing by
+                return;
+              }
+
+              // 2. Escaped prison on first roll?
+              if ((p as any).escapedJailFirstRoll) {
+                (p as any).escapedJailFirstRoll = false;
+                sound.playPrisonEscapeFirstRoll();
+                return;
+              }
+
+              // 3. Stopped directly on Start (Tile 0)?
+              if (targetPos === 0) {
                 sound.playLandOnStart();
-              } else {
-                const landedTile = tiles[targetPos];
-                if (landedTile) {
-                  if (landedTile.type === 'tax') {
-                    if (targetPos === 38 || landedTile.name.toLowerCase().includes('premium')) {
-                      sound.playPremiumTax();
-                    } else {
-                      sound.playEarningsTax();
-                    }
-                  } else if (landedTile.type === 'go_to_jail') {
-                    sound.playPrison();
-                  } else if (landedTile.type === 'chance') {
-                    // Chance card drawn - sound triggered upon drawing
-                  } else if (landedTile.type === 'chest') {
-                    sound.playCash();
-                  } else if (landedTile.type === 'railroad') {
-                    sound.playTurnChime();
-                  } else if (landedTile.type === 'vacation') {
-                    sound.playVacation();
-                  } else if (landedTile.type === 'property' || landedTile.type === 'utility') {
-                    if (landedTile.ownerId && landedTile.ownerId !== p.id && !landedTile.isMortgaged) {
-                      sound.playRent();
-                    } else {
-                      sound.playSelect();
-                    }
-                  } else {
-                    sound.playSelect();
+                return;
+              }
+
+              const landedTile = tiles[targetPos];
+              if (!landedTile) {
+                sound.playSelect();
+                return;
+              }
+
+              // 4. Taxes
+              if (landedTile.type === 'tax') {
+                if (p.cash < 0) {
+                  sound.playNegativeBalance();
+                } else {
+                  let taxAmt = landedTile.price;
+                  if (landedTile.name.toLowerCase().includes('earnings') || targetPos === 4) {
+                    taxAmt = p.cash > 0 ? Math.max(10, Math.floor(p.cash * 0.10)) : 0;
+                  } else if (landedTile.name.toLowerCase().includes('premium') || targetPos === 38) {
+                    taxAmt = 100;
                   }
+                  if (taxAmt >= 500) {
+                    sound.playBigLoss();
+                  } else if (targetPos === 38 || landedTile.name.toLowerCase().includes('premium')) {
+                    sound.playPremiumTax();
+                  } else {
+                    sound.playEarningsTax();
+                  }
+                }
+                return;
+              }
+
+              // 5. Vacation
+              if (landedTile.type === 'vacation') {
+                sound.playVacation();
+                return;
+              }
+
+              // 6. Go to Jail
+              if (landedTile.type === 'go_to_jail') {
+                sound.playPrison();
+                return;
+              }
+
+              // 7. Chance & Chest
+              if (landedTile.type === 'chance' || landedTile.type === 'chest') {
+                const latestCard = room.logs?.slice(-3).reverse().find(l => l.type === 'card');
+                if (p.cash < 0) {
+                  sound.playNegativeBalance();
+                } else if (latestCard && (latestCard.text.includes('Pay') || latestCard.text.includes('jail') || latestCard.text.includes('loss') || latestCard.text.includes('paid'))) {
+                  sound.playBadSurprise();
+                } else {
+                  sound.playCash();
+                }
+                return;
+              }
+
+              // 8. Properties / Utilities / Railroads
+              if (landedTile.type === 'property' || landedTile.type === 'utility' || landedTile.type === 'railroad') {
+                if (landedTile.ownerId && landedTile.ownerId !== p.id && !landedTile.isMortgaged) {
+                  const rollTotal = (room.dice?.[0] || 1) + (room.dice?.[1] || 1);
+                  const rentAmount = calculateRent(room, landedTile, rollTotal);
+                  if (p.cash < 0) {
+                    sound.playNegativeBalance();
+                  } else if (rentAmount >= 500) {
+                    sound.playBigLoss();
+                  } else if (rentAmount >= 400) {
+                    sound.playBigRentCollect();
+                  } else {
+                    sound.playRent();
+                  }
+                } else if (!landedTile.ownerId) {
+                  sound.playSelect();
                 } else {
                   sound.playSelect();
                 }
+                return;
               }
+
+              // Default landing click
+              sound.playSelect();
             }
           }, 110);
         }
@@ -175,7 +254,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
       Object.values(animTimers.current).forEach(t => clearInterval(t));
       animTimers.current = {};
     };
-  }, [players, tiles]);
+  }, [players, tiles, room.dice, room.logs]);
 
   const playersOnTile: Record<number, Player[]> = {};
   Object.values(players).forEach(p => {
