@@ -1,4 +1,4 @@
-# Richup - Real-Time Multiplayer Board Game
+# Monopoly -  Multiplayer Board Game
 
 [![GitHub Pages Deployment](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?style=flat-square&logo=github)](https://istabra9-byte.github.io/games/)
 [![React](https://img.shields.io/badge/React-18.x-61dafb?style=flat-square&logo=react)](https://react.dev)
