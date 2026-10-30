@@ -108,6 +108,8 @@ export const App: React.FC = () => {
   const [droppedMessages, setDroppedMessages] = useState<ChatMessage[]>([]);
   const lastMessageCountRef = useRef<number>(0);
   const prevRoomStatusRef = useRef<string | null>(null);
+  const phaseStartedAtRef = useRef<number>(Date.now());
+  const prevTurnKeyRef = useRef<string>('');
 
   // Preload all meme audio clips into local browser memory on mount
   useEffect(() => {
@@ -277,27 +279,74 @@ export const App: React.FC = () => {
     };
   }, [roomId, currentPlayer.id]);
 
-  // Sync turn timer countdown
+  // Reset phase start timestamp whenever turn player, turn phase, or dice changes
   useEffect(() => {
     if (!room || room.status !== 'playing') return;
+    const turnKey = `${room.currentTurnPlayerIndex}_${room.turnPhase}_${room.dice?.join(',')}`;
+    if (prevTurnKeyRef.current !== turnKey) {
+      prevTurnKeyRef.current = turnKey;
+      phaseStartedAtRef.current = Date.now();
+    }
+  }, [room?.currentTurnPlayerIndex, room?.turnPhase, room?.dice, room?.status]);
+
+  // Turn Inactivity Timer & Auto-Play System
+  // 1. Roll phase: if no roll for 10s, starts 20s timer pill. If expires, auto-rolls.
+  // 2. Action/Decision phase: if stopped playing for 10s, starts 3:00m timer pill. If expires, auto-plays.
+  // 3. Last 20s: Grant Time option appears (+30s for roll, +1m for action). Friends can also grant time!
+  useEffect(() => {
+    if (!room || room.status !== 'playing') return;
+    const currentTurnId = room.playerOrder[room.currentTurnPlayerIndex];
+    const turnPlayer = room.players[currentTurnId];
+    if (!turnPlayer || turnPlayer.isBot || turnPlayer.isBankrupt) return;
 
     const timer = setInterval(() => {
-      const left = Math.floor((room.turnEndsAt - Date.now()) / 1000);
-      if (left <= 0) {
-        // Auto-advance turn if timer expires
-        const isCurrentTurn = room.playerOrder[room.currentTurnPlayerIndex] === currentPlayer.id;
-        const isHost = room.hostId === currentPlayer.id;
-        if (isCurrentTurn || isHost) {
-          if (room.turnPhase === 'roll') {
-            handleRoll();
-          } else if (room.turnPhase === 'action') {
-            handleSkip();
-          } else {
-            handleEndTurn();
+      const now = Date.now();
+      const isMyTurn = currentTurnId === currentPlayer.id;
+      const isHost = room.hostId === currentPlayer.id;
+
+      // Check if 10 seconds of inactivity has elapsed without action
+      if (!room.turnTimer || !room.turnTimer.active) {
+        const inactivityMs = now - phaseStartedAtRef.current;
+        if (inactivityMs >= 10000) {
+          // Current turn player (or host after 12s as network fallback) starts the timer
+          if (isMyTurn || (isHost && inactivityMs >= 12000)) {
+            const situation: 'roll' | 'action' = room.turnPhase === 'roll' ? 'roll' : 'action';
+            const durationMs = situation === 'roll' ? 20000 : 180000; // 20s for roll, 3:00 min for action
+            const updatedRoom: GameRoom = JSON.parse(JSON.stringify(room));
+            updatedRoom.turnTimer = {
+              active: true,
+              situation,
+              forPlayerId: currentTurnId,
+              expiresAt: now + durationMs,
+              totalDuration: durationMs
+            };
+            multiplayer.updateRoom(updatedRoom);
+          }
+        }
+      } else {
+        // Timer is active: check if expired (reach 0:00)
+        if (now >= room.turnTimer.expiresAt) {
+          if (isMyTurn || isHost) {
+            if (room.turnTimer.situation === 'roll') {
+              // Auto-roll dice on expiration
+              handleRoll();
+            } else {
+              // Auto-play action on expiration
+              if (room.turnPhase === 'action') {
+                const skipped = skipCurrentProperty(room, currentTurnId);
+                const ended = endTurn(skipped);
+                ended.turnTimer = null;
+                multiplayer.updateRoom(ended);
+              } else {
+                const ended = endTurn(room);
+                ended.turnTimer = null;
+                multiplayer.updateRoom(ended);
+              }
+            }
           }
         }
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(timer);
   }, [room, currentPlayer.id]);
@@ -412,30 +461,35 @@ export const App: React.FC = () => {
   // Actions
   const handleRoll = () => {
     if (!room) return;
+    phaseStartedAtRef.current = Date.now();
     const updated = rollDice(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleBuy = () => {
     if (!room) return;
+    phaseStartedAtRef.current = Date.now();
     const updated = buyCurrentProperty(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleSkip = () => {
     if (!room) return;
+    phaseStartedAtRef.current = Date.now();
     const updated = skipCurrentProperty(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleEndTurn = () => {
     if (!room) return;
+    phaseStartedAtRef.current = Date.now();
     const updated = endTurn(room);
     multiplayer.updateRoom(updated);
   };
 
   const handleDeclareBankruptcy = () => {
     if (!room) return;
+    phaseStartedAtRef.current = Date.now();
     const updated = surrenderBankruptcy(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
@@ -445,6 +499,8 @@ export const App: React.FC = () => {
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
     const p = newRoom.players[currentPlayer.id];
     if (p && p.inJail && p.cash >= 50) {
+      phaseStartedAtRef.current = Date.now();
+      newRoom.turnTimer = null;
       p.cash -= 50;
       newRoom.pot += 50;
       p.inJail = false;
@@ -459,6 +515,29 @@ export const App: React.FC = () => {
       sound.playPrisonEscape();
       multiplayer.updateRoom(newRoom);
     }
+  };
+
+  const handleGrantTime = () => {
+    if (!room || !room.turnTimer || !room.turnTimer.active) return;
+    const timer = room.turnTimer;
+    const isRoll = timer.situation === 'roll';
+    const addedMs = isRoll ? 30000 : 60000; // +30s for roll, +1m for action
+    const label = isRoll ? '30 seconds' : '1 minute';
+    const granter = room.players[currentPlayer.id]?.name || 'A player';
+    const forPlayer = room.players[timer.forPlayerId]?.name || 'Player';
+
+    const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+    if (!newRoom.turnTimer) return;
+    newRoom.turnTimer.expiresAt += addedMs;
+    newRoom.turnTimer.totalDuration += addedMs;
+    newRoom.logs.push({
+      id: `grant_${Date.now()}`,
+      text: `⏱️ ${granter} granted +${label} to ${forPlayer}.`,
+      timestamp: Date.now(),
+      type: 'system'
+    });
+    sound.playTurnChime();
+    multiplayer.updateRoom(newRoom);
   };
 
   const handleRequestTime = () => {
@@ -875,6 +954,7 @@ export const App: React.FC = () => {
                 onEndTurn={handleEndTurn}
                 onPayBail={handlePayBail}
                 onRequestTime={handleRequestTime}
+                onGrantTime={handleGrantTime}
                 onTileClick={(tile) => setSelectedTile(tile)}
               />
             )}
@@ -890,6 +970,7 @@ export const App: React.FC = () => {
             onOpenTradeModal={() => { setSelectedTradePartnerId(''); setShowTradeModal(true); }}
             onSelectTile={(tile) => setSelectedTile(tile)}
             onDeclareBankruptcy={handleDeclareBankruptcy}
+            onGrantTime={handleGrantTime}
           />
         </div>
       </div>
@@ -927,6 +1008,7 @@ export const App: React.FC = () => {
               onOpenTradeModal={() => { setSelectedTradePartnerId(''); setShowTradeModal(true); }}
               onSelectTile={(tile) => setSelectedTile(tile)}
               onDeclareBankruptcy={handleDeclareBankruptcy}
+              onGrantTime={handleGrantTime}
             />
           </div>
         </>

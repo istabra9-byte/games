@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GameRoom, Tile } from '../types/game';
 import { DiceView } from './DiceView';
 import { PlayerAvatar } from './PlayerAvatar';
+import { TurnTimerPill } from './TurnTimerPill';
 import { Dices, Check, ShoppingCart, ShieldAlert } from 'lucide-react';
 import { sound } from '../services/sound';
 
@@ -15,6 +16,7 @@ interface CenterControlsProps {
   onEndTurn: () => void;
   onPayBail: () => void;
   onRequestTime: () => void;
+  onGrantTime?: () => void;
   onTileClick?: (tile: Tile) => void;
 }
 
@@ -185,6 +187,45 @@ const renderNotificationText = (rawText: string, players: Record<string, any>): 
   );
 };
 
+// Helper to render activity feed logs in uniform grey color
+const renderGreyLogContent = (rawText: string, players: Record<string, any>): React.ReactNode => {
+  let text = rawText.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜|🤝|✅|❌|🎲|🏚️|🛡️|🏆|🎁)\s*/u, '').trim();
+
+  // Find all players sorted by name length descending
+  const playerList = Object.values(players)
+    .filter((p: any) => Boolean(p && p.name))
+    .sort((a: any, b: any) => b.name.length - a.name.length);
+
+  if (playerList.length === 0) {
+    return renderLogContent(text, false);
+  }
+
+  // Create case-insensitive regex matching any player name
+  const escapedNames = playerList.map((p: any) => p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const playerRegex = new RegExp(`(${escapedNames.join('|')})`, 'gi');
+
+  const parts = text.split(playerRegex);
+
+  return (
+    <>
+      {parts.map((part, idx) => {
+        const matchedPlayer = playerList.find((p: any) => p.name.toLowerCase() === part.toLowerCase());
+        if (matchedPlayer) {
+          return (
+            <span
+              key={idx}
+              className="font-bold text-gray-200 mr-1 inline-flex items-center flex-shrink-0"
+            >
+              {part}
+            </span>
+          );
+        }
+        return <React.Fragment key={idx}>{renderLogContent(part, false)}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
 export const CenterControls: React.FC<CenterControlsProps> = ({
   room,
   currentPlayerId,
@@ -193,7 +234,8 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   onBuy,
   onSkip,
   onEndTurn,
-  onPayBail
+  onPayBail,
+  onGrantTime
 }) => {
   const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
   const turnPlayer = room.players[turnPlayerId];
@@ -348,6 +390,16 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
 
       {/* 1. Large 3D Dice with Realistic Shake & Tumble + Turn Action Controls */}
       <div className="flex flex-col items-center justify-center my-auto gap-1.5 flex-shrink-0 py-1">
+        {/* Turn Timer Countdown Pill (Exact match to user screenshot) */}
+        {room.turnTimer?.active && room.turnTimer.forPlayerId === turnPlayerId && (
+          <div className="flex items-center justify-center mb-0.5 animate-in fade-in zoom-in-95 duration-200">
+            <TurnTimerPill
+              timer={room.turnTimer}
+              onGrantTime={onGrantTime}
+            />
+          </div>
+        )}
+
         <div className="flex flex-col items-center justify-center">
           <DiceView values={room.dice} isRolling={isRolling} />
         </div>
@@ -470,10 +522,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         </div>
       </div>
 
-      {/* 3. Activity Feed Logs (Appears from under the action button down into the border of the bottom tiles) */}
+      {/* 3. Activity Feed Logs (Clean uniform grey color styling as requested) */}
       <div
         ref={logsContainerRef}
-        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[90px] max-h-[250px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[90px] max-h-[250px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-400 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {meaningfulLogs.slice(-20).map((log) => {
@@ -484,17 +536,13 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
           return (
             <div
               key={log.id}
-              className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded transition-colors ${
-                isBuy ? 'text-emerald-300 bg-emerald-950/25' :
-                isRent ? 'text-amber-300 bg-amber-950/25' :
-                isJail ? 'text-red-300 bg-red-950/25' : 'text-gray-300'
-              }`}
+              className="flex items-center gap-1.5 py-0.5 px-1.5 rounded transition-colors text-gray-400 hover:text-gray-300"
             >
-              <span className="flex-shrink-0 opacity-70 text-[10px]">
+              <span className="flex-shrink-0 text-gray-500 opacity-60 text-[10px]">
                 {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
               </span>
-              <span className="break-words line-clamp-2 inline-flex items-center flex-wrap">
-                {renderNotificationText(log.text, room.players)}
+              <span className="break-words line-clamp-2 inline-flex items-center flex-wrap text-gray-400">
+                {renderGreyLogContent(log.text, room.players)}
               </span>
             </div>
           );

@@ -95,6 +95,8 @@ export function sanitizeRoom(raw: any): GameRoom {
     };
   }
 
+  room.turnTimer = raw.turnTimer || null;
+
   return room as GameRoom;
 }
 
@@ -168,8 +170,9 @@ class MultiplayerService {
     const lastLogId = logsCount > 0 ? room.logs[logsCount - 1].id : '';
     const chatCount = (room.chat || []).length;
     const lastChatId = chatCount > 0 ? room.chat[chatCount - 1].id : '';
+    const timerDigest = room.turnTimer ? `${room.turnTimer.active}:${room.turnTimer.situation}:${room.turnTimer.expiresAt}` : 'none';
 
-    return `${room.status}_${room.currentTurnPlayerIndex}_${room.turnPhase}_${room.dice?.join(',')}_${room.pot}_${room.winnerId}_${tileDigest}_${playerDigest}_${lastLogId}_${lastChatId}`;
+    return `${room.status}_${room.currentTurnPlayerIndex}_${room.turnPhase}_${room.dice?.join(',')}_${room.pot}_${room.winnerId}_${timerDigest}_${tileDigest}_${playerDigest}_${lastLogId}_${lastChatId}`;
   }
 
   public tryInit(): boolean {

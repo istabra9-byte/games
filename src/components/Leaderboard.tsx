@@ -106,6 +106,14 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     {player.isHost && (
                       <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1.5 -right-1.5 drop-shadow" />
                     )}
+                    {/* Vacation Zzz Sleeping Animation */}
+                    {player.position === 20 && !player.isBankrupt && (
+                      <div className="absolute -top-1.5 -right-2 pointer-events-none select-none flex items-center gap-0.5 z-20">
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-1">Z</span>
+                        <span className="text-[8px] font-bold text-amber-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-2">z</span>
+                        <span className="text-[7px] font-semibold text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-3">z</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col leading-tight overflow-hidden">
@@ -129,9 +137,15 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                         {player.isBot && <Bot className="w-3 h-3 text-cyan-400 flex-shrink-0" />}
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-400">
-                      {ownedTiles.length} deeds
-                    </span>
+                    {player.position === 20 && !player.isBankrupt ? (
+                      <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                        🌴 Vacation <span className="inline-flex gap-0.5 animate-pulse">💤</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-gray-400">
+                        {ownedTiles.length} deeds
+                      </span>
+                    )}
                   </div>
                 </div>
 

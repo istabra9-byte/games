@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GameRoom, Player, Tile } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { PlayerAvatar } from './PlayerAvatar';
+import { TurnTimerPill } from './TurnTimerPill';
 import { Crown, Flag, Plus, ArrowLeftRight, ShieldAlert, Home, DollarSign, X } from 'lucide-react';
 import { useCashDeltas } from '../hooks/useCashDeltas';
 
@@ -12,6 +13,7 @@ interface RightSidebarProps {
   onOpenTradeModal: () => void;
   onSelectTile: (tile: Tile) => void;
   onDeclareBankruptcy: () => void;
+  onGrantTime?: () => void;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -20,7 +22,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onInitiateTrade,
   onOpenTradeModal,
   onSelectTile,
-  onDeclareBankruptcy
+  onDeclareBankruptcy,
+  onGrantTime
 }) => {
   const [showBankruptConfirm, setShowBankruptConfirm] = useState(false);
   const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
@@ -79,6 +82,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     {player.isHost && (
                       <Crown className="w-3.5 h-3.5 text-amber-400 absolute -top-1.5 -right-1 drop-shadow" />
                     )}
+                    {/* Vacation Zzz Sleeping Animation on player avatar */}
+                    {player.position === 20 && !player.isBankrupt && (
+                      <div className="absolute -top-1.5 -right-2 pointer-events-none select-none flex items-center gap-0.5 z-20">
+                        <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-1">Z</span>
+                        <span className="text-[8px] font-bold text-amber-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-2">z</span>
+                        <span className="text-[7px] font-semibold text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-3">z</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-col leading-tight min-w-0">
@@ -103,6 +114,11 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                         {player.name}
                       </span>
                     </div>
+                    {player.position === 20 && !player.isBankrupt && (
+                      <span className="text-[9px] text-amber-300 font-bold flex items-center gap-1">
+                        🌴 Vacation <span className="inline-flex gap-0.5 animate-pulse">💤</span>
+                      </span>
+                    )}
                     {player.inJail && !player.isBankrupt && (
                       <span className="text-[9px] text-orange-400 font-bold flex items-center gap-0.5">
                         <ShieldAlert className="w-2.5 h-2.5" /> In Prison ({player.jailTurns}/3)
@@ -116,8 +132,12 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
                 </div>
 
-                {/* Right: Cash & Trade Action */}
+                {/* Right: Cash & Trade Action & Turn Timer Pill */}
                 <div className="flex items-center gap-2 flex-shrink-0">
+                  {room.turnTimer?.active && room.turnTimer.forPlayerId === player.id && (
+                    <TurnTimerPill timer={room.turnTimer} onGrantTime={onGrantTime} />
+                  )}
+
                   <span className="text-xs font-black font-mono text-emerald-400">
                     ${player.cash}
                   </span>

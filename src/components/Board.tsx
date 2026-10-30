@@ -88,6 +88,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
         {/* Large, stable avatar (no bounce) */}
         <PlayerAvatar avatar={p.isBot ? 'navy' : p.avatar} color={p.color} size={size} />
+
+        {/* Vacation Zzz Sleeping Animation on the side of the icon */}
+        {p.position === 20 && !p.isBankrupt && (
+          <div className="absolute -top-2.5 -right-3 pointer-events-none select-none flex items-center gap-0.5 z-20">
+            <span className="text-[10px] font-black text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-1">Z</span>
+            <span className="text-[8px] font-bold text-amber-200 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-2">z</span>
+            <span className="text-[7px] font-semibold text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] animate-zzz-3">z</span>
+          </div>
+        )}
       </div>
     );
   };

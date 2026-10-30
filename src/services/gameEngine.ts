@@ -91,6 +91,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
 
   newRoom.dice = [d1, d2];
   newRoom.isDoubles = isDoubles;
+  newRoom.turnTimer = null;
   // Mark log cutoff index so notifications from prior turns disappear the moment roll is triggered
   newRoom.lastRollLogIndex = newRoom.logs ? newRoom.logs.length : 0;
 
@@ -322,6 +323,7 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
 
   player.cash -= tile.price;
   tile.ownerId = playerId;
+  newRoom.turnTimer = null;
 
   const placeFlag = tile.countryCode ? `[flag:${tile.countryCode}] ` : (tile.flag ? `${tile.flag} ` : '');
   newRoom.logs.push({
@@ -386,6 +388,7 @@ export function skipCurrentProperty(room: GameRoom, playerId: string): GameRoom 
   });
 
   newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
+  newRoom.turnTimer = null;
   return newRoom;
 }
 
@@ -580,6 +583,7 @@ export function endTurn(room: GameRoom): GameRoom {
   newRoom.turnEndsAt = Date.now() + newRoom.settings.turnTimeLimit * 1000;
   newRoom.consecutiveDoubles = 0;
   newRoom.isDoubles = false;
+  newRoom.turnTimer = null;
 
   // (Turn announcement logs are omitted from feed per user request)
 

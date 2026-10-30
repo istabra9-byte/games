@@ -109,6 +109,14 @@ export interface GameLog {
 
 export type TurnPhase = 'roll' | 'action' | 'trade' | 'auction' | 'end';
 
+export interface TurnTimerState {
+  active: boolean;
+  situation: 'roll' | 'action';
+  forPlayerId: string;
+  expiresAt: number;
+  totalDuration: number;
+}
+
 export interface GameRoom {
   id: string;
   status: 'lobby' | 'playing' | 'ended';
@@ -119,6 +127,7 @@ export interface GameRoom {
   currentTurnPlayerIndex: number;
   turnPhase: TurnPhase;
   turnEndsAt: number;
+  turnTimer?: TurnTimerState | null;
   dice: [number, number];
   isDoubles: boolean;
   consecutiveDoubles: number;
