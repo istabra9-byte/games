@@ -46,6 +46,10 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('pfp');
   const [notification, setNotification] = useState<string>('');
   const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
+  const [ownerClickCount, setOwnerClickCount] = useState<number>(0);
+  const [showOwnerModal, setShowOwnerModal] = useState<boolean>(false);
+  const [ownerPasscode, setOwnerPasscode] = useState<string>('');
+  const [ownerError, setOwnerError] = useState<string>('');
 
   // Animation state for graceful, slower full-page slide in from left to right
   const [isOpen, setIsOpen] = useState(false);
@@ -79,6 +83,48 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_SELECTED_THEME, equippedThemeId);
   }, [equippedThemeId]);
+
+  // Owner Developer Actions
+  const handleCoinBadgeClick = () => {
+    const next = ownerClickCount + 1;
+    if (next >= 5) {
+      setOwnerClickCount(0);
+      setShowOwnerModal(true);
+      sound.playTurnChime();
+    } else {
+      setOwnerClickCount(next);
+      setTimeout(() => setOwnerClickCount(0), 2500);
+    }
+  };
+
+  const handleOwnerAddCoins = (amount: number) => {
+    const success = secureStorage.ownerGrantCoins(ownerPasscode, amount);
+    if (success) {
+      setCoins(secureStorage.getCoins());
+      setNotification(`👑 Added +${amount} Owner Coins!`);
+      setShowOwnerModal(false);
+      sound.playCash();
+      setTimeout(() => setNotification(''), 3000);
+    } else {
+      setOwnerError('Invalid owner passcode.');
+    }
+  };
+
+  const handleOwnerUnlockAll = () => {
+    const allStyles = ALL_APPEARANCES.map(a => a.style);
+    const allThemeIds = BOARD_THEMES.map(t => t.id);
+    const success = secureStorage.ownerUnlockAll(ownerPasscode, allStyles, allThemeIds);
+    if (success) {
+      setUnlockedAvatars(secureStorage.getUnlockedAvatars());
+      setUnlockedThemes(secureStorage.getUnlockedThemes());
+      setNotification('👑 All Skins & Themes Unlocked!');
+      setShowOwnerModal(false);
+      sound.playUpgrade();
+      setTimeout(() => setNotification(''), 3000);
+    } else {
+      setOwnerError('Invalid owner passcode.');
+    }
+  };
 
   // Avatar Actions
   const handleBuyAvatar = (item: AppearanceOption) => {
@@ -204,8 +250,12 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* Coins & Close */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-amber-500/20 border border-amber-400/50 rounded-full shadow-inner">
-            <span className="text-lg leading-none">🪙</span>
+          <div 
+            onClick={handleCoinBadgeClick}
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 rounded-full shadow-inner cursor-pointer transition-colors"
+            title="Coins Balance (Click 5x for Owner Portal)"
+          >
+            <span className="text-lg leading-none select-none">🪙</span>
             <span className="text-base font-black font-mono text-amber-300">{coins}</span>
             <span className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider hidden sm:inline">Coins</span>
           </div>
@@ -542,6 +592,63 @@ export const ShopModal: React.FC<ShopModalProps> = ({
           Close Store
         </button>
       </footer>
+      {/* Owner Developer Modal */}
+      {showOwnerModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="bg-[#1b122e] border-2 border-amber-400/60 rounded-3xl max-w-sm w-full p-5 shadow-2xl text-white relative">
+            <button
+              onClick={() => { setShowOwnerModal(false); setOwnerError(''); }}
+              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/10"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2 text-amber-400 mb-2">
+              <Crown className="w-6 h-6 fill-amber-400" />
+              <h3 className="text-base font-black tracking-wide">Owner Developer Mode</h3>
+            </div>
+
+            <p className="text-xs text-gray-300 mb-3">
+              Enter your owner passcode to grant developer coins or unlock all assets:
+            </p>
+
+            <input
+              type="password"
+              placeholder="Enter passcode (e.g. istabra9)"
+              value={ownerPasscode}
+              onChange={(e) => { setOwnerPasscode(e.target.value); setOwnerError(''); }}
+              className="w-full bg-[#100a1c] border border-purple-800 rounded-xl px-3 py-2 text-sm text-white font-mono font-bold mb-2 outline-none focus:border-amber-400"
+            />
+
+            {ownerError && (
+              <p className="text-xs text-red-400 font-bold mb-2">❌ {ownerError}</p>
+            )}
+
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <button
+                onClick={() => handleOwnerAddCoins(1000)}
+                className="py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-purple-950 font-black text-xs rounded-xl shadow cursor-pointer active:scale-95"
+              >
+                +1,000 Coins 🪙
+              </button>
+
+              <button
+                onClick={() => handleOwnerAddCoins(5000)}
+                className="py-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 text-purple-950 font-black text-xs rounded-xl shadow cursor-pointer active:scale-95"
+              >
+                +5,000 Coins 🪙
+              </button>
+            </div>
+
+            <button
+              onClick={handleOwnerUnlockAll}
+              className="w-full mt-2.5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 text-white font-black text-xs rounded-xl shadow border border-purple-400/40 cursor-pointer active:scale-95"
+            >
+              🔓 Unlock All Skins & Themes
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

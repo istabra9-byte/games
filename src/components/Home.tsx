@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Volume2, VolumeX, Play, Key, ShoppingBag, Github, X, ArrowRight } from 'lucide-react';
 import { sound } from '../services/sound';
 import { ShopModal } from './ShopModal';
+import { AuthStatus } from './AuthStatus';
 
 interface HomeProps {
   onJoinRoom: (roomId: string, playerName: string) => void;
@@ -94,28 +95,44 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
 
   return (
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col items-center justify-between p-4 relative overflow-hidden select-none text-white font-sans">
-      {/* Top Navbar: Clean right-aligned controls */}
-      <header className="w-full flex items-center justify-end gap-2.5 z-20 px-3 sm:px-6 py-2">
-        {/* Sound toggle button */}
-        <button
-          onClick={() => setIsMuted(sound.toggleMute())}
-          title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-          className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#1e1533]/90 hover:bg-[#2a1d47] border border-purple-800/60 text-purple-200 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm backdrop-blur-sm"
-        >
-          {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-purple-300" />}
-          <span className="text-xs font-bold hidden sm:inline">{isMuted ? 'Muted' : 'Sound'}</span>
-        </button>
+      {/* Top Navbar: Google Sign-in on Left, Audio & GitHub on Right */}
+      <header className="w-full flex items-center justify-between z-20 px-3 sm:px-6 py-2">
+        {/* Left: Google Sign-in / Player Account */}
+        <div className="flex items-center gap-2">
+          <AuthStatus onUserChanged={(user) => {
+            if (user && user.displayName) {
+              setNickname(user.displayName);
+              try {
+                const saved = localStorage.getItem('richup_player');
+                const p = saved ? JSON.parse(saved) : {};
+                p.name = user.displayName;
+                localStorage.setItem('richup_player', JSON.stringify(p));
+              } catch {}
+            }
+          }} />
+        </div>
 
-        {/* GitHub Repo button */}
-        <a
-          href="https://github.com/istabra9-byte/games"
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs font-bold text-purple-200 hover:text-white bg-[#1e1533]/90 hover:bg-[#2a1d47] px-3.5 py-2 rounded-xl border border-purple-800/60 transition-all flex items-center gap-1.5 shadow-sm backdrop-blur-sm"
-        >
-          <Github className="w-4 h-4 text-purple-300" />
-          <span>GitHub Repo</span>
-        </a>
+        {/* Right: Audio Mute & GitHub Repo */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsMuted(sound.toggleMute())}
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#1e1533]/90 hover:bg-[#2a1d47] border border-purple-800/60 text-purple-200 hover:text-white transition-all cursor-pointer flex items-center gap-1.5 shadow-sm backdrop-blur-sm"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-purple-300" />}
+            <span className="text-xs font-bold hidden sm:inline">{isMuted ? 'Muted' : 'Sound'}</span>
+          </button>
+
+          <a
+            href="https://github.com/istabra9-byte/games"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-bold text-purple-200 hover:text-white bg-[#1e1533]/90 hover:bg-[#2a1d47] px-3.5 py-2 rounded-xl border border-purple-800/60 transition-all flex items-center gap-1.5 shadow-sm backdrop-blur-sm"
+          >
+            <Github className="w-4 h-4 text-purple-300" />
+            <span className="hidden sm:inline">GitHub Repo</span>
+          </a>
+        </div>
       </header>
 
       {/* Slide-out Appearance Shop Button on the Left */}

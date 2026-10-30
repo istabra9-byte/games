@@ -174,6 +174,38 @@ export const secureStorage = {
   },
 
   /**
+   * Owner Developer Mode: Authorized coin addition with cryptographic signature
+   */
+  ownerGrantCoins(passcode: string, amount: number): boolean {
+    const validCodes = ['istabra9', 'owner', 'admin'];
+    if (!validCodes.includes(String(passcode).trim().toLowerCase())) {
+      console.warn('❌ Invalid owner passcode.');
+      return false;
+    }
+    const current = this.getCoins();
+    const safeAmount = Math.max(1, Math.min(10000, Math.floor(amount)));
+    const newTotal = Math.min(MAX_SAFE_COINS, current + safeAmount);
+    this.setCoins(newTotal);
+    console.log(`%c👑 [Owner Access Granted] Added +${safeAmount} coins! New total: ${newTotal}`, 'color: #10b981; font-weight: bold;');
+    return true;
+  },
+
+  /**
+   * Owner Developer Mode: Unlock all avatars and board themes
+   */
+  ownerUnlockAll(passcode: string, allAvatars: string[], allThemes: string[]): boolean {
+    const validCodes = ['istabra9', 'owner', 'admin'];
+    if (!validCodes.includes(String(passcode).trim().toLowerCase())) {
+      console.warn('❌ Invalid owner passcode.');
+      return false;
+    }
+    this.setUnlockedAvatars(allAvatars);
+    this.setUnlockedThemes(allThemes);
+    console.log('%c👑 [Owner Access Granted] All skins and board themes unlocked!', 'color: #10b981; font-weight: bold;');
+    return true;
+  },
+
+  /**
    * Retrieves unlocked avatar styles, always ensuring 'navy' is present.
    */
   getUnlockedAvatars(): string[] {

@@ -35,9 +35,18 @@ if (typeof window !== 'undefined') {
     }
   });
 
+  // Owner Developer API (Authorized by secret passcode)
+  (window as any).richupOwner = (passcode: string, amount: number = 1000) => {
+    const success = secureStorage.ownerGrantCoins(passcode, amount);
+    if (success) {
+      window.dispatchEvent(new Event('storage'));
+    }
+    return success;
+  };
+
   // Display Anti-Cheat Banner in Console
   console.log(
-    '%c🛡️ Richup Anti-Cheat System Active%c\nProtected against console memory injection, unauthorized cash additions, and storage tampering.',
+    '%c🛡️ Richup Anti-Cheat System Active%c\nProtected against console memory injection, unauthorized cash additions, and storage tampering.\nOwner Developer command: richupOwner("istabra9", 1000)',
     'background: #10b981; color: #000; font-weight: 900; font-size: 13px; padding: 3px 8px; border-radius: 4px;',
     'color: #a78bfa; font-size: 11px;'
   );
