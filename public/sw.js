@@ -1,16 +1,34 @@
 // Ultra-Low Data Consumption Service Worker for Monopoly
 // Caches all static assets, images, flags, and sounds locally so subsequent games use 0.00 MB.
 
-const CACHE_NAME = 'monopoly-cache-v1';
+const CACHE_NAME = 'monopoly-cache-v2';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './sounds/meme_prison.mp3',
+  './sounds/meme_prison_saybomi.mp3',
+  './sounds/meme_prison_gta.mp3',
+  './sounds/meme_prison_coffin.mp3',
   './sounds/meme_tax.mp3',
+  './sounds/meme_tax_winifloussk.mp3',
+  './sounds/meme_tax_damage.mp3',
+  './sounds/meme_tax_error.mp3',
   './sounds/meme_surprise.mp3',
+  './sounds/meme_surprise_chabrouch1.mp3',
+  './sounds/meme_surprise_chabrouch2.mp3',
+  './sounds/meme_surprise_wow.mp3',
+  './sounds/meme_surprise_alert.mp3',
+  './sounds/meme_surprise_bruh.mp3',
   './sounds/meme_treasure.mp3',
+  './sounds/meme_treasure_bontou.mp3',
+  './sounds/meme_treasure_mrigel.mp3',
+  './sounds/meme_treasure_kaching.mp3',
+  './sounds/meme_treasure_siuu.mp3',
+  './sounds/meme_airport_chawali.mp3',
+  './sounds/meme_airport_tayara.mp3',
   './sounds/meme_bankrupt.mp3',
+  './sounds/meme_bankrupt_wasted.mp3',
   './flags/br.png',
   './flags/tn.png',
   './flags/es.png',

@@ -103,6 +103,11 @@ export const App: React.FC = () => {
   const [droppedMessages, setDroppedMessages] = useState<ChatMessage[]>([]);
   const lastMessageCountRef = useRef<number>(0);
 
+  // Preload all meme audio clips into local browser memory on mount
+  useEffect(() => {
+    sound.preloadMemeSounds();
+  }, []);
+
   // Sync window.location.hash
   useEffect(() => {
     if (roomId) {
@@ -465,6 +470,7 @@ export const App: React.FC = () => {
 
   const handleStartGame = () => {
     if (!room) return;
+    sound.preloadMemeSounds();
     const started = startGame(room);
     multiplayer.updateRoom(started);
   };
@@ -552,10 +558,12 @@ export const App: React.FC = () => {
     return (
       <Home
         onJoinRoom={(rid, name) => {
+          sound.preloadMemeSounds();
           setCurrentPlayer(prev => ({ ...prev, name }));
           setRoomId(rid);
         }}
         onCreatePrivateRoom={(name) => {
+          sound.preloadMemeSounds();
           setCurrentPlayer(prev => ({ ...prev, name }));
           setRoomId(generateRoomId());
         }}

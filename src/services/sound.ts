@@ -258,6 +258,8 @@ class SoundService {
     });
   }
 
+  private lastPlayed: Record<string, string> = {};
+
   // Helper to resolve sound assets cleanly across dev, relative, and GitHub Pages
   private getSoundUrl(soundFile: string): string {
     const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
@@ -265,7 +267,59 @@ class SoundService {
     return `${cleanBase}sounds/${soundFile}`;
   }
 
-  // 16. Tunisian Meme Soundboard Engine (Ultra-low latency HTML5 Audio with graceful synth fallback)
+  // Tunisian & Worldwide viral meme sound pools
+  private static MEME_POOLS: Record<string, string[]> = {
+    prison: [
+      'meme_prison.mp3',
+      'meme_prison_saybomi.mp3',
+      'meme_prison_gta.mp3',
+      'meme_prison_coffin.mp3'
+    ],
+    tax: [
+      'meme_tax.mp3',
+      'meme_tax_winifloussk.mp3',
+      'meme_tax_damage.mp3',
+      'meme_tax_error.mp3'
+    ],
+    surprise: [
+      'meme_surprise.mp3',
+      'meme_surprise_chabrouch1.mp3',
+      'meme_surprise_chabrouch2.mp3',
+      'meme_surprise_wow.mp3',
+      'meme_surprise_alert.mp3',
+      'meme_surprise_bruh.mp3'
+    ],
+    treasure: [
+      'meme_treasure.mp3',
+      'meme_treasure_bontou.mp3',
+      'meme_treasure_mrigel.mp3',
+      'meme_treasure_kaching.mp3',
+      'meme_treasure_siuu.mp3'
+    ],
+    airport: [
+      'meme_airport_chawali.mp3',
+      'meme_airport_tayara.mp3'
+    ],
+    bankrupt: [
+      'meme_bankrupt.mp3',
+      'meme_bankrupt_wasted.mp3',
+      'meme_prison_coffin.mp3'
+    ]
+  };
+
+  private pickRandomFromPool(category: string): string {
+    const pool = SoundService.MEME_POOLS[category];
+    if (!pool || pool.length === 0) return '';
+    if (pool.length === 1) return pool[0];
+
+    const last = this.lastPlayed[category];
+    const available = pool.filter(s => s !== last);
+    const chosen = available[Math.floor(Math.random() * available.length)] || pool[0];
+    this.lastPlayed[category] = chosen;
+    return chosen;
+  }
+
+  // 16. Tunisian & Viral Meme Soundboard Engine (Ultra-low latency HTML5 Audio with graceful synth fallback)
   private playMemeAudio(soundFile: string, fallbackSynth?: () => void) {
     if (!this.enabled || !this.memeSoundsEnabled) {
       if (fallbackSynth) fallbackSynth();
@@ -294,16 +348,19 @@ class SoundService {
     }
   }
 
-  // Preload meme clips on first user interaction so no repeated network requests happen during gameplay
+  // Preload all meme audio clips on first user interaction so no repeated network requests happen during gameplay
   public preloadMemeSounds() {
     if (typeof window === 'undefined') return;
-    const sounds = ['meme_prison.mp3', 'meme_tax.mp3', 'meme_surprise.mp3', 'meme_treasure.mp3', 'meme_bankrupt.mp3'];
-    sounds.forEach(s => {
+    const allSounds = Object.values(SoundService.MEME_POOLS).flat();
+    const uniqueSounds = Array.from(new Set(allSounds));
+    uniqueSounds.forEach(s => {
       try {
         const url = this.getSoundUrl(s);
-        const audio = new Audio(url);
-        audio.preload = 'auto';
-        this.memeAudioCache[s] = audio;
+        if (!this.memeAudioCache[s]) {
+          const audio = new Audio(url);
+          audio.preload = 'auto';
+          this.memeAudioCache[s] = audio;
+        }
       } catch (e) {}
     });
   }
@@ -320,25 +377,35 @@ class SoundService {
     return this.memeSoundsEnabled;
   }
 
-  // 17. Tunisian Meme Event Triggers
+  // 17. Tunisian & Viral Meme Event Triggers (randomly picked without consecutive repeats)
   public playMemePrison() {
-    this.playMemeAudio('meme_prison.mp3', () => this.playPrison());
+    const soundFile = this.pickRandomFromPool('prison');
+    this.playMemeAudio(soundFile, () => this.playPrison());
   }
 
   public playMemeTax() {
-    this.playMemeAudio('meme_tax.mp3', () => this.playTax());
+    const soundFile = this.pickRandomFromPool('tax');
+    this.playMemeAudio(soundFile, () => this.playTax());
   }
 
   public playMemeSurprise() {
-    this.playMemeAudio('meme_surprise.mp3', () => this.playSelect());
+    const soundFile = this.pickRandomFromPool('surprise');
+    this.playMemeAudio(soundFile, () => this.playSelect());
   }
 
   public playMemeTreasure() {
-    this.playMemeAudio('meme_treasure.mp3', () => this.playCash());
+    const soundFile = this.pickRandomFromPool('treasure');
+    this.playMemeAudio(soundFile, () => this.playCash());
+  }
+
+  public playMemeAirport() {
+    const soundFile = this.pickRandomFromPool('airport');
+    this.playMemeAudio(soundFile, () => this.playTurnChime());
   }
 
   public playMemeBankrupt() {
-    this.playMemeAudio('meme_bankrupt.mp3', () => this.playPrison());
+    const soundFile = this.pickRandomFromPool('bankrupt');
+    this.playMemeAudio(soundFile, () => this.playPrison());
   }
 }
 

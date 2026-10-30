@@ -154,7 +154,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         timestamp: Date.now(),
         type: 'jail'
       });
-      sound.playMemePrison();
       return newRoom;
     }
   } else {
@@ -212,7 +211,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
             type: 'rent',
             playerId: player.id
           });
-          sound.playRent();
 
           if (player.cash < 0) {
             resolveDebtOrBankruptcy(newRoom, player.id, owner.id);
@@ -240,7 +238,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       type: 'rent',
       playerId: player.id
     });
-    sound.playMemeTax();
     if (player.cash < 0) {
       resolveDebtOrBankruptcy(newRoom, player.id, null);
     }
@@ -257,7 +254,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         type: 'rent',
         playerId: player.id
       });
-      sound.playVacation();
     } else {
       newRoom.logs.push({
         id: `vacation_${Date.now()}`,
@@ -266,7 +262,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         type: 'system',
         playerId: player.id
       });
-      sound.playVacation();
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'go_to_jail') {
@@ -281,13 +276,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       timestamp: Date.now(),
       type: 'jail'
     });
-    sound.playMemePrison();
   } else if (tile.type === 'chance' || tile.type === 'chest') {
-    if (tile.type === 'chance') {
-      sound.playMemeSurprise();
-    } else {
-      sound.playMemeTreasure();
-    }
     const cardDeck = tile.type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
     const card = cardDeck[Math.floor(Math.random() * cardDeck.length)];
     applyCardEffect(newRoom, player, card);
@@ -675,8 +664,6 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
     timestamp: Date.now(),
     type: 'bankrupt'
   });
-
-  sound.playMemeBankrupt();
 }
 
 function applyCardEffect(room: GameRoom, player: Player, card: any) {
@@ -691,7 +678,6 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
     case 'advance_to_go':
       player.position = 0;
       player.cash += room.settings.salary;
-      sound.playCash();
       break;
     case 'pay_pot_50':
       player.cash -= 50;
@@ -702,25 +688,20 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
       break;
     case 'receive_100':
       player.cash += 100;
-      sound.playCash();
       break;
     case 'receive_200':
       player.cash += 200;
-      sound.playCash();
       break;
     case 'receive_50':
       player.cash += 50;
-      sound.playCash();
       break;
     case 'receive_75':
       player.cash += 75;
-      sound.playCash();
       break;
     case 'go_to_jail':
       player.position = 10;
       player.inJail = true;
       player.jailTurns = 0;
-      sound.playMemePrison();
       break;
     case 'jail_card':
       player.jailCards = (player.jailCards || 0) + 1;
@@ -735,7 +716,6 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
           player.cash += 20;
         }
       });
-      sound.playCash();
       break;
   }
 }
@@ -795,6 +775,7 @@ export function surrenderBankruptcy(room: GameRoom, playerId: string): GameRoom 
   if (!player || player.isBankrupt) return room;
 
   handleBankruptcy(newRoom, playerId, null);
+  sound.playMemeBankrupt();
   updateNetWorths(newRoom);
 
   // Check if only one non-bankrupt player remains (victory)

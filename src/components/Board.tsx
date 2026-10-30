@@ -113,6 +113,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             next.delete(p.id);
             return next;
           });
+          sound.playMemePrison();
           return;
         }
 
@@ -127,12 +128,43 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             if (currentStep === targetPos) {
               clearInterval(animTimers.current[p.id]);
               delete animTimers.current[p.id];
-              sound.playSelect();
               setMovingPlayerIds(prev => {
                 const next = new Set(prev);
                 next.delete(p.id);
                 return next;
               });
+
+              // Trigger soundboard memes strictly upon landing in position!
+              if (p.isBankrupt) {
+                sound.playMemeBankrupt();
+              } else {
+                const landedTile = tiles[targetPos];
+                if (landedTile) {
+                  if (landedTile.type === 'tax') {
+                    sound.playMemeTax();
+                  } else if (landedTile.type === 'go_to_jail') {
+                    sound.playMemePrison();
+                  } else if (landedTile.type === 'chance') {
+                    sound.playMemeSurprise();
+                  } else if (landedTile.type === 'chest') {
+                    sound.playMemeTreasure();
+                  } else if (landedTile.type === 'railroad') {
+                    sound.playMemeAirport();
+                  } else if (landedTile.type === 'vacation') {
+                    sound.playVacation();
+                  } else if (landedTile.type === 'property' || landedTile.type === 'utility') {
+                    if (landedTile.ownerId && landedTile.ownerId !== p.id && !landedTile.isMortgaged) {
+                      sound.playRent();
+                    } else {
+                      sound.playSelect();
+                    }
+                  } else {
+                    sound.playSelect();
+                  }
+                } else {
+                  sound.playSelect();
+                }
+              }
             }
           }, 110);
         }
@@ -143,7 +175,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
       Object.values(animTimers.current).forEach(t => clearInterval(t));
       animTimers.current = {};
     };
-  }, [players]);
+  }, [players, tiles]);
 
   const playersOnTile: Record<number, Player[]> = {};
   Object.values(players).forEach(p => {
