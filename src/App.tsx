@@ -36,7 +36,7 @@ import { ShopModal } from './components/ShopModal';
 import { secureStorage } from './services/secureStorage';
 import { FirebaseConfigModal } from './components/FirebaseConfigModal';
 import { PlayerAvatar, PLAYER_COLORS, COLOR_HEXES } from './components/PlayerAvatar';
-import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices, RotateCcw } from 'lucide-react';
+import { Volume2, VolumeX, Flame, LogOut, MessageSquare, Users, Dices } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 // Generate random 5-letter alphanumeric code matching Richup
@@ -106,6 +106,21 @@ export const App: React.FC = () => {
   const [boardTheme, setBoardTheme] = useState<string>(() => localStorage.getItem('richup_selected_board_theme') || 'midnight');
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
   const [isMemeSound, setIsMemeSound] = useState<boolean>(sound.isMemeSoundsEnabled());
+  const [memeVolume, setMemeVolume] = useState<number>(() => sound.getMemeVolume());
+
+  const handleCycleMemeVolume = () => {
+    let next: number;
+    if (memeVolume >= 0.95) next = 0.75;
+    else if (memeVolume >= 0.70) next = 0.50;
+    else if (memeVolume >= 0.45) next = 0.25;
+    else if (memeVolume >= 0.20) next = 0.0;
+    else next = 1.0;
+
+    const saved = sound.setMemeVolume(next);
+    setMemeVolume(saved);
+    setIsMemeSound(saved > 0);
+    sound.playSelect();
+  };
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
@@ -983,28 +998,21 @@ export const App: React.FC = () => {
             <span className="hidden sm:inline">Players</span>
           </button>
 
-          {/* Restart match button */}
+          {/* Tunisian Meme Sounds Volume Control */}
           <button
-            onClick={handleRestartRoom}
-            title="Restart Match / New Game"
-            className="px-2 py-1 bg-[#21163b] hover:bg-[#2e1f52] border border-purple-800/60 text-purple-200 hover:text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden sm:inline">Restart</span>
-          </button>
-
-          {/* Tunisian Meme Sounds toggle */}
-          <button
-            onClick={() => setIsMemeSound(sound.toggleMemeSounds())}
-            title={isMemeSound ? 'Tunisian Meme Sounds Enabled' : 'Tunisian Meme Sounds Muted'}
-            className={`px-2 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
-              isMemeSound
+            onClick={handleCycleMemeVolume}
+            title={`Meme Sound Volume: ${Math.round(memeVolume * 100)}% (Click to reduce/cycle)`}
+            className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer select-none active:scale-95 ${
+              memeVolume > 0 && isMemeSound
                 ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 hover:bg-amber-500/30 shadow-sm'
                 : 'bg-[#21163b] text-gray-400 border-purple-800/60 hover:text-gray-200'
             }`}
           >
             <span className="text-xs">🎭</span>
-            <span className="hidden sm:inline">{isMemeSound ? 'Memes ON' : 'Memes OFF'}</span>
+            <span className="font-mono">
+              {memeVolume > 0 && isMemeSound ? `${Math.round(memeVolume * 100)}%` : 'Muted'}
+            </span>
+            <span className="hidden sm:inline text-[10px] text-amber-400/80">Memes</span>
           </button>
 
           {/* Audio toggle */}

@@ -6,6 +6,9 @@ class SoundService {
   private memeSoundsEnabled: boolean = typeof window !== 'undefined'
     ? localStorage.getItem('richup_meme_sounds') !== '0'
     : true;
+  private memeVolume: number = typeof window !== 'undefined'
+    ? (parseFloat(localStorage.getItem('richup_meme_volume') || '0.75') || 0.75)
+    : 0.75;
   private volume: number = 0.45;
   private memeAudioCache: Record<string, HTMLAudioElement> = {};
   private currentAudio: HTMLAudioElement | null = null;
@@ -300,7 +303,7 @@ class SoundService {
 
   // 16. Meme Soundboard Engine (Ultra-low latency HTML5 Audio with graceful synth fallback)
   private playMemeAudio(soundFile: string, fallbackSynth?: () => void, volumeMultiplier: number = 1.15) {
-    if (!this.enabled || !this.memeSoundsEnabled) {
+    if (!this.enabled || !this.memeSoundsEnabled || this.memeVolume <= 0) {
       if (fallbackSynth) fallbackSynth();
       return;
     }
@@ -319,7 +322,7 @@ class SoundService {
       }
 
       const audio = this.memeAudioCache[soundFile];
-      audio.volume = Math.max(0, Math.min(1, this.volume * volumeMultiplier));
+      audio.volume = Math.max(0, Math.min(1, this.volume * this.memeVolume * volumeMultiplier));
       audio.currentTime = 0;
       this.currentAudio = audio;
       this.lastAudioStartTime = Date.now();
@@ -389,6 +392,22 @@ class SoundService {
       localStorage.setItem('richup_meme_sounds', this.memeSoundsEnabled ? '1' : '0');
     } catch (e) {}
     return this.memeSoundsEnabled;
+  }
+
+  public getMemeVolume(): number {
+    return this.memeVolume;
+  }
+
+  public setMemeVolume(vol: number): number {
+    this.memeVolume = Math.max(0, Math.min(1, Number(vol.toFixed(2))));
+    if (this.memeVolume > 0 && !this.memeSoundsEnabled) {
+      this.memeSoundsEnabled = true;
+    }
+    try {
+      localStorage.setItem('richup_meme_volume', this.memeVolume.toString());
+      localStorage.setItem('richup_meme_sounds', this.memeSoundsEnabled ? '1' : '0');
+    } catch (e) {}
+    return this.memeVolume;
   }
 
   // 17. Semantic Event Triggers (Single, clean entry points)

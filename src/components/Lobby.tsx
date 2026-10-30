@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GameRoom, Player, GameSettings } from '../types/game';
-import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock, ShoppingBag } from 'lucide-react';
+import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { sound } from '../services/sound';
 import { ShopModal } from './ShopModal';
 import { secureStorage } from '../services/secureStorage';
@@ -37,7 +37,17 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [name, setName] = useState(currentPlayer.name);
   const [showShopModal, setShowShopModal] = useState(false);
+  const appearanceScrollRef = useRef<HTMLDivElement>(null);
   const isHost = room.hostId === currentPlayer.id;
+
+  const scrollAppearances = (direction: 'left' | 'right') => {
+    if (appearanceScrollRef.current) {
+      appearanceScrollRef.current.scrollBy({
+        left: direction === 'left' ? -220 : 220,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Unlocked appearance styles protected with cryptographic anti-tamper signature
   const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => secureStorage.getUnlockedAvatars());
@@ -83,6 +93,20 @@ export const Lobby: React.FC<LobbyProps> = ({
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 max-w-xl mx-auto w-full text-white relative select-none">
+      {/* Slide-out Appearance Shop Button on the Left */}
+      <button
+        onClick={() => setShowShopModal(true)}
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 group flex items-center bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-black py-3 px-3 pl-3.5 pr-4 rounded-r-2xl shadow-[0_8px_25px_rgba(245,158,11,0.45)] border-t border-r border-b border-yellow-300/60 transition-all duration-300 transform hover:translate-x-1 cursor-pointer"
+        title="Open Monopoly Shop"
+      >
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="w-5 h-5 text-yellow-100 group-hover:scale-110 transition-transform animate-bounce" />
+          <div className="flex flex-col text-left leading-none">
+            <span className="text-[10px] uppercase font-bold text-yellow-200 tracking-wider">Appearance</span>
+            <span className="text-sm font-extrabold tracking-wide uppercase drop-shadow">Shop</span>
+          </div>
+        </div>
+      </button>
       {/* Brand Header */}
       <div className="text-center mb-5">
         <h1 className="text-5xl sm:text-6xl font-black font-heading tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-pink-400 to-purple-400 leading-none">
@@ -159,9 +183,23 @@ export const Lobby: React.FC<LobbyProps> = ({
               </button>
             </div>
 
-            {/* Available Appearances (Only Navy is free by default, others require purchase) */}
-            <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
-              {ALL_APPEARANCES.map((app) => {
+            {/* Available Appearances with Left/Right Slide Buttons */}
+            <div className="relative group/carousel">
+              {/* Left Slide Button */}
+              <button
+                type="button"
+                onClick={() => scrollAppearances('left')}
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1b122e]/95 hover:bg-purple-600 border border-purple-400/50 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div
+                ref={appearanceScrollRef}
+                className="flex items-center gap-2 overflow-x-auto p-1.5 px-9 bg-[#120c1d] rounded-xl border border-purple-950 scroll-smooth no-scrollbar"
+              >
+                {ALL_APPEARANCES.map((app) => {
                 const isNavy = app.style === 'navy';
                 const isUnlocked = isNavy || unlockedAvatars.includes(app.style);
                 const isSelected = (currentPlayer.avatar || 'navy') === app.style;
@@ -217,6 +255,17 @@ export const Lobby: React.FC<LobbyProps> = ({
                   </button>
                 );
               })}
+              </div>
+
+              {/* Right Slide Button */}
+              <button
+                type="button"
+                onClick={() => scrollAppearances('right')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1b122e]/95 hover:bg-purple-600 border border-purple-400/50 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer hover:scale-110 active:scale-95"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Choose Player Color (8 Unique Colors, Only One Player Per Color) */}

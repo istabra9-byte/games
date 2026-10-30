@@ -31,9 +31,9 @@ export const CHANCE_CARDS = [
   {
     id: 'ch_4',
     type: 'chance',
-    title: 'Go Directly to Jail',
-    description: 'Do not pass GO, do not collect $200.',
-    action: 'go_to_jail'
+    title: 'Tourism Grant',
+    description: 'Mediterranean Tourism Board awards you $100 for your hospitality projects.',
+    action: 'receive_100'
   },
   {
     id: 'ch_5',
@@ -83,6 +83,41 @@ export const CHANCE_CARDS = [
     title: 'Double Boost',
     description: 'Velocity surge! Roll the dice again immediately!',
     action: 'free_roll'
+  },
+  {
+    id: 'ch_12',
+    type: 'chance',
+    title: 'Tech Startup IPO',
+    description: 'Your venture yields windfall returns. Collect $150 from the bank.',
+    action: 'receive_150'
+  },
+  {
+    id: 'ch_13',
+    type: 'chance',
+    title: 'City Development Bonus',
+    description: 'Municipal council rewards infrastructure development. Collect $75.',
+    action: 'receive_75'
+  },
+  {
+    id: 'ch_14',
+    type: 'chance',
+    title: 'Commercial Airfreight',
+    description: 'Advance to the nearest Airport. If unowned, you may buy it. If owned, pay rent.',
+    action: 'advance_to_nearest_airport'
+  },
+  {
+    id: 'ch_15',
+    type: 'chance',
+    title: 'Solar Energy Rebate',
+    description: 'Green energy transition incentive! Receive $50 government rebate.',
+    action: 'receive_50'
+  },
+  {
+    id: 'ch_16',
+    type: 'chance',
+    title: 'Direct Investigation',
+    description: 'Rare financial audit! Sent directly to Jail for investigation.',
+    action: 'go_to_jail'
   }
 ];
 

@@ -87,13 +87,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 100
   },
-  // 6: Seville (Spain)
+  // 6: Sousse (Tunisia)
   {
     index: 6,
-    name: 'Seville',
-    country: 'Spain',
-    countryCode: 'es',
-    flag: '🇪🇸',
+    name: 'Sousse',
+    country: 'Tunisia',
+    countryCode: 'tn',
+    flag: '🇹🇳',
     type: 'property',
     group: 'light_blue',
     price: 100,
@@ -104,13 +104,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 50
   },
-  // 7: Barcelona (Spain)
+  // 7: Sfax (Tunisia)
   {
     index: 7,
-    name: 'Barcelona',
-    country: 'Spain',
-    countryCode: 'es',
-    flag: '🇪🇸',
+    name: 'Sfax',
+    country: 'Tunisia',
+    countryCode: 'tn',
+    flag: '🇹🇳',
     type: 'property',
     group: 'light_blue',
     price: 110,
@@ -133,13 +133,13 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 0
   },
-  // 9: Madrid (Spain)
+  // 9: Bizerte (Tunisia)
   {
     index: 9,
-    name: 'Madrid',
-    country: 'Spain',
-    countryCode: 'es',
-    flag: '🇪🇸',
+    name: 'Bizerte',
+    country: 'Tunisia',
+    countryCode: 'tn',
+    flag: '🇹🇳',
     type: 'property',
     group: 'light_blue',
     price: 120,
@@ -619,7 +619,7 @@ export const INITIAL_BOARD_TILES: Tile[] = [
 
 export const PROPERTY_GROUPS: Record<string, { name: string; country: string; color: string; count: number }> = {
   brown: { name: 'Brazil', country: 'Brazil', color: '#45322E', count: 2 },
-  light_blue: { name: 'Spain', country: 'Spain', color: '#B45309', count: 3 },
+  light_blue: { name: 'Tunisia', country: 'Tunisia', color: '#B45309', count: 3 },
   pink: { name: 'Italy', country: 'Italy', color: '#1B6B60', count: 3 },
   orange: { name: 'Germany', country: 'Germany', color: '#882233', count: 3 },
   red: { name: 'China', country: 'China', color: '#6A2576', count: 3 },

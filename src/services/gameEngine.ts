@@ -84,12 +84,36 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   const player = newRoom.players[playerId];
   if (!player || player.isBankrupt) return room;
 
-  // Authentic 2d6 dice distribution & medium-to-hard balanced algorithm
-  // Truly independent six-sided dice yielding the natural bell curve (2 to 12, peak at 7)
-  // Natural doubles probability is exactly 1/6 (~16.67%), no forced high numbers or repeated big doubles.
-  const d1 = Math.floor(Math.random() * 6) + 1;
-  const d2 = Math.floor(Math.random() * 6) + 1;
-  const isDoubles = d1 === d2;
+  // Calibrated Luck Algorithm:
+  // 1. One double is a lucky occurrence (~6% chance).
+  // 2. Two doubles in a row is ultra-rare "luckiest person on earth" (~1.5% chance).
+  // 3. Three doubles in a row is STRICTLY IMPOSSIBLE (0% chance).
+  const currentStreak = newRoom.consecutiveDoubles || 0;
+  let isDoubles = false;
+
+  if (currentStreak >= 2) {
+    // 3 doubles in a row is strictly impossible
+    isDoubles = false;
+  } else if (currentStreak === 1) {
+    // 2 doubles in a row: extremely lucky (1.5% chance)
+    isDoubles = Math.random() < 0.015;
+  } else {
+    // 1 double: rare lucky event (6% chance)
+    isDoubles = Math.random() < 0.06;
+  }
+
+  let d1: number;
+  let d2: number;
+
+  if (isDoubles) {
+    d1 = Math.floor(Math.random() * 6) + 1;
+    d2 = d1;
+  } else {
+    d1 = Math.floor(Math.random() * 6) + 1;
+    let other = Math.floor(Math.random() * 5) + 1;
+    if (other >= d1) other += 1;
+    d2 = other;
+  }
   const rollTotal = d1 + d2;
 
   newRoom.dice = [d1, d2];
@@ -178,31 +202,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     }
   }
 
-  // Handle consecutive doubles (Speeding rule)
+  // Handle consecutive doubles
   if (isDoubles) {
-    newRoom.consecutiveDoubles += 1;
-    if (newRoom.consecutiveDoubles >= 3) {
-      player.position = 10;
-      player.inJail = true;
-      player.jailTurns = 0;
-      newRoom.consecutiveDoubles = 0;
-      newRoom.isDoubles = false;
-      newRoom.turnPhase = 'end';
-      newRoom.logs.push({
-        id: `jail_3doubles_${Date.now()}`,
-        text: `🚨 ${player.name} rolled doubles 3 consecutive times! Sent directly to Jail for speeding!`,
-        timestamp: Date.now(),
-        type: 'jail',
-        playerId: player.id
-      });
-      sound.playPrison();
-      updateNetWorths(newRoom);
-      return newRoom;
-    }
-
+    newRoom.consecutiveDoubles = (newRoom.consecutiveDoubles || 0) + 1;
     newRoom.logs.push({
       id: `doubles_${Date.now()}`,
-      text: `🎲 ${player.name} rolled DOUBLES (${d1}-${d2})! Takes turn & gets an extra roll!`,
+      text: `🎲 ${player.name} rolled lucky DOUBLES (${d1}-${d2})! Takes turn & gets an extra roll!`,
       timestamp: Date.now(),
       type: 'system',
       playerId: player.id
@@ -966,6 +971,10 @@ function applyCardEffect(room: GameRoom, player: Player, card: any, isDoubles: b
     }
     case 'receive_100': {
       player.cash += 100;
+      break;
+    }
+    case 'receive_150': {
+      player.cash += 150;
       break;
     }
     case 'receive_200': {

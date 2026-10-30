@@ -159,7 +159,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 return;
               }
 
-              // Give a smooth 240ms settle delay so the token visibly lands and stops in place before soundboard triggers
+              // Smooth 360ms settle delay so the token visibly lands and stops in place before soundboard triggers
               setTimeout(() => {
                 setMovingPlayerIds(prev => {
                   const next = new Set(prev);
@@ -270,9 +270,9 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
                 // Default landing click
                 sound.playSelect();
-              }, 240);
+              }, 360);
             }
-          }, 110);
+          }, 260); // Slowed down from 110ms to 260ms per tile step so players can comfortably track movement
         }
       }
     });
