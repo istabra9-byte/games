@@ -127,8 +127,11 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             ) : tile.countryCode ? (
               <div className="w-6 h-6 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black/30">
                 <img
-                  src={`https://flagcdn.com/w40/${tile.countryCode}.png`}
+                  src={`${import.meta.env.BASE_URL.replace(/\/$/, '')}/flags/${tile.countryCode}.png`}
                   alt={tile.name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://flagcdn.com/w40/${tile.countryCode}.png`;
+                  }}
                   className="w-full h-full object-cover select-none pointer-events-none"
                   style={
                     tile.countryCode === 'cn'

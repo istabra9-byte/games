@@ -1,7 +1,11 @@
 class SoundService {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
+  private memeSoundsEnabled: boolean = typeof window !== 'undefined'
+    ? localStorage.getItem('richup_meme_sounds') !== '0'
+    : true;
   private volume: number = 0.45;
+  private memeAudioCache: Record<string, HTMLAudioElement> = {};
 
   private initContext() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -252,6 +256,89 @@ class SoundService {
       const time = this.ctx!.currentTime + idx * 0.12;
       this.playWarmTone(freq, time, 0.8, 0.35, 'sine');
     });
+  }
+
+  // Helper to resolve sound assets cleanly across dev, relative, and GitHub Pages
+  private getSoundUrl(soundFile: string): string {
+    const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    return `${cleanBase}sounds/${soundFile}`;
+  }
+
+  // 16. Tunisian Meme Soundboard Engine (Ultra-low latency HTML5 Audio with graceful synth fallback)
+  private playMemeAudio(soundFile: string, fallbackSynth?: () => void) {
+    if (!this.enabled || !this.memeSoundsEnabled) {
+      if (fallbackSynth) fallbackSynth();
+      return;
+    }
+
+    try {
+      const url = this.getSoundUrl(soundFile);
+      if (!this.memeAudioCache[soundFile]) {
+        const audio = new Audio(url);
+        audio.preload = 'auto';
+        this.memeAudioCache[soundFile] = audio;
+      }
+
+      const audio = this.memeAudioCache[soundFile];
+      audio.volume = Math.min(1, this.volume * 1.15);
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          if (fallbackSynth) fallbackSynth();
+        });
+      }
+    } catch (e) {
+      if (fallbackSynth) fallbackSynth();
+    }
+  }
+
+  // Preload meme clips on first user interaction so no repeated network requests happen during gameplay
+  public preloadMemeSounds() {
+    if (typeof window === 'undefined') return;
+    const sounds = ['meme_prison.mp3', 'meme_tax.mp3', 'meme_surprise.mp3', 'meme_treasure.mp3', 'meme_bankrupt.mp3'];
+    sounds.forEach(s => {
+      try {
+        const url = this.getSoundUrl(s);
+        const audio = new Audio(url);
+        audio.preload = 'auto';
+        this.memeAudioCache[s] = audio;
+      } catch (e) {}
+    });
+  }
+
+  public isMemeSoundsEnabled(): boolean {
+    return this.memeSoundsEnabled;
+  }
+
+  public toggleMemeSounds(): boolean {
+    this.memeSoundsEnabled = !this.memeSoundsEnabled;
+    try {
+      localStorage.setItem('richup_meme_sounds', this.memeSoundsEnabled ? '1' : '0');
+    } catch (e) {}
+    return this.memeSoundsEnabled;
+  }
+
+  // 17. Tunisian Meme Event Triggers
+  public playMemePrison() {
+    this.playMemeAudio('meme_prison.mp3', () => this.playPrison());
+  }
+
+  public playMemeTax() {
+    this.playMemeAudio('meme_tax.mp3', () => this.playTax());
+  }
+
+  public playMemeSurprise() {
+    this.playMemeAudio('meme_surprise.mp3', () => this.playSelect());
+  }
+
+  public playMemeTreasure() {
+    this.playMemeAudio('meme_treasure.mp3', () => this.playCash());
+  }
+
+  public playMemeBankrupt() {
+    this.playMemeAudio('meme_bankrupt.mp3', () => this.playPrison());
   }
 }
 

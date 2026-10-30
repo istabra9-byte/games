@@ -95,6 +95,7 @@ export const App: React.FC = () => {
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
+  const [isMemeSound, setIsMemeSound] = useState<boolean>(sound.isMemeSoundsEnabled());
   const [isFirebaseActive, setIsFirebaseActive] = useState<boolean>(multiplayer.isUsingFirebase());
   const [mobileTab, setMobileTab] = useState<'board' | 'chat' | 'players'>('board');
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
@@ -682,6 +683,20 @@ export const App: React.FC = () => {
           >
             <RotateCcw className="w-3 h-3" />
             <span className="hidden sm:inline">Restart</span>
+          </button>
+
+          {/* Tunisian Meme Sounds toggle */}
+          <button
+            onClick={() => setIsMemeSound(sound.toggleMemeSounds())}
+            title={isMemeSound ? 'Tunisian Meme Sounds Enabled' : 'Tunisian Meme Sounds Muted'}
+            className={`px-2 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer ${
+              isMemeSound
+                ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 hover:bg-amber-500/30 shadow-sm'
+                : 'bg-[#21163b] text-gray-400 border-purple-800/60 hover:text-gray-200'
+            }`}
+          >
+            <span className="text-xs">🎭</span>
+            <span className="hidden sm:inline">{isMemeSound ? 'Memes ON' : 'Memes OFF'}</span>
           </button>
 
           {/* Audio toggle */}

@@ -154,7 +154,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
         timestamp: Date.now(),
         type: 'jail'
       });
-      sound.playJail();
+      sound.playMemePrison();
       return newRoom;
     }
   } else {
@@ -240,7 +240,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       type: 'rent',
       playerId: player.id
     });
-    sound.playTax();
+    sound.playMemeTax();
     if (player.cash < 0) {
       resolveDebtOrBankruptcy(newRoom, player.id, null);
     }
@@ -281,8 +281,13 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       timestamp: Date.now(),
       type: 'jail'
     });
-    sound.playPrison();
+    sound.playMemePrison();
   } else if (tile.type === 'chance' || tile.type === 'chest') {
+    if (tile.type === 'chance') {
+      sound.playMemeSurprise();
+    } else {
+      sound.playMemeTreasure();
+    }
     const cardDeck = tile.type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
     const card = cardDeck[Math.floor(Math.random() * cardDeck.length)];
     applyCardEffect(newRoom, player, card);
@@ -671,7 +676,7 @@ export function handleBankruptcy(room: GameRoom, debtorId: string, creditorId: s
     type: 'bankrupt'
   });
 
-  sound.playJail();
+  sound.playMemeBankrupt();
 }
 
 function applyCardEffect(room: GameRoom, player: Player, card: any) {
@@ -715,7 +720,7 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
       player.position = 10;
       player.inJail = true;
       player.jailTurns = 0;
-      sound.playJail();
+      sound.playMemePrison();
       break;
     case 'jail_card':
       player.jailCards = (player.jailCards || 0) + 1;
