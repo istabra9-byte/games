@@ -43,8 +43,10 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ onUserChanged, compact =
       }
     } catch (err: any) {
       console.warn('Google sign-in error:', err);
-      // Suppress user-aborted popup errors
-      if (err?.code !== 'auth/popup-closed-by-user') {
+      // Friendly message for unauthorized domain in Firebase Console
+      if (err?.code === 'auth/unauthorized-domain') {
+        alert("Domain Not Authorized: Please add 'istabra9-byte.github.io' to your Firebase Console -> Authentication -> Settings -> Authorized domains.");
+      } else if (err?.code !== 'auth/popup-closed-by-user') {
         alert(err.message || 'Failed to sign in with Google. Ensure popup permissions are enabled.');
       }
     } finally {
