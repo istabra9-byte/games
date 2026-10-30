@@ -2,6 +2,7 @@ import React from 'react';
 import { Tile, GameRoom } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Home, X, DollarSign, AlertCircle, Sparkles, Building2, CheckCircle2 } from 'lucide-react';
+import { HouseIcon, HotelIcon } from './HouseIcons';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
 import tunisairLogo from '../assets/tunisair.svg';
@@ -225,9 +226,17 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                 )}
               </div>
               {tile.houses > 0 && (
-                <div className="text-amber-300 font-bold flex items-center gap-1 mt-0.5">
+                <div className="text-amber-300 font-bold flex items-center gap-1.5 mt-0.5">
                   <span>Current Level:</span>
-                  <span>{tile.houses === 5 ? '🏨 Hotel' : `🏡 ${tile.houses} Houses`}</span>
+                  {tile.houses === 5 ? (
+                    <span className="inline-flex items-center gap-1 text-red-400 font-black">
+                      <HotelIcon className="w-4 h-4" /> Hotel
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-emerald-400 font-black">
+                      <HouseIcon className="w-3.5 h-3.5" /> {tile.houses} {tile.houses === 1 ? 'House' : 'Houses'}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -244,24 +253,34 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
                 <span>Monopoly (Unimproved 2x):</span>
                 <span>${tile.rent[0] * 2}</span>
               </div>
-              <div className={`flex justify-between ${tile.houses === 1 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
-                <span>Rent with 1 House:</span>
+              <div className={`flex justify-between items-center ${tile.houses === 1 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                <span className="inline-flex items-center gap-1">
+                  <HouseIcon className="w-3 h-3" /> Rent with 1 House:
+                </span>
                 <span>${tile.rent[1]}</span>
               </div>
-              <div className={`flex justify-between ${tile.houses === 2 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
-                <span>Rent with 2 Houses:</span>
+              <div className={`flex justify-between items-center ${tile.houses === 2 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                <span className="inline-flex items-center gap-1">
+                  <div className="inline-flex gap-0.5"><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /></div> Rent with 2 Houses:
+                </span>
                 <span>${tile.rent[2]}</span>
               </div>
-              <div className={`flex justify-between ${tile.houses === 3 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
-                <span>Rent with 3 Houses:</span>
+              <div className={`flex justify-between items-center ${tile.houses === 3 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                <span className="inline-flex items-center gap-1">
+                  <div className="inline-flex gap-0.5"><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /></div> Rent with 3 Houses:
+                </span>
                 <span>${tile.rent[3]}</span>
               </div>
-              <div className={`flex justify-between ${tile.houses === 4 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
-                <span>Rent with 4 Houses:</span>
+              <div className={`flex justify-between items-center ${tile.houses === 4 ? 'text-emerald-400 font-bold' : 'text-gray-300'}`}>
+                <span className="inline-flex items-center gap-1">
+                  <div className="inline-flex gap-0.5"><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /><HouseIcon className="w-2.5 h-2.5" /></div> Rent with 4 Houses:
+                </span>
                 <span>${tile.rent[4]}</span>
               </div>
-              <div className={`flex justify-between ${tile.houses === 5 ? 'text-red-400 font-bold' : 'text-red-300'}`}>
-                <span>Rent with Hotel:</span>
+              <div className={`flex justify-between items-center ${tile.houses === 5 ? 'text-red-400 font-bold' : 'text-red-300'}`}>
+                <span className="inline-flex items-center gap-1">
+                  <HotelIcon className="w-3.5 h-3.5" /> Rent with Hotel:
+                </span>
                 <span>${tile.rent[5]}</span>
               </div>
               {tile.houseCost && (

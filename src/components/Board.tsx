@@ -5,6 +5,7 @@ import { calculateRent } from '../services/gameEngine';
 import { Plane, Zap, Droplets, HelpCircle, Gift, AlertTriangle, Shield, Palmtree, ArrowRight, Skull, Gem, Percent, ShoppingCart, Check } from 'lucide-react';
 import { sound } from '../services/sound';
 import { PlayerAvatar } from './PlayerAvatar';
+import { HouseIcon, HotelIcon } from './HouseIcons';
 import { getBoardTheme } from '../config/boardThemes';
 import stegLogo from '../assets/steg.png';
 import sonedeLogo from '../assets/sonede.svg';
@@ -301,7 +302,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
         className="w-full h-full gap-[2px] sm:gap-[3px] rounded-xl p-0.5 sm:p-1 relative transition-colors duration-500"
         style={{
           display: 'grid',
-          gridTemplateColumns: '2.8fr repeat(9, 1fr) 2.8fr',
+          gridTemplateColumns: '2.3fr repeat(9, 1fr) 2.3fr',
           gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr',
           backgroundColor: currentTheme.colors.gridBg
         }}
@@ -455,33 +456,32 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
           }
 
           // Edge Tiles (Top, Right, Bottom, Left)
-          // 1. Outer Edge: Solid Owner Colored Bar OR Translucent Price Pill
+          // 1. Outer Edge: Solid Owner Colored Bar with Miniature 3D Houses/Hotel OR Translucent Price Pill
           const renderOuterEdge = () => {
             if (isOwned && owner) {
+              const hasBuildings = tile.houses > 0;
               return (
                 <div
-                  className={`flex-shrink-0 flex items-center justify-center z-15 relative ${
+                  className={`flex-shrink-0 flex items-center justify-center z-15 relative overflow-visible ${
                     side === 'top'
-                      ? 'w-full h-2.5 sm:h-3 rounded-t-[6px]'
+                      ? hasBuildings ? 'w-full h-3 sm:h-3.5 rounded-t-[6px]' : 'w-full h-2.5 sm:h-3 rounded-t-[6px]'
                       : side === 'bottom'
-                      ? 'w-full h-2.5 sm:h-3 rounded-b-[6px]'
+                      ? hasBuildings ? 'w-full h-3 sm:h-3.5 rounded-b-[6px]' : 'w-full h-2.5 sm:h-3 rounded-b-[6px]'
                       : side === 'left'
-                      ? 'h-full w-2.5 sm:w-3 rounded-l-[6px]'
-                      : 'h-full w-2.5 sm:w-3 rounded-r-[6px]'
+                      ? hasBuildings ? 'h-full w-3 sm:w-3.5 rounded-l-[6px]' : 'h-full w-2.5 sm:w-3 rounded-l-[6px]'
+                      : hasBuildings ? 'h-full w-3 sm:w-3.5 rounded-r-[6px]' : 'h-full w-2.5 sm:w-3 rounded-r-[6px]'
                   }`}
                   style={{ backgroundColor: owner.color }}
                 >
-                  {/* House Cubes (sitting right on the owner bar) */}
+                  {/* Miniature 3D Houses or Hotel (Actual models, not green dots) */}
                   {tile.houses > 0 && (
-                    <div className={`flex items-center gap-0.5 ${isHorizontal ? 'flex-col' : 'flex-row'}`}>
+                    <div className={`flex items-center justify-center gap-0.5 ${isHorizontal ? 'flex-col' : 'flex-row'}`}>
                       {tile.houses < 5 ? (
                         Array.from({ length: tile.houses }).map((_, h) => (
-                          <div key={h} className="w-1.5 h-1.5 bg-emerald-300 rounded-[1px] shadow-sm border border-emerald-900" />
+                          <HouseIcon key={h} className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         ))
                       ) : (
-                        <div className="w-2.5 h-2 bg-red-500 rounded-[1px] shadow border border-red-900 text-[6px] font-black text-white flex items-center justify-center">
-                          H
-                        </div>
+                        <HotelIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       )}
                     </div>
                   )}
@@ -633,7 +633,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             );
           };
 
-          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, identical prominent font size on all 4 sides)
+          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, perfectly sized to guarantee NO hidden/cut off letters)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
@@ -641,9 +641,20 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               : tile.name.split(' ');
 
             const maxWordLen = Math.max(...words.map(w => w.length));
+            const isTopOrBottom = side === 'top' || side === 'bottom';
 
-            // Generous, prominent font size clamp matching bottom and top to right and left exactly
-            const fontSize = maxWordLen >= 10
+            // Fine-tuned font size and letter-spacing so 100% of letters are visible on top & bottom without clipping
+            const fontSize = isTopOrBottom
+              ? maxWordLen >= 9
+                ? 'clamp(8px, 1.05cqi, 10.5px)'
+                : maxWordLen >= 8
+                ? 'clamp(8.5px, 1.15cqi, 11px)'
+                : maxWordLen >= 7
+                ? 'clamp(9px, 1.25cqi, 12px)'
+                : maxWordLen >= 6
+                ? 'clamp(9.5px, 1.35cqi, 13px)'
+                : 'clamp(11px, 1.5cqi, 15px)'
+              : maxWordLen >= 10
               ? 'clamp(10px, 1.35cqi, 13px)'
               : maxWordLen >= 8
               ? 'clamp(11px, 1.5cqi, 14.5px)'
@@ -651,19 +662,34 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               ? 'clamp(12px, 1.65cqi, 16px)'
               : 'clamp(13px, 1.85cqi, 18px)';
 
+            const letterSpacing = isTopOrBottom
+              ? maxWordLen >= 9
+                ? '-0.04em'
+                : maxWordLen >= 8
+                ? '-0.03em'
+                : maxWordLen >= 7
+                ? '-0.02em'
+                : '-0.01em'
+              : maxWordLen >= 9
+              ? '-0.03em'
+              : maxWordLen >= 7
+              ? '-0.015em'
+              : 'normal';
+
             return (
-              <div className="flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center text-center z-10 px-0.5">
+              <div className="flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-visible">
                 <span
-                  className="font-sans font-black text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
+                  className="font-sans font-black text-white select-none text-center leading-[1.06] tracking-tight w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    letterSpacing: maxWordLen >= 9 ? '-0.03em' : maxWordLen >= 7 ? '-0.015em' : 'normal'
+                    letterSpacing,
+                    lineHeight: 1.06
                   }}
                   title={tile.name}
                 >
                   {words.map((word, idx) => (
-                    <span key={idx} className="block whitespace-nowrap leading-[1.08] max-w-full text-center">
+                    <span key={idx} className="block whitespace-nowrap leading-[1.06] max-w-full text-center">
                       {word}
                     </span>
                   ))}

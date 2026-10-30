@@ -3,6 +3,7 @@ import { GameRoom, Player, Tile } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { PlayerAvatar } from './PlayerAvatar';
 import { TurnTimerPill } from './TurnTimerPill';
+import { HouseIcon, HotelIcon } from './HouseIcons';
 import { Crown, Flag, Plus, ArrowLeftRight, ShieldAlert, Home, DollarSign, X } from 'lucide-react';
 import { useCashDeltas } from '../hooks/useCashDeltas';
 
@@ -243,8 +244,22 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {tile.houses > 0 && (
-                      <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-500/40">
-                        <Home className="w-2.5 h-2.5" /> {tile.houses === 5 ? 'Hotel' : tile.houses}
+                      <span className={`text-[10px] font-bold flex items-center gap-1 px-1.5 py-0.5 rounded border ${
+                        tile.houses === 5
+                          ? 'text-red-300 bg-red-950/60 border-red-500/40'
+                          : 'text-emerald-300 bg-emerald-950/60 border-emerald-500/40'
+                      }`}>
+                        {tile.houses === 5 ? (
+                          <>
+                            <HotelIcon className="w-3 h-3" />
+                            <span>Hotel</span>
+                          </>
+                        ) : (
+                          <>
+                            <HouseIcon className="w-2.5 h-2.5" />
+                            <span>{tile.houses}</span>
+                          </>
+                        )}
                       </span>
                     )}
                     {tile.isMortgaged && (
