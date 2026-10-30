@@ -206,7 +206,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     <div className="flex flex-col items-center">
                       <span
                         className="font-black text-gray-300 uppercase tracking-tight"
-                        style={{ fontSize: 'clamp(7.5px, 1.1cqi, 12px)' }}
+                        style={{ fontSize: 'clamp(9.5px, 1.35cqi, 13px)' }}
                       >
                         Passing by
                       </span>
@@ -223,7 +223,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(90deg,transparent,transparent_3px,#cbd5e1_3px,#cbd5e1_5px)]" />
                       <span
                         className="font-black text-purple-200 uppercase z-10 leading-none drop-shadow"
-                        style={{ fontSize: 'clamp(8.5px, 1.25cqi, 14px)' }}
+                        style={{ fontSize: 'clamp(10.5px, 1.5cqi, 15px)' }}
                       >
                         In Prison
                       </span>
@@ -252,7 +252,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     </span>
                     <span
                       className="font-semibold text-emerald-300 leading-none mt-0.5 font-mono"
-                      style={{ fontSize: 'clamp(8px, 1.15cqi, 13px)' }}
+                      style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
                     >
                       ${room.pot || 0} on hold
                     </span>
@@ -326,7 +326,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 1.1cqi, 11.5px)' : 'clamp(8.5px, 1.25cqi, 13px)' }}
+                    style={{ fontSize: isHorizontal ? 'clamp(9.5px, 1.35cqi, 13px)' : 'clamp(10px, 1.4cqi, 13.5px)' }}
                   >
                     {tile.price} $
                   </div>
@@ -339,7 +339,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 <div className="flex items-center justify-center flex-shrink-0 z-10 p-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 1.05cqi, 11px)' : 'clamp(8px, 1.15cqi, 12px)' }}
+                    style={{ fontSize: isHorizontal ? 'clamp(9.5px, 1.35cqi, 13px)' : 'clamp(10px, 1.4cqi, 13.5px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$75'}
                   </div>
@@ -461,15 +461,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             );
           };
 
-          // 3. Title / City Name (Clean, Bold, Upright font matching Richup)
+          // 3. Title / City Name (Bold, Open, Highly Legible font on PC and Mobile)
           const nameLabel = (
             <div className="flex-1 flex justify-center items-center text-center z-10 relative min-w-0 px-0.5 w-full overflow-hidden">
               <span
-                className="font-heading font-black text-white select-none text-center leading-[1.05] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
+                className="font-sans font-extrabold text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]"
                 style={{
                   fontSize: isHorizontal
-                    ? 'clamp(10px, 1.4cqi, 15px)'
-                    : 'clamp(10.5px, 1.5cqi, 15px)',
+                    ? 'clamp(12px, 1.85cqi, 16px)'
+                    : 'clamp(12.5px, 1.9cqi, 16.5px)',
                   textRendering: 'optimizeLegibility',
                   wordBreak: 'break-word',
                   overflowWrap: 'break-word'

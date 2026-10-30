@@ -57,19 +57,21 @@
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 33rem), calc((100vh - 3rem) * 1.08));
-    height: min(calc((100vw - 33rem) / 1.08), calc(100vh - 3rem));
-    max-width: min(calc(100vw - 33rem), calc((100vh - 3rem) * 1.08));
-    max-height: min(calc(100vh - 3rem), calc((100vw - 33rem) / 1.08));
+    width: min(calc(100vw - 32rem), calc((100vh - 2.5rem) * 1.12));
+    height: min(calc((100vw - 32rem) / 1.12), calc(100vh - 2.5rem));
+    max-width: min(calc(100vw - 32rem), calc((100vh - 2.5rem) * 1.12));
+    max-height: min(calc(100vh - 2.5rem), calc((100vw - 32rem) / 1.12));
+    aspect-ratio: 1.12 / 1;
   }
 }
 
 @media (min-width: 1280px) {
   .responsive-board-wrapper {
-    width: min(calc(100vw - 36rem), calc((100vh - 3rem) * 1.1));
-    height: min(calc((100vw - 36rem) / 1.1), calc(100vh - 3rem));
-    max-width: min(calc(100vw - 36rem), calc((100vh - 3rem) * 1.1));
-    max-height: min(calc(100vh - 3rem), calc((100vw - 36rem) / 1.1));
+    width: min(calc(100vw - 35rem), calc((100vh - 2.5rem) * 1.14));
+    height: min(calc((100vw - 35rem) / 1.14), calc(100vh - 2.5rem));
+    max-width: min(calc(100vw - 35rem), calc((100vh - 2.5rem) * 1.14));
+    max-height: min(calc(100vh - 2.5rem), calc((100vw - 35rem) / 1.14));
+    aspect-ratio: 1.14 / 1;
   }
 }
 
