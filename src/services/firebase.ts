@@ -1,5 +1,15 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getDatabase, ref, set, onValue, Database, runTransaction } from 'firebase/database';
+import {
+  getAuth,
+  signInAnonymously,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged,
+  Auth,
+  User
+} from 'firebase/auth';
 import { GameRoom, ChatMessage, GameLog, Tile } from '../types/game';
 import { firebaseConfig as staticConfig } from '../firebaseConfig';
 import { INITIAL_BOARD_TILES } from '../data/boardTiles';
@@ -134,6 +144,9 @@ export function saveFirebaseConfig(cfg: FirebaseConfig) {
 class MultiplayerService {
   private app: FirebaseApp | null = null;
   private db: Database | null = null;
+  private auth: Auth | null = null;
+  private currentUser: User | null = null;
+  private authSubscribers: ((user: User | null) => void)[] = [];
   private isFirebaseReady: boolean = false;
   private broadcast: BroadcastChannel | null = null;
   private memoryRooms: Record<string, GameRoom> = {};
@@ -191,14 +204,66 @@ class MultiplayerService {
         this.app = getApps()[0];
       }
       this.db = getDatabase(this.app);
+      this.auth = getAuth(this.app);
       this.isFirebaseReady = true;
       saveFirebaseConfig(config);
+
+      onAuthStateChanged(this.auth, (user) => {
+        this.currentUser = user;
+        this.authSubscribers.forEach(cb => cb(user));
+      });
+
+      if (!this.auth.currentUser) {
+        signInAnonymously(this.auth).catch((e) => {
+          console.warn('Anonymous sign-in auto attempt:', e);
+        });
+      }
+
       return true;
     } catch (e) {
       console.warn('Firebase init error (using offline multi-tab mode):', e);
       this.isFirebaseReady = false;
       return false;
     }
+  }
+
+  public async signInWithGoogle(): Promise<User | null> {
+    if (!this.auth) this.tryInit();
+    if (!this.auth) throw new Error('Firebase Auth is not available.');
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await signInWithPopup(this.auth, provider);
+    return result.user;
+  }
+
+  public async signInAsGuest(): Promise<User | null> {
+    if (!this.auth) this.tryInit();
+    if (!this.auth) throw new Error('Firebase Auth is not available.');
+    const result = await signInAnonymously(this.auth);
+    return result.user;
+  }
+
+  public async signOutUser(): Promise<void> {
+    if (this.auth) {
+      await signOut(this.auth);
+      await signInAnonymously(this.auth).catch(() => {});
+    }
+  }
+
+  public getCurrentUser(): User | null {
+    return this.currentUser || (this.auth ? this.auth.currentUser : null);
+  }
+
+  public onAuthChange(callback: (user: User | null) => void): () => void {
+    this.authSubscribers.push(callback);
+    callback(this.getCurrentUser());
+    return () => {
+      this.authSubscribers = this.authSubscribers.filter(cb => cb !== callback);
+    };
+  }
+
+  public getAuthInstance(): Auth | null {
+    return this.auth;
   }
 
   public isUsingFirebase(): boolean {

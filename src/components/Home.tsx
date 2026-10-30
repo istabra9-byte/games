@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Volume2, VolumeX, Play, Key, ShoppingBag, Github, X, ArrowRight } from 'lucide-react';
 import { sound } from '../services/sound';
 import { ShopModal } from './ShopModal';
+import { AuthStatus } from './AuthStatus';
 
 interface HomeProps {
   onJoinRoom: (roomId: string, playerName: string) => void;
@@ -96,6 +97,14 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
     <div className="w-screen h-screen bg-[#130f1d] flex flex-col items-center justify-between p-4 relative overflow-hidden select-none text-white font-sans">
       {/* Top Navbar: Clean right-aligned controls */}
       <header className="w-full flex items-center justify-end gap-2.5 z-20 px-3 sm:px-6 py-2">
+        {/* Firebase Authentication Status (Google & Anonymous) */}
+        <AuthStatus
+          onUserChanged={(u) => {
+            if (u && !u.isAnonymous && u.displayName) {
+              setNickname(u.displayName);
+            }
+          }}
+        />
         {/* Sound toggle button */}
         <button
           onClick={() => setIsMuted(sound.toggleMute())}

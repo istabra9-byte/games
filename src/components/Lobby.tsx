@@ -4,6 +4,7 @@ import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, 
 import { sound } from '../services/sound';
 import { PlayerAvatar, PLAYER_COLORS, ALL_APPEARANCES, BASE_APPEARANCES } from './PlayerAvatar';
 import { ShopModal } from './ShopModal';
+import { AuthStatus } from './AuthStatus';
 
 interface LobbyProps {
   room: GameRoom;
@@ -118,13 +119,16 @@ export const Lobby: React.FC<LobbyProps> = ({
             </span>
           </div>
 
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-1.5 px-3 py-1 bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white rounded-lg text-xs font-bold transition-all border border-purple-500/30 cursor-pointer"
-          >
-            {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied Link!' : 'Share Room'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <AuthStatus compact />
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 px-3 py-1 bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white rounded-lg text-xs font-bold transition-all border border-purple-500/30 cursor-pointer"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied Link!' : 'Share Room'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Player Profile Customization */}

@@ -28,6 +28,7 @@ import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { RoomSettingsModal } from './components/RoomSettingsModal';
 import { Leaderboard } from './components/Leaderboard';
+import { AuthStatus } from './components/AuthStatus';
 import { ChatAndLogs } from './components/ChatAndLogs';
 import { TradeModal } from './components/TradeModal';
 import { PropertyDetailModal } from './components/PropertyDetailModal';
@@ -181,6 +182,26 @@ export const App: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [droppedMessages]);
+
+  // Synchronize authenticated Firebase user (Google or Anonymous) with currentPlayer
+  useEffect(() => {
+    const unsub = multiplayer.onAuthChange((user) => {
+      if (user) {
+        setCurrentPlayer(prev => {
+          const isGoogle = !user.isAnonymous && Boolean(user.displayName);
+          const updatedName = isGoogle ? (user.displayName || prev.name) : prev.name;
+          const updated = {
+            ...prev,
+            id: user.uid,
+            name: updatedName
+          };
+          localStorage.setItem('richup_player', JSON.stringify(updated));
+          return updated;
+        });
+      }
+    });
+    return unsub;
+  }, []);
 
   // Save current player info locally
   useEffect(() => {
@@ -962,6 +983,9 @@ export const App: React.FC = () => {
           >
             {isMuted ? <VolumeX className="w-3 h-3 text-red-400" /> : <Volume2 className="w-3 h-3" />}
           </button>
+
+          {/* Firebase Auth Status (Google & Anonymous) */}
+          <AuthStatus compact />
 
           {/* Leave game to home */}
           <button
