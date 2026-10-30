@@ -479,8 +479,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
           const renderOuterEdge = () => {
             const isHorizontal = side === 'top' || side === 'bottom';
             const fixedSlotClass = isHorizontal
-              ? 'h-5 sm:h-5.5 w-full flex items-center justify-center flex-shrink-0 z-20'
-              : 'w-10 sm:w-12 h-full flex items-center justify-center flex-shrink-0 z-20';
+              ? 'h-4 sm:h-[18px] w-full flex items-center justify-center flex-shrink-0 z-20'
+              : 'w-[26px] sm:w-[30px] h-full flex items-center justify-center flex-shrink-0 z-20';
 
             if (isOwned && owner) {
               const hasBuildings = tile.houses > 0;
@@ -672,7 +672,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             );
           };
 
-          // 3. Title / City Name (Same font size & same height so all can be lined correctly)
+          // 3. Title / City Name (Dynamic scaling & letter-spacing so all names fit with 0 clipping)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
@@ -680,18 +680,54 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               : tile.name.split(' ');
 
             const isTopOrBottom = side === 'top' || side === 'bottom';
-            const fontSize = isTopOrBottom
-              ? 'clamp(10px, 1.35cqi, 13px)'
-              : 'clamp(11.5px, 1.55cqi, 14.5px)';
+            const longestWordLen = Math.max(...words.map(w => w.length));
+
+            let fontSize: string;
+            let letterSpacing: string;
+
+            if (isTopOrBottom) {
+              if (longestWordLen >= 9) {
+                // Barcelona (9), Nouvelair (9)
+                fontSize = 'clamp(7.5px, 1.05cqi, 9.5px)';
+                letterSpacing = '-0.04em';
+              } else if (longestWordLen >= 7) {
+                // Salvador (8), Surprise (8), Carthage (8), Toulouse (8), Shenzhen (8), Shanghai (8), Beijing (7), Seville (7)
+                fontSize = 'clamp(8.5px, 1.2cqi, 10.5px)';
+                letterSpacing = '-0.025em';
+              } else {
+                // Paris (5), Lyon (4), Rio (3), Bank (4), Madrid (6), SONEDE (6)
+                fontSize = 'clamp(10px, 1.4cqi, 12px)';
+                letterSpacing = '-0.015em';
+              }
+            } else {
+              // Left/Right tiles
+              if (longestWordLen >= 10) {
+                // Manchester (10)
+                fontSize = 'clamp(8px, 1.15cqi, 10px)';
+                letterSpacing = '-0.035em';
+              } else if (longestWordLen >= 9) {
+                // Liverpool (9), Francisco (9), Frankfurt (9)
+                fontSize = 'clamp(8.5px, 1.22cqi, 10.5px)';
+                letterSpacing = '-0.03em';
+              } else if (longestWordLen >= 7) {
+                // Surprise (8), Treasure (8), Emirates (8), Airways (7)
+                fontSize = 'clamp(9.5px, 1.35cqi, 11.5px)';
+                letterSpacing = '-0.02em';
+              } else {
+                // London (6), Venice (6), Munich (6), Berlin (6), Milan (5), Rome (4), Poste (5), STEG (4), New (3), York (4)
+                fontSize = 'clamp(10.5px, 1.5cqi, 12.5px)';
+                letterSpacing = '-0.015em';
+              }
+            }
 
             return (
-              <div className="flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-visible">
+              <div className="flex-1 min-w-0 min-h-0 flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-hidden">
                 <span
-                  className="font-sans font-black text-white select-none text-center leading-[1.08] tracking-tight w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
+                  className="font-sans font-black text-white select-none text-center leading-[1.08] w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    letterSpacing: '-0.02em',
+                    letterSpacing,
                     lineHeight: 1.08
                   }}
                   title={tile.name}
@@ -734,7 +770,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             >
               {side === 'left' ? (
                 /* Left Column: Outer edge (price/owner) on left, inner edge (flag) on right border half in/half out */
-                <div className="w-full h-full flex flex-row items-center justify-between pl-1 pr-3.5 sm:pr-4 py-0.5 z-10 gap-1 relative overflow-visible">
+                <div className="w-full h-full flex flex-row items-center justify-between pl-1 pr-[17px] sm:pr-[18px] py-0.5 z-10 gap-1 relative overflow-visible">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   <div className={getInnerIconPositionClass()}>
@@ -743,7 +779,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : side === 'right' ? (
                 /* Right Column: Inner edge (flag) on left border half in/half out, outer edge (price/owner) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between pl-3.5 sm:pl-4 pr-1 py-0.5 z-10 gap-1 relative overflow-visible">
+                <div className="w-full h-full flex flex-row items-center justify-between pl-[17px] sm:pl-[18px] pr-1 py-0.5 z-10 gap-1 relative overflow-visible">
                   <div className={getInnerIconPositionClass()}>
                     {renderInnerIcon()}
                   </div>
@@ -752,7 +788,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : side === 'top' ? (
                 /* Top Row: Outer edge (price/owner) at top, inner edge (flag) at bottom border half in/half out */
-                <div className="w-full h-full flex flex-col items-center justify-between pt-0.5 pb-3 sm:pb-3.5 px-0.5 z-10 relative overflow-visible">
+                <div className="w-full h-full flex flex-col items-center justify-between pt-0.5 pb-[17px] sm:pb-[18px] px-0.5 z-10 relative overflow-visible">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   <div className={getInnerIconPositionClass()}>
@@ -761,7 +797,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : (
                 /* Bottom Row: Inner edge (flag) at top border half in/half out, outer edge (price/owner) at bottom */
-                <div className="w-full h-full flex flex-col items-center justify-between pt-3 sm:pt-3.5 pb-0.5 px-0.5 z-10 relative overflow-visible">
+                <div className="w-full h-full flex flex-col items-center justify-between pt-[17px] sm:pt-[18px] pb-0.5 px-0.5 z-10 relative overflow-visible">
                   <div className={getInnerIconPositionClass()}>
                     {renderInnerIcon()}
                   </div>
