@@ -95,6 +95,27 @@ export function sanitizeRoom(raw: any): GameRoom {
   if (!room.players) room.players = {};
   if (!room.playerOrder) room.playerOrder = [];
 
+  // Anti-Cheat: Validate and sanitize all player cash & properties against memory/console tampering
+  if (room.players && typeof room.players === 'object') {
+    Object.keys(room.players).forEach(pId => {
+      const p = room.players[pId];
+      if (p) {
+        if (typeof p.cash !== 'number' || !Number.isFinite(p.cash)) {
+          p.cash = 1500;
+        } else {
+          if (room.status === 'lobby') {
+            const expectedStart = (room.settings && typeof room.settings.startingCash === 'number')
+              ? room.settings.startingCash
+              : 1500;
+            p.cash = expectedStart;
+          } else {
+            p.cash = Math.max(0, Math.min(100000, Math.floor(p.cash)));
+          }
+        }
+      }
+    });
+  }
+
   if (room.activeTrade) {
     room.activeTrade = {
       ...room.activeTrade,

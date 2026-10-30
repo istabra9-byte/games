@@ -3,6 +3,7 @@ import { GameRoom, Player, GameSettings } from '../types/game';
 import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock, ShoppingBag } from 'lucide-react';
 import { sound } from '../services/sound';
 import { ShopModal } from './ShopModal';
+import { secureStorage } from '../services/secureStorage';
 import { PlayerAvatar, PLAYER_COLORS, ALL_APPEARANCES, BASE_APPEARANCES } from './PlayerAvatar';
 
 interface LobbyProps {
@@ -38,26 +39,11 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [showShopModal, setShowShopModal] = useState(false);
   const isHost = room.hostId === currentPlayer.id;
 
-  // Unlocked appearance styles from localStorage
-  const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => {
-    const saved = localStorage.getItem('richup_unlocked_avatars');
-    if (saved) {
-      try {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) return arr;
-      } catch (e) {}
-    }
-    return ['navy'];
-  });
+  // Unlocked appearance styles protected with cryptographic anti-tamper signature
+  const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => secureStorage.getUnlockedAvatars());
 
   const refreshUnlocked = () => {
-    const saved = localStorage.getItem('richup_unlocked_avatars');
-    if (saved) {
-      try {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) setUnlockedAvatars(arr);
-      } catch (e) {}
-    }
+    setUnlockedAvatars(secureStorage.getUnlockedAvatars());
   };
 
   const playersList = Object.values(room.players);

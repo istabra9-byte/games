@@ -3,6 +3,7 @@ import { X, Sparkles, Check, ShoppingBag, ArrowLeft, Crown, MapPin, UserCheck, P
 import { ALL_APPEARANCES, PROFILE_PICTURES, SHOP_APPEARANCES, BASE_APPEARANCES, AppearanceOption, PlayerAvatar } from './PlayerAvatar';
 import { BOARD_THEMES, BoardTheme, getBoardTheme } from '../config/boardThemes';
 import { sound } from '../services/sound';
+import { secureStorage } from '../services/secureStorage';
 
 interface ShopModalProps {
   currentAvatar: string;
@@ -26,39 +27,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   onSelectBoardTheme,
   onClose
 }) => {
-  // Coin balance: default 250 coins so players can test buying immediately
-  const [coins, setCoins] = useState<number>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_COINS);
-    if (saved !== null) {
-      const parsed = parseInt(saved, 10);
-      if (!isNaN(parsed)) return parsed;
-    }
-    return 250;
-  });
+  // Coin balance: cryptographically protected against console tampering
+  const [coins, setCoins] = useState<number>(() => secureStorage.getCoins());
 
-  // Unlocked appearance styles
-  const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_UNLOCKED_AVATARS);
-    if (saved) {
-      try {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) return arr;
-      } catch (e) {}
-    }
-    return ['navy'];
-  });
+  // Unlocked appearance styles: signed anti-cheat verification
+  const [unlockedAvatars, setUnlockedAvatars] = useState<string[]>(() => secureStorage.getUnlockedAvatars());
 
-  // Unlocked board map themes
-  const [unlockedThemes, setUnlockedThemes] = useState<string[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_UNLOCKED_THEMES);
-    if (saved) {
-      try {
-        const arr = JSON.parse(saved);
-        if (Array.isArray(arr)) return arr;
-      } catch (e) {}
-    }
-    return ['midnight'];
-  });
+  // Unlocked board map themes: signed anti-cheat verification
+  const [unlockedThemes, setUnlockedThemes] = useState<string[]>(() => secureStorage.getUnlockedThemes());
 
   // Equipped board theme
   const [equippedThemeId, setEquippedThemeId] = useState<string>(() => {
@@ -89,15 +65,15 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   };
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_COINS, coins.toString());
+    secureStorage.setCoins(coins);
   }, [coins]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_UNLOCKED_AVATARS, JSON.stringify(unlockedAvatars));
+    secureStorage.setUnlockedAvatars(unlockedAvatars);
   }, [unlockedAvatars]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_UNLOCKED_THEMES, JSON.stringify(unlockedThemes));
+    secureStorage.setUnlockedThemes(unlockedThemes);
   }, [unlockedThemes]);
 
   useEffect(() => {
@@ -232,17 +208,6 @@ export const ShopModal: React.FC<ShopModalProps> = ({
             <span className="text-lg leading-none">🪙</span>
             <span className="text-base font-black font-mono text-amber-300">{coins}</span>
             <span className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider hidden sm:inline">Coins</span>
-            <button
-              onClick={() => {
-                setCoins(prev => prev + 500);
-                sound.playCash();
-                setNotification('💰 Added +500 Free Coins!');
-              }}
-              className="ml-1 px-2 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-purple-950 font-black text-xs leading-none shadow cursor-pointer active:scale-90 transition-transform"
-              title="Click to add +500 coins"
-            >
-              +500
-            </button>
           </div>
 
           <button

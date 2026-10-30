@@ -27,7 +27,7 @@
               ".validate": "newData.isString() && newData.val().length <= 50"
             },
             "cash": {
-              ".validate": "newData.isNumber()"
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
             }
           }
         },

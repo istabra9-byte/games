@@ -518,28 +518,37 @@ export const App: React.FC = () => {
 
   // Actions
   const handleRoll = () => {
-    if (!room) return;
+    if (!room || room.status !== 'playing') return;
+    const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+    // Anti-Cheat: strict turn & phase validation prevents console / speed exploits
+    if (turnPlayerId !== currentPlayer.id || room.turnPhase !== 'roll') return;
     phaseStartedAtRef.current = Date.now();
     const updated = rollDice(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleBuy = () => {
-    if (!room) return;
+    if (!room || room.status !== 'playing') return;
+    const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+    if (turnPlayerId !== currentPlayer.id || room.turnPhase !== 'action') return;
     phaseStartedAtRef.current = Date.now();
     const updated = buyCurrentProperty(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleSkip = () => {
-    if (!room) return;
+    if (!room || room.status !== 'playing') return;
+    const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+    if (turnPlayerId !== currentPlayer.id || room.turnPhase !== 'action') return;
     phaseStartedAtRef.current = Date.now();
     const updated = skipCurrentProperty(room, currentPlayer.id);
     multiplayer.updateRoom(updated);
   };
 
   const handleEndTurn = () => {
-    if (!room) return;
+    if (!room || room.status !== 'playing') return;
+    const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+    if (turnPlayerId !== currentPlayer.id || room.turnPhase !== 'end') return;
     phaseStartedAtRef.current = Date.now();
     const updated = endTurn(room);
     multiplayer.updateRoom(updated);
