@@ -51,54 +51,45 @@
   scrollbar-width: none !important;
 }
 
-/* Authentic Richup Responsive Board Across All Screens (Wider Side Columns for Country Names) */
+/* Authentic Monopoly Responsive Square Board Across All Screens */
 .responsive-board-wrapper {
-  aspect-ratio: 13.6 / 12.7;
+  aspect-ratio: 1 / 1;
+  width: min(calc(100dvh - 80px), calc(100dvw - 20px));
+  height: auto;
   max-width: 100%;
   max-height: 100%;
-  width: auto;
-  height: 100%;
+  margin: 0 auto;
   flex-shrink: 0;
-  container-type: inline-size;
+  container-type: size;
   container-name: board;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-@supports (width: 1cqw) {
+@supports (width: 1cqmin) {
   .responsive-board-wrapper {
-    width: min(100cqw, calc(100cqh * 13.6 / 12.7));
-    height: min(100cqh, calc(100cqw * 12.7 / 13.6));
+    width: min(100cqw, 100cqh);
+    height: min(100cqw, 100cqh);
+    aspect-ratio: 1 / 1;
   }
 }
 
 @media (min-width: 1024px) {
   .responsive-board-wrapper {
-    aspect-ratio: 13.6 / 12.7;
+    aspect-ratio: 1 / 1;
+    width: min(calc(100dvh - 80px), calc(100dvw - 520px));
+    height: auto;
     max-width: 100%;
     max-height: 100%;
+    margin: 0 auto;
   }
 
-  @supports (width: 1cqw) {
+  @supports (width: 1cqmin) {
     .responsive-board-wrapper {
-      width: min(100cqw, calc(100cqh * 13.6 / 12.7));
-      height: min(100cqh, calc(100cqw * 12.7 / 13.6));
-    }
-  }
-}
-
-@media (min-width: 1280px) {
-  .responsive-board-wrapper {
-    aspect-ratio: 13.6 / 12.7;
-    max-width: 100%;
-    max-height: 100%;
-  }
-
-  @supports (width: 1cqw) {
-    .responsive-board-wrapper {
-      width: min(100cqw, calc(100cqh * 13.6 / 12.7));
-      height: min(100cqh, calc(100cqw * 12.7 / 13.6));
+      width: min(100cqw, 100cqh);
+      height: min(100cqw, 100cqh);
+      aspect-ratio: 1 / 1;
     }
   }
 }
