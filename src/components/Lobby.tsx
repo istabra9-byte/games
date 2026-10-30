@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GameRoom, Player, GameSettings } from '../types/game';
-import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock } from 'lucide-react';
+import { Dices, Users, Settings, Copy, Check, Plus, Bot, Flame, Crown, Play, X, Sliders, Lock, ShoppingBag } from 'lucide-react';
 import { sound } from '../services/sound';
+import { ShopModal } from './ShopModal';
 import { PlayerAvatar, PLAYER_COLORS, ALL_APPEARANCES, BASE_APPEARANCES } from './PlayerAvatar';
 
 interface LobbyProps {
@@ -34,6 +35,7 @@ export const Lobby: React.FC<LobbyProps> = ({
   const [copied, setCopied] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [name, setName] = useState(currentPlayer.name);
+  const [showShopModal, setShowShopModal] = useState(false);
   const isHost = room.hostId === currentPlayer.id;
 
   // Unlocked appearance styles from localStorage
@@ -155,37 +157,77 @@ export const Lobby: React.FC<LobbyProps> = ({
             placeholder="Enter your nickname"
           />
 
-          {/* Player Appearance Selection (Navy by default, more in Shop) */}
+          {/* Player Appearance Selection (Only Navy is free, others paid) */}
           <div className="flex flex-col gap-2 pt-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-gray-300 uppercase tracking-wide">
                 Player Appearance
               </span>
+              <button
+                onClick={() => setShowShopModal(true)}
+                className="px-2.5 py-1 bg-gradient-to-r from-amber-500/20 via-purple-600/30 to-pink-500/20 hover:from-amber-500/30 hover:to-pink-500/30 border border-amber-400/50 rounded-xl text-xs font-bold text-amber-300 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>Shop</span>
+                <span className="text-[10px] bg-amber-400/25 px-1 py-0.2 rounded font-mono">🪙</span>
+              </button>
             </div>
 
-            {/* Available Appearances (All Character Styles Unlocked) */}
+            {/* Available Appearances (Only Navy is free by default, others require purchase) */}
             <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#120c1d] rounded-xl border border-purple-950">
               {ALL_APPEARANCES.slice(0, 15).map((app) => {
+                const isNavy = app.style === 'navy';
+                const isUnlocked = isNavy || unlockedAvatars.includes(app.style);
                 const isSelected = (currentPlayer.avatar || 'navy') === app.style;
+
                 return (
                   <button
                     key={app.id}
                     onClick={() => {
-                      onUpdatePlayer(name, app.style, currentPlayer.color);
-                      sound.playSelect();
+                      if (isUnlocked) {
+                        onUpdatePlayer(name, app.style, currentPlayer.color);
+                        sound.playSelect();
+                      } else {
+                        // Open Shop so player can buy this appearance!
+                        setShowShopModal(true);
+                        sound.playSelect();
+                      }
                     }}
-                    className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border min-w-[72px] sm:min-w-[80px] ${
+                    className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer border min-w-[72px] sm:min-w-[80px] relative ${
                       isSelected
                         ? 'bg-purple-950/80 border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.5)] scale-102 ring-1 ring-purple-400'
-                        : 'bg-[#181126] border-purple-900/30 hover:border-purple-700/60 hover:bg-[#201633] opacity-80 hover:opacity-100'
+                        : isUnlocked
+                        ? 'bg-[#181126] border-purple-900/30 hover:border-purple-700/60 hover:bg-[#201633] opacity-85 hover:opacity-100'
+                        : 'bg-[#140e20] border-purple-950/40 opacity-60 hover:opacity-90 hover:border-amber-500/50'
                     }`}
+                    title={isUnlocked ? `Select ${app.name}` : `${app.name} (${app.price} coins) - Open Shop`}
                   >
-                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
-                      <PlayerAvatar avatar={app.style} color={currentPlayer.color} size={36} />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center relative">
+                      <PlayerAvatar avatar={app.style} color={isUnlocked ? currentPlayer.color : '#6b7280'} size={36} />
+                      {!isUnlocked && (
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-[0.5px] rounded-full flex items-center justify-center shadow">
+                          <span className="text-xs">🔒</span>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-[10px] font-bold text-gray-200 truncate max-w-full">
-                      {app.name}
-                    </span>
+                    <div className="flex flex-col items-center leading-none text-center">
+                      <span className="text-[10px] font-bold text-gray-200 truncate max-w-full">
+                        {app.name}
+                      </span>
+                      {isNavy ? (
+                        <span className="text-[8.5px] text-emerald-400 font-bold mt-0.5">
+                          FREE
+                        </span>
+                      ) : !isUnlocked ? (
+                        <span className="text-[9px] font-mono font-bold text-amber-400 mt-0.5 flex items-center gap-0.5">
+                          {app.price}🪙
+                        </span>
+                      ) : (
+                        <span className="text-[8.5px] text-purple-300 font-semibold mt-0.5">
+                          OWNED
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -410,7 +452,22 @@ export const Lobby: React.FC<LobbyProps> = ({
         </div>
       )}
 
-
+      {/* Character Shop Modal */}
+      {showShopModal && (
+        <ShopModal
+          currentAvatar={currentPlayer.avatar || 'navy'}
+          onSelectAvatar={(style) => {
+            onUpdatePlayer(name, style, currentPlayer.color);
+            refreshUnlocked();
+          }}
+          currentBoardTheme={currentBoardTheme}
+          onSelectBoardTheme={onSelectBoardTheme}
+          onClose={() => {
+            setShowShopModal(false);
+            refreshUnlocked();
+          }}
+        />
+      )}
     </div>
   );
 };

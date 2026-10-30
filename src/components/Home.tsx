@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Play, Key, Github, X, ArrowRight } from 'lucide-react';
+import { Volume2, VolumeX, Play, Key, ShoppingBag, Github, X, ArrowRight } from 'lucide-react';
 import { sound } from '../services/sound';
+import { ShopModal } from './ShopModal';
 
 interface HomeProps {
   onJoinRoom: (roomId: string, playerName: string) => void;
@@ -37,6 +38,7 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
   });
 
   const [isMuted, setIsMuted] = useState(sound.isMuted());
+  const [showShop, setShowShop] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [roomKeyInput, setRoomKeyInput] = useState('');
   const [joinError, setJoinError] = useState('');
@@ -116,7 +118,20 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
         </a>
       </header>
 
-
+      {/* Slide-out Appearance Shop Button on the Left */}
+      <button
+        onClick={() => setShowShop(true)}
+        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 group flex items-center bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-white font-black py-3 px-3 pl-3.5 pr-4 rounded-r-2xl shadow-[0_8px_25px_rgba(245,158,11,0.45)] border-t border-r border-b border-yellow-300/60 transition-all duration-300 transform hover:translate-x-1 cursor-pointer"
+        title="Open Character Shop"
+      >
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="w-5 h-5 text-yellow-100 group-hover:scale-110 transition-transform animate-bounce" />
+          <div className="flex flex-col text-left leading-none">
+            <span className="text-[10px] uppercase font-bold text-yellow-200 tracking-wider">Appearance</span>
+            <span className="text-sm font-extrabold tracking-wide uppercase drop-shadow">Shop</span>
+          </div>
+        </div>
+      </button>
 
       {/* Center Hero Form */}
       <div className="my-auto flex flex-col items-center max-w-md w-full z-20 text-center">
@@ -243,6 +258,15 @@ export const Home: React.FC<HomeProps> = ({ onJoinRoom, onCreatePrivateRoom }) =
       )}
 
 
+
+      {/* Shop Modal */}
+      {showShop && (
+        <ShopModal
+          currentAvatar={currentAvatar}
+          onSelectAvatar={handleSelectAvatar}
+          onClose={() => setShowShop(false)}
+        />
+      )}
 
       {/* Floating Animated Icons in Background */}
       <div className="absolute inset-0 pointer-events-none opacity-10 flex items-center justify-center overflow-hidden">
