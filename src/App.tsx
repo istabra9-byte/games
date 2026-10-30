@@ -453,10 +453,16 @@ export const App: React.FC = () => {
           } else {
             actedRoom = { ...room };
           }
-          // Smart House Building
-          const bestTileToBuild = getBotHouseBuildTileIndex(actedRoom, turnPlayer.id);
-          if (bestTileToBuild !== null) {
-            actedRoom = buildHouse(actedRoom, turnPlayer.id, bestTileToBuild);
+          // Smart House Building (Medium-Hard AI: build up to 3 houses per turn while funds permit)
+          let buildCount = 0;
+          while (buildCount < 3) {
+            const bestTileToBuild = getBotHouseBuildTileIndex(actedRoom, turnPlayer.id);
+            if (bestTileToBuild !== null) {
+              actedRoom = buildHouse(actedRoom, turnPlayer.id, bestTileToBuild);
+              buildCount++;
+            } else {
+              break;
+            }
           }
           if (actedRoom.turnPhase === 'end') {
             const nextRoom = endTurn(actedRoom);
@@ -467,9 +473,15 @@ export const App: React.FC = () => {
           }
         } else if (room.turnPhase === 'end') {
           let roomWithUpgrades = room;
-          const bestTileToBuild = getBotHouseBuildTileIndex(roomWithUpgrades, turnPlayer.id);
-          if (bestTileToBuild !== null) {
-            roomWithUpgrades = buildHouse(roomWithUpgrades, turnPlayer.id, bestTileToBuild);
+          let buildCount = 0;
+          while (buildCount < 3) {
+            const bestTileToBuild = getBotHouseBuildTileIndex(roomWithUpgrades, turnPlayer.id);
+            if (bestTileToBuild !== null) {
+              roomWithUpgrades = buildHouse(roomWithUpgrades, turnPlayer.id, bestTileToBuild);
+              buildCount++;
+            } else {
+              break;
+            }
           }
           const nextRoom = endTurn(roomWithUpgrades);
           multiplayer.updateRoom(nextRoom);

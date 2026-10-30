@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { multiplayer } from '../services/firebase';
 import { User } from 'firebase/auth';
-import { LogOut, User as UserIcon, ShieldCheck, Sparkles, ChevronDown } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldCheck, Sparkles, ChevronDown, Copy, Check, AlertTriangle, X } from 'lucide-react';
 import { sound } from '../services/sound';
 
 interface AuthStatusProps {
@@ -13,6 +13,8 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ onUserChanged, compact =
   const [user, setUser] = useState<User | null>(multiplayer.getCurrentUser());
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,10 +45,16 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ onUserChanged, compact =
       }
     } catch (err: any) {
       console.warn('Google sign-in error:', err);
-      // Friendly message for unauthorized domain in Firebase Console
-      if (err?.code === 'auth/unauthorized-domain') {
-        alert("Domain Not Authorized: Please add 'istabra9-byte.github.io' to your Firebase Console -> Authentication -> Settings -> Authorized domains.");
-      } else if (err?.code !== 'auth/popup-closed-by-user') {
+      const errMsg = String(err?.message || '');
+      const errCode = String(err?.code || '');
+      const isUnauthorizedDomain =
+        errCode === 'auth/unauthorized-domain' ||
+        errMsg.toLowerCase().includes('unauthorized-domain') ||
+        errMsg.toLowerCase().includes('unauthorized domain');
+
+      if (isUnauthorizedDomain) {
+        setShowDomainModal(true);
+      } else if (errCode !== 'auth/popup-closed-by-user' && !errMsg.includes('popup-closed')) {
         alert(err.message || 'Failed to sign in with Google. Ensure popup permissions are enabled.');
       }
     } finally {
@@ -168,6 +176,78 @@ export const AuthStatus: React.FC<AuthStatusProps> = ({ onUserChanged, compact =
               {loading ? 'Signing in...' : 'Sign in with Google'}
             </span>
           </button>
+        </div>
+      )}
+
+      {/* Unauthorized Domain Helpful Guidance Modal */}
+      {showDomainModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-[#19112a] border border-amber-500/50 rounded-2xl max-w-md w-full p-5 shadow-2xl text-white relative">
+            <button
+              onClick={() => setShowDomainModal(false)}
+              className="absolute top-3.5 right-3.5 p-1 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 text-amber-400 mb-3">
+              <AlertTriangle className="w-6 h-6 flex-shrink-0" />
+              <h3 className="text-base font-black tracking-wide">Firebase Authorized Domain Required</h3>
+            </div>
+
+            <p className="text-xs text-gray-300 leading-relaxed mb-3">
+              Google Sign-in on GitHub Pages requires adding your website domain to your Firebase Console authorized domains list:
+            </p>
+
+            {/* Domain Copy Box */}
+            <div className="flex items-center gap-2 bg-[#0e0918] border border-purple-800/60 rounded-xl px-3 py-2 mb-4">
+              <code className="text-xs font-mono font-bold text-amber-300 flex-1 truncate select-all">
+                {typeof window !== 'undefined' ? window.location.hostname : 'istabra9-byte.github.io'}
+              </code>
+              <button
+                onClick={() => {
+                  const host = typeof window !== 'undefined' ? window.location.hostname : 'istabra9-byte.github.io';
+                  navigator.clipboard.writeText(host);
+                  setCopiedDomain(true);
+                  setTimeout(() => setCopiedDomain(false), 2000);
+                }}
+                className="px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
+              >
+                {copiedDomain ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedDomain ? 'Copied!' : 'Copy'}</span>
+              </button>
+            </div>
+
+            {/* Steps */}
+            <div className="bg-[#120b20] border border-purple-900/50 rounded-xl p-3 text-[11px] text-gray-300 space-y-1.5 mb-4">
+              <div className="font-bold text-purple-300 text-xs mb-1">Quick 30-Second Fix in Firebase Console:</div>
+              <div className="flex items-start gap-1.5">
+                <span className="font-bold text-amber-400">1.</span>
+                <span>Open <b>Firebase Console</b> &gt; select your project.</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="font-bold text-amber-400">2.</span>
+                <span>Navigate to <b>Authentication</b> &gt; <b>Settings</b> tab.</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="font-bold text-amber-400">3.</span>
+                <span>Scroll down to <b>Authorized domains</b> &gt; click <b>Add domain</b>.</span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <span className="font-bold text-amber-400">4.</span>
+                <span>Paste <code className="text-amber-300 font-mono">istabra9-byte.github.io</code> and click <b>Save</b>.</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowDomainModal(false)}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow"
+              >
+                Continue Playing as Guest
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

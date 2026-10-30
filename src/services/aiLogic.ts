@@ -29,28 +29,28 @@ export function evaluateBotPropertyPurchase(room: GameRoom, botId: string, tile:
     }
   });
 
-  // Dynamic cash safety cushion based on game phase
-  let safetyCushion = 80;
+  // Medium-to-Hard dynamic cash safety cushion: aggressive early acquisition, prudent late game
+  let safetyCushion = 30; // Early game: aggressive expansion
   if (opponentHouses >= 5) {
-    safetyCushion = 320; // High danger late game
+    safetyCushion = 180; // High danger late game
   } else if (opponentHouses >= 2) {
-    safetyCushion = 180; // Moderate danger mid game
+    safetyCushion = 85; // Moderate danger mid game
   }
 
-  // 2. Monopoly Completion Check (Priority 1)
+  // 2. Monopoly Completion Check (Priority 1 - top urgency)
   if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
     const groupTiles = room.tiles.filter(t => t.group === tile.group);
     const botOwnedInGroup = groupTiles.filter(t => t.ownerId === botId).length;
     // If buying this completes the monopoly
     if (botOwnedInGroup === groupTiles.length - 1) {
-      // Aggressively buy if we have at least $25 left over
-      if (bot.cash >= tile.price + 25) {
+      // Aggressively buy if we have at least $10 left over
+      if (bot.cash >= tile.price + 10) {
         return { shouldBuy: true, reason: 'Completes color monopoly!' };
       }
     }
   }
 
-  // 3. Monopoly Blocker Check (Priority 2)
+  // 3. Monopoly Blocker Check (Priority 2 - deny human monopoly)
   if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
     const groupTiles = room.tiles.filter(t => t.group === tile.group);
     for (const p of Object.values(room.players)) {
@@ -58,7 +58,7 @@ export function evaluateBotPropertyPurchase(room: GameRoom, botId: string, tile:
         const opponentCount = groupTiles.filter(t => t.ownerId === p.id).length;
         if (opponentCount === groupTiles.length - 1) {
           // Block opponent from getting full set
-          if (bot.cash >= tile.price + 40) {
+          if (bot.cash >= tile.price + 20) {
             return { shouldBuy: true, reason: `Blocks ${p.name}'s monopoly!` };
           }
         }
@@ -66,10 +66,10 @@ export function evaluateBotPropertyPurchase(room: GameRoom, botId: string, tile:
     }
   }
 
-  // 4. Stations / Airports (Priority 3 - high, reliable returns)
+  // 4. Stations / Airports (Priority 3 - steady reliable returns)
   if (tile.type === 'railroad') {
     const botStations = room.tiles.filter(t => t.type === 'railroad' && t.ownerId === botId).length;
-    if (botStations >= 1 && bot.cash >= tile.price + 50) {
+    if (botStations >= 1 && bot.cash >= tile.price + 25) {
       return { shouldBuy: true, reason: 'Expands station network' };
     }
   }
@@ -108,8 +108,8 @@ export function getBotHouseBuildTileIndex(room: GameRoom, botId: string): number
 
   for (const candidate of candidateTiles) {
     const cost = candidate.houseCost || 100;
-    // Require at least $180 cash reserve after building
-    if (bot.cash >= cost + 180) {
+    // Require at least $70 cash reserve after building (Medium-Hard AI builds houses rapidly)
+    if (bot.cash >= cost + 70) {
       return candidate.index;
     }
   }
@@ -180,7 +180,7 @@ export function evaluateBotTrade(room: GameRoom, botId: string, trade: TradeOffe
         const groupTiles = room.tiles.filter(t => t.group === tile.group);
         const senderCurrentCount = groupTiles.filter(t => t.ownerId === trade.senderId).length;
         if (senderCurrentCount === groupTiles.length - 1) {
-          valueGiven += 250; // Opponent monopoly penalty
+          valueGiven += 450; // Strict opponent monopoly penalty (Medium-Hard AI denies easy monopolies)
         }
         // Heavy penalty if giving away this tile breaks bot's own monopoly
         const botCurrentCount = groupTiles.filter(t => t.ownerId === botId).length;

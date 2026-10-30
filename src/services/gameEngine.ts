@@ -84,20 +84,12 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   const player = newRoom.players[playerId];
   if (!player || player.isBankrupt) return room;
 
-  const isInPrisonOrVacation = Boolean(player.inJail || player.inVacation);
-  const doubleChance = isInPrisonOrVacation ? 0.70 : 0.80;
-  const isDoubles = Math.random() < doubleChance;
-  let d1: number;
-  let d2: number;
-  if (isDoubles) {
-    d1 = Math.floor(Math.random() * 6) + 1;
-    d2 = d1;
-  } else {
-    d1 = Math.floor(Math.random() * 6) + 1;
-    let other = Math.floor(Math.random() * 5) + 1;
-    if (other >= d1) other += 1;
-    d2 = other;
-  }
+  // Authentic 2d6 dice distribution & medium-to-hard balanced algorithm
+  // Truly independent six-sided dice yielding the natural bell curve (2 to 12, peak at 7)
+  // Natural doubles probability is exactly 1/6 (~16.67%), no forced high numbers or repeated big doubles.
+  const d1 = Math.floor(Math.random() * 6) + 1;
+  const d2 = Math.floor(Math.random() * 6) + 1;
+  const isDoubles = d1 === d2;
   const rollTotal = d1 + d2;
 
   newRoom.dice = [d1, d2];
