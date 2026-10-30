@@ -400,8 +400,19 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-between w-full h-full max-w-sm sm:max-w-md px-2 pt-1 pb-0.5 select-none relative">
-      {/* 0. Top Action Notification Banner (Elevated Higher to Top of Center Stage) */}
-      <div className="w-full flex items-center justify-center min-h-[36px] flex-shrink-0 pt-0.5 mb-0.5">
+      {/* 0. Top Header Area (Directly Under Top Row Countries) */}
+      <div className="w-full flex flex-col items-center justify-start flex-shrink-0 pt-0.5 mb-1 gap-1.5 z-20">
+        {/* Turn Timer Countdown Pill: Positioned directly under top row countries */}
+        {room.turnTimer?.active && room.turnTimer.forPlayerId === turnPlayerId && (
+          <div className="flex items-center justify-center animate-in fade-in zoom-in-95 duration-200">
+            <TurnTimerPill
+              timer={room.turnTimer}
+              onGrantTime={onGrantTime}
+            />
+          </div>
+        )}
+
+        {/* Top Action Notification Banner */}
         {latestActionLog ? (
           <div
             key={latestActionLog.id}
@@ -424,22 +435,12 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             </span>
           </div>
         ) : (
-          <div className="h-6" />
+          !room.turnTimer?.active && <div className="h-6" />
         )}
       </div>
 
       {/* 1. Large 3D Dice with Realistic Shake & Tumble + Turn Action Controls */}
-      <div className="flex flex-col items-center justify-center my-auto gap-1.5 flex-shrink-0 py-1">
-        {/* Turn Timer Countdown Pill (Exact match to user screenshot) */}
-        {room.turnTimer?.active && room.turnTimer.forPlayerId === turnPlayerId && (
-          <div className="flex items-center justify-center mb-0.5 animate-in fade-in zoom-in-95 duration-200">
-            <TurnTimerPill
-              timer={room.turnTimer}
-              onGrantTime={onGrantTime}
-            />
-          </div>
-        )}
-
+      <div className="flex flex-col items-center justify-center my-auto gap-2 flex-shrink-0 py-1">
         <div className="flex flex-col items-center justify-center">
           <DiceView values={room.dice} isRolling={isRolling} />
         </div>

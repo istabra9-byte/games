@@ -334,9 +334,14 @@ export const App: React.FC = () => {
               // Auto-play action on expiration
               if (room.turnPhase === 'action') {
                 const skipped = skipCurrentProperty(room, currentTurnId);
-                const ended = endTurn(skipped);
-                ended.turnTimer = null;
-                multiplayer.updateRoom(ended);
+                if (skipped.turnPhase === 'end') {
+                  const ended = endTurn(skipped);
+                  ended.turnTimer = null;
+                  multiplayer.updateRoom(ended);
+                } else {
+                  skipped.turnTimer = null;
+                  multiplayer.updateRoom(skipped);
+                }
               } else {
                 const ended = endTurn(room);
                 ended.turnTimer = null;

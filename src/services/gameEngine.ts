@@ -387,9 +387,12 @@ export function skipCurrentProperty(room: GameRoom, playerId: string): GameRoom 
     type: 'system'
   });
 
-  newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
   newRoom.turnTimer = null;
-  return newRoom;
+  if (newRoom.isDoubles) {
+    newRoom.turnPhase = 'roll';
+    return newRoom;
+  }
+  return endTurn(newRoom);
 }
 
 export function canBuildHouse(room: GameRoom, playerId: string, tileIndex: number): boolean {
