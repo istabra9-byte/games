@@ -235,11 +235,11 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
                 {/* 10: PASSING BY / IN PRISON (Mornaguia Prison) */}
                 {cornerType === 'jail' && (
-                  <div className="w-full h-full flex flex-col items-center justify-between p-0.5 text-center relative">
-                    <div className="flex flex-col items-center z-10">
+                  <div className="w-full h-full flex flex-col items-center justify-start gap-0.5 pt-0.5 px-0.5 pb-1 text-center relative">
+                    <div className="flex flex-col items-center z-10 flex-shrink-0">
                       <span
-                        className="font-black text-gray-300 uppercase tracking-tight"
-                        style={{ fontSize: 'clamp(9px, 1.3cqi, 12.5px)' }}
+                        className="font-black text-gray-300 uppercase tracking-tight leading-none pt-0.5"
+                        style={{ fontSize: 'clamp(8.5px, 1.2cqi, 12px)' }}
                       >
                         Passing by
                       </span>
@@ -251,7 +251,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       )}
                     </div>
 
-                    <div className="w-[90%] h-[62%] rounded-md border border-purple-400/60 shadow-inner relative overflow-hidden flex flex-col items-center justify-center">
+                    <div className="w-[94%] flex-1 min-h-[58%] rounded-md border border-purple-400/60 shadow-inner relative overflow-hidden flex flex-col items-center justify-center pb-0.5">
                       {/* Real Mornaguia Civil Prison Photo */}
                       <img
                         src={mornaguiaJailImg}
@@ -263,26 +263,27 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       {/* Prison Bars Overlay */}
                       <div className="absolute inset-0 opacity-25 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#cbd5e1_4px,#cbd5e1_6px)]" />
 
-                      <span
-                        className="font-black text-amber-200 uppercase z-10 leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
-                        style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
-                      >
-                        In Prison
-                      </span>
-                      <span
-                        className="text-[7.5px] sm:text-[8.5px] font-bold text-white/95 z-10 drop-shadow mt-0.5 tracking-tight font-sans"
-                      >
-                        المرناقية
-                      </span>
+                      <div className="flex flex-col items-center z-10 -translate-y-1">
+                        <span
+                          className="font-black text-amber-200 uppercase leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] tracking-wide"
+                          style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
+                        >
+                          In Prison
+                        </span>
+                        <span
+                          className="text-[7.5px] sm:text-[8.5px] font-bold text-white/95 drop-shadow mt-0.5 tracking-tight font-sans leading-none"
+                        >
+                          المرناقية
+                        </span>
+                      </div>
 
                       {/* In Prison tokens */}
                       {playersHere.filter(p => p.inJail).length > 0 && (
-                        <div className="flex items-center justify-center -space-x-2 mt-0.5 z-20">
+                        <div className="absolute bottom-1 inset-x-0 flex items-center justify-center -space-x-2 z-20 pointer-events-none">
                           {playersHere.filter(p => p.inJail).map(p => renderPlayerToken(p, true))}
                         </div>
                       )}
                     </div>
-                    <div className="h-0.5" />
                   </div>
                 )}
 

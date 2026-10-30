@@ -145,6 +145,46 @@ export const renderLogContent = (rawText: string, stripLeadingIcon: boolean = fa
 
 export const formatLogText = renderLogContent;
 
+// Helper to render notification banner with player name in their chosen color
+const renderNotificationText = (rawText: string, players: Record<string, any>): React.ReactNode => {
+  let text = rawText.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜)\s*/u, '').trim();
+
+  // Find all players sorted by name length descending
+  const playerList = Object.values(players)
+    .filter((p: any) => Boolean(p && p.name))
+    .sort((a: any, b: any) => b.name.length - a.name.length);
+
+  if (playerList.length === 0) {
+    return renderLogContent(text, false);
+  }
+
+  // Create regex matching any player name
+  const escapedNames = playerList.map((p: any) => p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const playerRegex = new RegExp(`(${escapedNames.join('|')})`, 'g');
+
+  const parts = text.split(playerRegex);
+
+  return (
+    <>
+      {parts.map((part, idx) => {
+        const matchedPlayer = playerList.find((p: any) => p.name === part);
+        if (matchedPlayer) {
+          return (
+            <span
+              key={idx}
+              className="font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] mr-1 flex-shrink-0"
+              style={{ color: matchedPlayer.color || '#a855f7' }}
+            >
+              {matchedPlayer.name}
+            </span>
+          );
+        }
+        return <React.Fragment key={idx}>{renderLogContent(part, false)}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
 export const CenterControls: React.FC<CenterControlsProps> = ({
   room,
   currentPlayerId,
@@ -213,11 +253,14 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
     ? room.players[latestActionLog.playerId]
     : Object.values(room.players).find(p => latestActionLog?.text.includes(p.name));
 
-  // Filter out noisy timer-tick logs
-  const meaningfulLogs = (room.logs || []).filter(l => 
-    !l.text.includes('Turn limit expired') && 
-    !l.text.includes('time has expired')
-  );
+  // Filter out noisy roll, turn-announcement, and timer-tick logs per user request
+  const meaningfulLogs = (room.logs || []).filter(l => {
+    const text = l.text.toLowerCase();
+    if (l.type === 'roll' || text.includes(' rolled ')) return false;
+    if (text.includes("'s turn") || text.includes('turn of') || text.startsWith("it's now ")) return false;
+    if (text.includes('turn limit expired') || text.includes('time has expired')) return false;
+    return true;
+  });
 
   // Auto-scroll logs to bottom
   useEffect(() => {
@@ -245,7 +288,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
               <span className="text-xs flex-shrink-0">🔔</span>
             )}
             <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide inline-flex items-center">
-              {renderLogContent(latestActionLog.text, true)}
+              {renderNotificationText(latestActionLog.text, room.players)}
             </span>
           </div>
         ) : (
@@ -377,7 +420,8 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         {/* 3. Activity Feed Logs (Placed EXACTLY Under the Action Button with No Header) */}
         <div
           ref={logsContainerRef}
-          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 scrollbar-thin"
+          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 no-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {meaningfulLogs.slice(-15).map((log) => {
             const isBuy = log.type === 'buy';
