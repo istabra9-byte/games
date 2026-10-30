@@ -48,6 +48,8 @@ export interface Player {
   position: number; // 0..39
   inJail: boolean;
   jailTurns: number;
+  inVacation?: boolean;
+  vacationTurns?: number;
   jailCards: number;
   isBankrupt: boolean;
   isHost: boolean;

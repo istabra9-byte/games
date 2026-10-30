@@ -14,6 +14,7 @@ import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
 import mornaguiaJailImg from '../assets/mornaguia_jail.png';
+import vacationImg from '../assets/vacation.png';
 import posteLogo from '../assets/poste.png';
 import bankLogo from '../assets/bank.png';
 
@@ -414,20 +415,28 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 {/* 20: VACATION */}
                 {cornerType === 'vacation' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-0.5">
-                    <div style={{ fontSize: 'clamp(20px, 3.6cqi, 42px)' }}>
-                      🏝️
+                    <div
+                      className="rounded-xl overflow-hidden border-[1.5px] border-emerald-400/80 shadow-[0_2px_12px_rgba(16,185,129,0.5)] flex items-center justify-center bg-black/60 flex-shrink-0 relative"
+                      style={{ width: 'clamp(58px, 9cqi, 96px)', height: 'clamp(42px, 6.4cqi, 68px)' }}
+                    >
+                      <img
+                        src={vacationImg}
+                        alt="Vacation Island"
+                        className="w-full h-full object-cover brightness-105"
+                      />
+                      <div className="absolute inset-0 bg-emerald-950/10 pointer-events-none" />
                     </div>
                     <span
-                      className="font-black text-white uppercase tracking-wider font-heading leading-tight"
-                      style={{ fontSize: 'clamp(12.5px, 1.8cqi, 20px)' }}
+                      className="font-black text-white uppercase tracking-wider font-heading leading-tight mt-0.5"
+                      style={{ fontSize: 'clamp(11px, 1.55cqi, 17px)' }}
                     >
                       Vacation
                     </span>
                     <span
-                      className="font-semibold text-emerald-300 leading-none mt-0.5 font-mono"
-                      style={{ fontSize: 'clamp(10px, 1.45cqi, 15px)' }}
+                      className="font-semibold text-emerald-300 leading-none font-mono"
+                      style={{ fontSize: 'clamp(8.5px, 1.25cqi, 12.5px)' }}
                     >
-                      ${room.pot || 0} on hold
+                      $150 or doubles
                     </span>
                   </div>
                 )}
@@ -436,15 +445,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 {cornerType === 'go_to_jail' && (
                   <div className="w-full h-full flex flex-col items-center justify-center p-0.5 text-center gap-1">
                     <div
-                      className="rounded-full overflow-hidden border-[1.5px] border-red-500/80 shadow-[0_2px_8px_rgba(239,68,68,0.5)] flex items-center justify-center bg-black/60 flex-shrink-0 relative"
-                      style={{ width: 'clamp(28px, 4.2cqi, 46px)', height: 'clamp(28px, 4.2cqi, 46px)' }}
+                      className="rounded-xl overflow-hidden border-[1.5px] border-red-500/80 shadow-[0_2px_12px_rgba(239,68,68,0.5)] flex items-center justify-center bg-black/60 flex-shrink-0 relative"
+                      style={{ width: 'clamp(58px, 9cqi, 96px)', height: 'clamp(42px, 6.4cqi, 68px)' }}
                     >
                       <img
                         src={mornaguiaJailImg}
                         alt="Mornaguia Prison"
                         className="w-full h-full object-cover brightness-95"
                       />
-                      <div className="absolute inset-0 bg-red-950/20" />
+                      <div className="absolute inset-0 bg-red-950/15 pointer-events-none" />
                     </div>
                     <span
                       className="font-black text-white uppercase font-heading leading-tight tracking-wider"

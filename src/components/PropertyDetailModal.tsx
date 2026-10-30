@@ -10,6 +10,7 @@ import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
 import mornaguiaJailImg from '../assets/mornaguia_jail.png';
+import vacationImg from '../assets/vacation.png';
 import posteLogo from '../assets/poste.png';
 import bankLogo from '../assets/bank.png';
 
@@ -186,6 +187,10 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black flex-shrink-0">
                 <img src={mornaguiaJailImg} alt="Mornaguia Prison" className="w-full h-full object-cover" />
               </div>
+            ) : tile.type === 'vacation' ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-black flex-shrink-0">
+                <img src={vacationImg} alt="Vacation Island" className="w-full h-full object-cover" />
+              </div>
             ) : tile.flag ? (
               <span className="text-2xl drop-shadow">{tile.flag}</span>
             ) : null}
@@ -257,6 +262,27 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               </ul>
               <div className="text-[10px] text-amber-400 font-mono pt-1 border-t border-amber-900/40">
                 * Event tiles cannot be bought, mortgaged, or owned.
+              </div>
+            </div>
+          )}
+
+          {/* Vacation Island explanation */}
+          {tile.type === 'vacation' && (
+            <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/40 rounded-xl space-y-2 text-xs text-emerald-200">
+              <div className="font-bold text-emerald-300 flex items-center gap-1.5 text-sm">
+                <span>🌴</span>
+                <span>Vacation Island Rules</span>
+              </div>
+              <p className="text-[11px] text-gray-200 leading-relaxed">
+                Landing on <span className="font-bold text-emerald-300">Vacation</span> places you on the Island! Just like Prison, to leave you must:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-300">
+                <li><span className="font-bold text-white">Roll Doubles:</span> 70% chance to escape for free and advance!</li>
+                <li><span className="font-bold text-white">Pay $150 Fee:</span> Pay the $150 island departure fee into the pot to leave immediately.</li>
+                <li>After 3 turns stranded, you must pay $150 and leave.</li>
+              </ul>
+              <div className="text-[10px] text-emerald-400 font-mono pt-1 border-t border-emerald-900/40">
+                * Island location cannot be bought, mortgaged, or traded.
               </div>
             </div>
           )}

@@ -396,6 +396,29 @@ export const App: React.FC = () => {
               return;
             }
           }
+
+          // Check strategic vacation exit for bots
+          if (turnPlayer.inVacation && turnPlayer.cash >= 150) {
+            const shouldPayVacation = (turnPlayer.vacationTurns || 0) >= 2 || (turnPlayer.cash >= 400 && Math.random() > 0.6);
+            if (shouldPayVacation) {
+              const unvacationed = JSON.parse(JSON.stringify(room));
+              unvacationed.players[turnPlayer.id].cash -= 150;
+              unvacationed.pot += 150;
+              unvacationed.players[turnPlayer.id].inVacation = false;
+              unvacationed.players[turnPlayer.id].vacationTurns = 0;
+              unvacationed.logs.push({
+                id: `bot_vacation_fee_${Date.now()}`,
+                text: `🌴 ${turnPlayer.name} paid $150 island fee to leave Vacation!`,
+                timestamp: Date.now(),
+                type: 'system',
+                playerId: turnPlayer.id
+              });
+              sound.playDiceRoll();
+              const rolled = rollDice(unvacationed, turnPlayer.id);
+              multiplayer.updateRoom(rolled);
+              return;
+            }
+          }
           sound.playDiceRoll();
           const nextRoom = rollDice(room, turnPlayer.id);
           multiplayer.updateRoom(nextRoom);
@@ -518,6 +541,29 @@ export const App: React.FC = () => {
         playerId: p.id
       });
       sound.playPrisonEscape();
+      multiplayer.updateRoom(newRoom);
+    }
+  };
+
+  const handlePayVacationFee = () => {
+    if (!room) return;
+    const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+    const p = newRoom.players[currentPlayer.id];
+    if (p && p.inVacation && p.cash >= 150) {
+      phaseStartedAtRef.current = Date.now();
+      newRoom.turnTimer = null;
+      p.cash -= 150;
+      newRoom.pot += 150;
+      p.inVacation = false;
+      p.vacationTurns = 0;
+      newRoom.logs.push({
+        id: `vacation_fee_${Date.now()}`,
+        text: `🌴 ${p.name} paid $150 island fee and departed Vacation!`,
+        timestamp: Date.now(),
+        type: 'system',
+        playerId: p.id
+      });
+      sound.playSelect();
       multiplayer.updateRoom(newRoom);
     }
   };
@@ -958,6 +1004,7 @@ export const App: React.FC = () => {
                 onSkip={handleSkip}
                 onEndTurn={handleEndTurn}
                 onPayBail={handlePayBail}
+                onPayVacationFee={handlePayVacationFee}
                 onRequestTime={handleRequestTime}
                 onGrantTime={handleGrantTime}
                 onTileClick={(tile) => setSelectedTile(tile)}

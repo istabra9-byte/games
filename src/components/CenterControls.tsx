@@ -3,7 +3,7 @@ import { GameRoom, Tile } from '../types/game';
 import { DiceView } from './DiceView';
 import { PlayerAvatar } from './PlayerAvatar';
 import { TurnTimerPill } from './TurnTimerPill';
-import { Dices, Check, ShoppingCart, ShieldAlert } from 'lucide-react';
+import { Dices, Check, ShoppingCart, ShieldAlert, Palmtree } from 'lucide-react';
 import { sound } from '../services/sound';
 
 interface CenterControlsProps {
@@ -15,6 +15,7 @@ interface CenterControlsProps {
   onSkip: () => void;
   onEndTurn: () => void;
   onPayBail: () => void;
+  onPayVacationFee?: () => void;
   onRequestTime: () => void;
   onGrantTime?: () => void;
   onTileClick?: (tile: Tile) => void;
@@ -275,6 +276,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   onSkip,
   onEndTurn,
   onPayBail,
+  onPayVacationFee,
   onGrantTime
 }) => {
   const turnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
@@ -481,6 +483,17 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
                         >
                           <ShieldAlert className="w-4 h-4 text-amber-200" />
                           <span>Pay $50 Bail</span>
+                        </button>
+                      )}
+
+                      {turnPlayer.inVacation && onPayVacationFee && (
+                        <button
+                          onClick={onPayVacationFee}
+                          disabled={turnPlayer.cash < 150}
+                          className="px-5 sm:px-6 py-2.5 bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 hover:from-teal-500 hover:to-emerald-500 active:scale-95 disabled:opacity-40 text-white font-black text-xs tracking-wider uppercase rounded-2xl shadow-[0_4px_16px_rgba(20,184,166,0.5)] flex items-center justify-center gap-2 transition-all cursor-pointer border border-emerald-400/50 whitespace-nowrap min-w-[130px]"
+                        >
+                          <Palmtree className="w-4 h-4 text-emerald-200" />
+                          <span>Leave Vacation ($150)</span>
                         </button>
                       )}
                     </>

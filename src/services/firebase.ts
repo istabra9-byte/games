@@ -39,13 +39,13 @@ export function compressRoomForNetwork(room: GameRoom): any {
   clone.tileState = tileState;
 
   // 2. Cap logs to the most recent 25 to avoid accumulating bandwidth over long games
-  if (Array.isArray(clone.logs) && clone.logs.length > 25) {
-    clone.logs = clone.logs.slice(-25);
+  if (Array.isArray(clone.logs) && clone.logs.length > 20) {
+    clone.logs = clone.logs.slice(-20);
   }
 
   // 3. Cap chat messages to the most recent 25
-  if (Array.isArray(clone.chat) && clone.chat.length > 25) {
-    clone.chat = clone.chat.slice(-25);
+  if (Array.isArray(clone.chat) && clone.chat.length > 20) {
+    clone.chat = clone.chat.slice(-20);
   }
 
   return clone;

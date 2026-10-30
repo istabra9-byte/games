@@ -84,9 +84,20 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   const player = newRoom.players[playerId];
   if (!player || player.isBankrupt) return room;
 
-  const d1 = Math.floor(Math.random() * 6) + 1;
-  const d2 = Math.floor(Math.random() * 6) + 1;
-  const isDoubles = d1 === d2;
+  const isInPrisonOrVacation = Boolean(player.inJail || player.inVacation);
+  const doubleChance = isInPrisonOrVacation ? 0.70 : 0.80;
+  const isDoubles = Math.random() < doubleChance;
+  let d1: number;
+  let d2: number;
+  if (isDoubles) {
+    d1 = Math.floor(Math.random() * 6) + 1;
+    d2 = d1;
+  } else {
+    d1 = Math.floor(Math.random() * 6) + 1;
+    let other = Math.floor(Math.random() * 5) + 1;
+    if (other >= d1) other += 1;
+    d2 = other;
+  }
   const rollTotal = d1 + d2;
 
   newRoom.dice = [d1, d2];
@@ -136,6 +147,49 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
           text: `⚖️ ${player.name} remains in jail (Turn ${player.jailTurns}/3).`,
           timestamp: Date.now(),
           type: 'jail',
+          playerId: player.id
+        });
+        newRoom.turnPhase = 'end';
+        return newRoom;
+      }
+    }
+  }
+
+  // Handle player in Vacation (similar to Jail: roll doubles or pay $150 departure fee)
+  if (player.inVacation) {
+    if (isDoubles) {
+      player.inVacation = false;
+      player.vacationTurns = 0;
+      newRoom.consecutiveDoubles = 0;
+      newRoom.isDoubles = false;
+      newRoom.logs.push({
+        id: `vacation_free_${Date.now()}`,
+        text: `🎲 ${player.name} rolled doubles (${d1}-${d2}) and departed Vacation Island!`,
+        timestamp: Date.now(),
+        type: 'system',
+        playerId: player.id
+      });
+    } else {
+      player.vacationTurns = (player.vacationTurns || 0) + 1;
+      if (player.vacationTurns >= 3) {
+        // Force pay island fee
+        player.cash -= 150;
+        newRoom.pot += 150;
+        player.inVacation = false;
+        player.vacationTurns = 0;
+        newRoom.logs.push({
+          id: `vacation_pay_${Date.now()}`,
+          text: `🌴 ${player.name} stayed 3 turns, paid $150 island fee and departed Vacation Island.`,
+          timestamp: Date.now(),
+          type: 'system',
+          playerId: player.id
+        });
+      } else {
+        newRoom.logs.push({
+          id: `vacation_stay_${Date.now()}`,
+          text: `🌴 ${player.name} remains on Vacation Island (Turn ${player.vacationTurns}/3).`,
+          timestamp: Date.now(),
+          type: 'system',
           playerId: player.id
         });
         newRoom.turnPhase = 'end';
@@ -270,13 +324,15 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'vacation') {
+    player.inVacation = true;
+    player.vacationTurns = 0;
     if (newRoom.settings.vacationCash && newRoom.pot > 0) {
       const potCash = newRoom.pot;
       player.cash += potCash;
       newRoom.pot = 0;
       newRoom.logs.push({
         id: `pot_${Date.now()}`,
-        text: `🌴 ${player.name} won the $${potCash} Vacation Pot!`,
+        text: `🌴 ${player.name} arrived at Vacation Island and collected $${potCash} pot!`,
         timestamp: Date.now(),
         type: 'rent',
         playerId: player.id
@@ -284,7 +340,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     } else {
       newRoom.logs.push({
         id: `vacation_${Date.now()}`,
-        text: `🌴 ${player.name} is resting on Vacation!`,
+        text: `🌴 ${player.name} arrived at Vacation Island! Roll doubles or pay $150 to leave.`,
         timestamp: Date.now(),
         type: 'system',
         playerId: player.id
@@ -828,15 +884,25 @@ function handlePlayerRelocation(
     }
     room.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (destTile.type === 'vacation') {
+    player.inVacation = true;
+    player.vacationTurns = 0;
     if (room.settings.vacationCash && room.pot > 0) {
       const potCash = room.pot;
       player.cash += potCash;
       room.pot = 0;
       room.logs.push({
         id: `pot_${Date.now()}`,
-        text: `🌴 ${player.name} won the $${potCash} Vacation Pot!`,
+        text: `🌴 ${player.name} arrived at Vacation Island and collected $${potCash} pot!`,
         timestamp: Date.now(),
         type: 'rent',
+        playerId: player.id
+      });
+    } else {
+      room.logs.push({
+        id: `vacation_${Date.now()}`,
+        text: `🌴 ${player.name} arrived at Vacation Island! Roll doubles or pay $150 to leave.`,
+        timestamp: Date.now(),
+        type: 'system',
         playerId: player.id
       });
     }
