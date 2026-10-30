@@ -18,23 +18,132 @@ interface CenterControlsProps {
   onTileClick?: (tile: Tile) => void;
 }
 
-// Helper to format log text: replaces country names in parentheses with their flag
-export const formatLogText = (rawText: string) => {
-  let text = rawText.replace(/^[^\w\s]+/, '').trim();
-  return text
-    .replace(/\(Spain\)/gi, '🇪🇸')
-    .replace(/\(Brazil\)/gi, '🇧🇷')
-    .replace(/\(Italy\)/gi, '🇮🇹')
-    .replace(/\(Germany\)/gi, '🇩🇪')
-    .replace(/\(China\)/gi, '🇨🇳')
-    .replace(/\(France\)/gi, '🇫🇷')
-    .replace(/\(United Kingdom\)/gi, '🇬🇧')
-    .replace(/\(United States\)/gi, '🇺🇸')
-    .replace(/\(Tunisia\)/gi, '🇹🇳')
-    .replace(/\(Qatar\)/gi, '🇶🇦')
-    .replace(/\(UAE\)/gi, '🇦🇪')
-    .replace(/\s+/g, ' ');
+// Country code mappings for crisp PNG flags
+const COUNTRY_FLAG_MAP: Record<string, string> = {
+  spain: 'es',
+  brazil: 'br',
+  italy: 'it',
+  germany: 'de',
+  china: 'cn',
+  france: 'fr',
+  'united kingdom': 'gb',
+  uk: 'gb',
+  'united states': 'us',
+  usa: 'us',
+  tunisia: 'tn',
+  qatar: 'qa',
+  uae: 'ae',
+  emirates: 'ae',
+  es: 'es',
+  br: 'br',
+  it: 'it',
+  de: 'de',
+  cn: 'cn',
+  fr: 'fr',
+  gb: 'gb',
+  us: 'us',
+  tn: 'tn',
+  qa: 'qa',
+  ae: 'ae'
 };
+
+// Helper to render log text with real PNG flag images instead of failing emoji glyphs on Windows
+export const renderLogContent = (rawText: string, stripLeadingIcon: boolean = false): React.ReactNode => {
+  let text = rawText;
+  if (stripLeadingIcon) {
+    text = text.replace(/^(?:[^\w\s\uD83C-\uDBFF\uDC00-\uDFFF]|🏠|💰|⚖️|🏛️|💥|🚨|💸|🌴|📜)\s*/u, '').trim();
+  }
+
+  // Regex matches:
+  // 1. Unicode Regional Indicator flag pairs (e.g. 🇮🇹, 🇪🇸)
+  // 2. Parenthesized countries: (Spain), (Italy), etc.
+  // 3. [flag:xx] tags
+  // 4. Raw 2-letter uppercase codes before known cities (e.g. "IT Venice", "ES Barcelona")
+  const flagRegex = /([\u{1F1E6}-\u{1F1FF}]{2}|\((?:Spain|Brazil|Italy|Germany|China|France|United Kingdom|UK|United States|USA|Tunisia|Qatar|UAE|Emirates)\)|\[flag:[a-z]{2}\]|\b(?:IT|ES|BR|DE|CN|FR|GB|US|TN|QA|AE)\b(?=\s+[A-Z]))/giu;
+
+  const parts = text.split(flagRegex);
+  const baseUrl = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (!part) return null;
+
+        // 1. Check Unicode Regional Indicator flag
+        const codePoints = Array.from(part).map(c => c.codePointAt(0) || 0);
+        if (
+          codePoints.length === 2 &&
+          codePoints[0] >= 0x1F1E6 && codePoints[0] <= 0x1F1FF &&
+          codePoints[1] >= 0x1F1E6 && codePoints[1] <= 0x1F1FF
+        ) {
+          const c1 = String.fromCharCode(65 + codePoints[0] - 0x1F1E6);
+          const c2 = String.fromCharCode(65 + codePoints[1] - 0x1F1E6);
+          const countryCode = (c1 + c2).toLowerCase();
+          return (
+            <img
+              key={index}
+              src={`${cleanBase}/flags/${countryCode}.png`}
+              alt={countryCode}
+              className="inline-block w-[17px] h-[12px] object-cover rounded-[2px] mx-1 shadow-sm align-middle flex-shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+            />
+          );
+        }
+
+        // 2. Check parenthesized country names
+        const parenMatch = part.match(/^\((Spain|Brazil|Italy|Germany|China|France|United Kingdom|UK|United States|USA|Tunisia|Qatar|UAE|Emirates)\)$/i);
+        if (parenMatch) {
+          const countryName = parenMatch[1].toLowerCase();
+          const countryCode = COUNTRY_FLAG_MAP[countryName] || 'tn';
+          return (
+            <img
+              key={index}
+              src={`${cleanBase}/flags/${countryCode}.png`}
+              alt={countryCode}
+              className="inline-block w-[17px] h-[12px] object-cover rounded-[2px] mx-1 shadow-sm align-middle flex-shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+            />
+          );
+        }
+
+        // 3. Check [flag:xx]
+        const tagMatch = part.match(/^\[flag:([a-z]{2})\]$/i);
+        if (tagMatch) {
+          const countryCode = tagMatch[1].toLowerCase();
+          return (
+            <img
+              key={index}
+              src={`${cleanBase}/flags/${countryCode}.png`}
+              alt={countryCode}
+              className="inline-block w-[17px] h-[12px] object-cover rounded-[2px] mx-1 shadow-sm align-middle flex-shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+            />
+          );
+        }
+
+        // 4. Check raw 2-letter uppercase codes matching countries
+        const codeUpper = part.trim().toLowerCase();
+        if (COUNTRY_FLAG_MAP[codeUpper] && part.trim().length === 2 && part === part.toUpperCase()) {
+          const countryCode = COUNTRY_FLAG_MAP[codeUpper];
+          return (
+            <img
+              key={index}
+              src={`${cleanBase}/flags/${countryCode}.png`}
+              alt={countryCode}
+              className="inline-block w-[17px] h-[12px] object-cover rounded-[2px] mx-1 shadow-sm align-middle flex-shrink-0"
+              onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+            />
+          );
+        }
+
+        return <React.Fragment key={index}>{part}</React.Fragment>;
+      })}
+    </>
+  );
+};
+
+export const formatLogText = renderLogContent;
 
 export const CenterControls: React.FC<CenterControlsProps> = ({
   room,
@@ -135,8 +244,8 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             ) : (
               <span className="text-xs flex-shrink-0">🔔</span>
             )}
-            <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide">
-              {formatLogText(latestActionLog.text)}
+            <span className="text-[11.5px] sm:text-xs font-semibold text-purple-100 truncate tracking-wide inline-flex items-center">
+              {renderLogContent(latestActionLog.text, true)}
             </span>
           </div>
         ) : (
@@ -264,23 +373,11 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             </>
           )}
         </div>
-      </div>
 
-      {/* 3. Live Activity Feed (Under Buttons with Smooth Scroll) */}
-      <div className="w-full max-w-xs mt-auto flex flex-col pb-1">
-        <div className="flex items-center justify-between px-1 mb-1">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono uppercase tracking-wider text-gray-400 font-bold">
-              Live Activity
-            </span>
-          </div>
-          <span className="text-[9px] text-gray-500 font-mono">buys • sells • trades</span>
-        </div>
-
+        {/* 3. Activity Feed Logs (Placed EXACTLY Under the Action Button with No Header) */}
         <div
           ref={logsContainerRef}
-          className="h-16 overflow-y-auto pr-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans border-t border-purple-900/30 pt-1"
+          className="w-full max-w-[280px] sm:max-w-[320px] max-h-20 sm:max-h-24 overflow-y-auto px-2 py-1 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/25 rounded-xl border border-purple-900/35 shadow-inner mt-1 scrollbar-thin"
         >
           {meaningfulLogs.slice(-15).map((log) => {
             const isBuy = log.type === 'buy';
@@ -290,17 +387,17 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
             return (
               <div
                 key={log.id}
-                className={`flex items-start gap-1 py-0.5 px-1 rounded transition-colors ${
-                  isBuy ? 'text-emerald-300 bg-emerald-950/20' :
-                  isRent ? 'text-amber-300 bg-amber-950/20' :
-                  isJail ? 'text-red-300 bg-red-950/20' : 'text-gray-300'
+                className={`flex items-center gap-1.5 py-0.5 px-1.5 rounded transition-colors ${
+                  isBuy ? 'text-emerald-300 bg-emerald-950/25' :
+                  isRent ? 'text-amber-300 bg-amber-950/25' :
+                  isJail ? 'text-red-300 bg-red-950/25' : 'text-gray-300'
                 }`}
               >
-                <span className="flex-shrink-0 opacity-70">
+                <span className="flex-shrink-0 opacity-70 text-[10px]">
                   {isBuy ? '🏠' : isRent ? '💰' : isJail ? '⚖️' : '◀'}
                 </span>
-                <span className="break-words line-clamp-2">
-                  {formatLogText(log.text)}
+                <span className="break-words line-clamp-2 inline-flex items-center flex-wrap">
+                  {renderLogContent(log.text, false)}
                 </span>
               </div>
             );

@@ -299,7 +299,7 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   player.cash -= tile.price;
   tile.ownerId = playerId;
 
-  const placeFlag = tile.flag ? `${tile.flag} ` : '';
+  const placeFlag = tile.countryCode ? `[flag:${tile.countryCode}] ` : (tile.flag ? `${tile.flag} ` : '');
   newRoom.logs.push({
     id: `buy_${Date.now()}`,
     text: `🏠 ${player.name} bought ${placeFlag}${tile.name} for $${tile.price}!`,
@@ -756,9 +756,10 @@ export function sellPropertyToBank(room: GameRoom, playerId: string, tileIndex: 
   tile.houses = 0;
   tile.isMortgaged = false;
 
+  const placeFlag = tile.countryCode ? `[flag:${tile.countryCode}] ` : (tile.flag ? `${tile.flag} ` : '');
   newRoom.logs.push({
     id: `sell_prop_${Date.now()}`,
-    text: `🏛️ ${player.name} sold ${tile.flag || ''} ${tile.name} to the Bank for $${sellPrice}!`,
+    text: `🏛️ ${player.name} sold ${placeFlag}${tile.name} to the Bank for $${sellPrice}!`,
     timestamp: Date.now(),
     type: 'buy'
   });
