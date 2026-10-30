@@ -146,27 +146,32 @@ export function evaluateBotTrade(room: GameRoom, botId: string, trade: TradeOffe
     return { accept: false, reason: 'Invalid players' };
   }
 
+  const receiverTileIndices = Array.isArray(trade.receiverTileIndices) ? trade.receiverTileIndices : [];
+  const senderTileIndices = Array.isArray(trade.senderTileIndices) ? trade.senderTileIndices : [];
+  const receiverCash = typeof trade.receiverCash === 'number' ? trade.receiverCash : 0;
+  const senderCash = typeof trade.senderCash === 'number' ? trade.senderCash : 0;
+
   // 1. Feasibility validation
-  if (bot.cash < trade.receiverCash) {
+  if (bot.cash < receiverCash) {
     return { accept: false, reason: 'Bot has insufficient cash' };
   }
-  if (sender.cash < trade.senderCash) {
+  if (sender.cash < senderCash) {
     return { accept: false, reason: 'Sender has insufficient cash' };
   }
-  for (const idx of trade.receiverTileIndices) {
+  for (const idx of receiverTileIndices) {
     if (room.tiles[idx]?.ownerId !== botId) {
       return { accept: false, reason: 'Bot does not own property' };
     }
   }
-  for (const idx of trade.senderTileIndices) {
+  for (const idx of senderTileIndices) {
     if (room.tiles[idx]?.ownerId !== trade.senderId) {
       return { accept: false, reason: 'Sender does not own property' };
     }
   }
 
   // 2. Compute value given by bot
-  let valueGiven = trade.receiverCash;
-  for (const idx of trade.receiverTileIndices) {
+  let valueGiven = receiverCash;
+  for (const idx of receiverTileIndices) {
     const tile = room.tiles[idx];
     if (tile) {
       valueGiven += tile.price;
@@ -187,8 +192,8 @@ export function evaluateBotTrade(room: GameRoom, botId: string, trade: TradeOffe
   }
 
   // 3. Compute value received by bot
-  let valueReceived = trade.senderCash;
-  for (const idx of trade.senderTileIndices) {
+  let valueReceived = senderCash;
+  for (const idx of senderTileIndices) {
     const tile = room.tiles[idx];
     if (tile) {
       valueReceived += tile.price;

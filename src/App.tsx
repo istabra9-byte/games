@@ -542,10 +542,17 @@ export const App: React.FC = () => {
   const handleSendTrade = (offer: TradeOffer) => {
     if (!room) return;
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
-    newRoom.activeTrade = offer;
+    newRoom.activeTrade = {
+      ...offer,
+      senderTileIndices: Array.isArray(offer.senderTileIndices) ? offer.senderTileIndices : [],
+      receiverTileIndices: Array.isArray(offer.receiverTileIndices) ? offer.receiverTileIndices : [],
+      senderCash: typeof offer.senderCash === 'number' ? offer.senderCash : 0,
+      receiverCash: typeof offer.receiverCash === 'number' ? offer.receiverCash : 0
+    };
+    if (!newRoom.logs) newRoom.logs = [];
     newRoom.logs.push({
       id: `trade_off_${Date.now()}`,
-      text: `🤝 ${currentPlayer.name} proposed a trade to ${room.players[offer.receiverId]?.name}!`,
+      text: `🤝 ${currentPlayer.name} proposed a trade to ${room.players[offer.receiverId]?.name || 'Player'}!`,
       timestamp: Date.now(),
       type: 'trade',
       playerId: currentPlayer.id
@@ -567,19 +574,31 @@ export const App: React.FC = () => {
     const prevSenderCash = sender.cash;
     const prevReceiverCash = receiver.cash;
 
+    const senderTileIndices = Array.isArray(trade.senderTileIndices) ? trade.senderTileIndices : [];
+    const receiverTileIndices = Array.isArray(trade.receiverTileIndices) ? trade.receiverTileIndices : [];
+    const senderCash = typeof trade.senderCash === 'number' ? trade.senderCash : 0;
+    const receiverCash = typeof trade.receiverCash === 'number' ? trade.receiverCash : 0;
+
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
-    newRoom.players[trade.senderId].cash -= trade.senderCash;
-    newRoom.players[trade.receiverId].cash += trade.senderCash;
-    newRoom.players[trade.receiverId].cash -= trade.receiverCash;
-    newRoom.players[trade.senderId].cash += trade.receiverCash;
+    if (!newRoom.players[trade.senderId] || !newRoom.players[trade.receiverId]) return;
 
-    trade.senderTileIndices.forEach(idx => {
-      newRoom.tiles[idx].ownerId = trade.receiverId;
+    newRoom.players[trade.senderId].cash -= senderCash;
+    newRoom.players[trade.receiverId].cash += senderCash;
+    newRoom.players[trade.receiverId].cash -= receiverCash;
+    newRoom.players[trade.senderId].cash += receiverCash;
+
+    senderTileIndices.forEach(idx => {
+      if (newRoom.tiles[idx]) {
+        newRoom.tiles[idx].ownerId = trade.receiverId;
+      }
     });
-    trade.receiverTileIndices.forEach(idx => {
-      newRoom.tiles[idx].ownerId = trade.senderId;
+    receiverTileIndices.forEach(idx => {
+      if (newRoom.tiles[idx]) {
+        newRoom.tiles[idx].ownerId = trade.senderId;
+      }
     });
 
+    if (!newRoom.logs) newRoom.logs = [];
     newRoom.logs.push({
       id: `trade_done_${Date.now()}`,
       text: `✅ Trade completed between ${sender.name} and ${receiver.name}!`,
@@ -589,8 +608,8 @@ export const App: React.FC = () => {
     });
 
     // Check if one player gave cash and received nothing in trade
-    const senderGaveMoneyGotNothing = trade.senderCash > 0 && trade.receiverCash === 0 && trade.receiverTileIndices.length === 0;
-    const receiverGaveMoneyGotNothing = trade.receiverCash > 0 && trade.senderCash === 0 && trade.senderTileIndices.length === 0;
+    const senderGaveMoneyGotNothing = senderCash > 0 && receiverCash === 0 && receiverTileIndices.length === 0;
+    const receiverGaveMoneyGotNothing = receiverCash > 0 && senderCash === 0 && senderTileIndices.length === 0;
 
     // Check debt cleared for either player
     if (prevSenderCash < 0 && newRoom.players[trade.senderId].cash >= 0) {
@@ -621,6 +640,7 @@ export const App: React.FC = () => {
   const handleDeclineTrade = () => {
     if (!room) return;
     const newRoom: GameRoom = JSON.parse(JSON.stringify(room));
+    if (!newRoom.logs) newRoom.logs = [];
     newRoom.logs.push({
       id: `trade_decl_${Date.now()}`,
       text: `❌ Trade proposal was declined.`,

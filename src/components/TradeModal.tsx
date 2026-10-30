@@ -35,8 +35,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   );
   const [offeredTileIndices, setOfferedTileIndices] = useState<number[]>([]);
   const [requestedTileIndices, setRequestedTileIndices] = useState<number[]>([]);
-  const [offeredCash, setOfferedCash] = useState<number>(0);
-  const [requestedCash, setRequestedCash] = useState<number>(0);
+  const [offeredCash, setOfferedCash] = useState<number | ''>('');
+  const [requestedCash, setRequestedCash] = useState<number | ''>('');
 
   const partnerPlayer = room.players[selectedPartnerId];
 
@@ -50,6 +50,8 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   if (activeTrade && (isIncomingTradeForMe || isOutgoingTradeFromMe)) {
     const sender = room.players[activeTrade.senderId];
     const receiver = room.players[activeTrade.receiverId];
+    const senderTiles = activeTrade.senderTileIndices || [];
+    const receiverTiles = activeTrade.receiverTileIndices || [];
 
     return (
       <div
@@ -76,34 +78,42 @@ export const TradeModal: React.FC<TradeModalProps> = ({
             {/* Sender side */}
             <div className="bg-[#2a1d45] p-3 rounded-xl border border-purple-800/40">
               <span className="text-xs font-bold text-purple-300 mb-1 block">
-                {sender?.name} Offers:
+                {sender?.name || 'Player'} Offers:
               </span>
               <div className="text-emerald-400 font-mono font-bold text-sm mb-2">
-                Cash: ${activeTrade.senderCash}
+                Cash: ${activeTrade.senderCash || 0}
               </div>
               <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                {activeTrade.senderTileIndices.map(idx => (
-                  <span key={idx} className="text-xs bg-purple-900/60 px-2 py-1 rounded">
-                    {room.tiles[idx].name}
-                  </span>
-                ))}
+                {senderTiles.length > 0 ? (
+                  senderTiles.map(idx => (
+                    <span key={idx} className="text-xs bg-purple-900/60 px-2 py-1 rounded">
+                      {room.tiles[idx]?.name || `Tile ${idx}`}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-500 italic">No properties</span>
+                )}
               </div>
             </div>
 
             {/* Receiver side */}
             <div className="bg-[#2a1d45] p-3 rounded-xl border border-purple-800/40">
               <span className="text-xs font-bold text-purple-300 mb-1 block">
-                {receiver?.name} Gives:
+                {receiver?.name || 'Player'} Gives:
               </span>
               <div className="text-emerald-400 font-mono font-bold text-sm mb-2">
-                Cash: ${activeTrade.receiverCash}
+                Cash: ${activeTrade.receiverCash || 0}
               </div>
               <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                {activeTrade.receiverTileIndices.map(idx => (
-                  <span key={idx} className="text-xs bg-purple-900/60 px-2 py-1 rounded">
-                    {room.tiles[idx].name}
-                  </span>
-                ))}
+                {receiverTiles.length > 0 ? (
+                  receiverTiles.map(idx => (
+                    <span key={idx} className="text-xs bg-purple-900/60 px-2 py-1 rounded">
+                      {room.tiles[idx]?.name || `Tile ${idx}`}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-gray-500 italic">No properties</span>
+                )}
               </div>
             </div>
           </div>
@@ -161,13 +171,15 @@ export const TradeModal: React.FC<TradeModalProps> = ({
 
   const handleSubmit = () => {
     if (!selectedPartnerId) return;
+    const numOfferedCash = typeof offeredCash === 'number' ? offeredCash : 0;
+    const numRequestedCash = typeof requestedCash === 'number' ? requestedCash : 0;
     onSendTrade({
       senderId: currentPlayerId,
       receiverId: selectedPartnerId,
-      senderCash: Math.min(myPlayer.cash, Math.max(0, offeredCash)),
-      receiverCash: Math.min(partnerPlayer?.cash || 0, Math.max(0, requestedCash)),
-      senderTileIndices: offeredTileIndices,
-      receiverTileIndices: requestedTileIndices,
+      senderCash: Math.min(myPlayer.cash, Math.max(0, numOfferedCash)),
+      receiverCash: Math.min(partnerPlayer?.cash || 0, Math.max(0, numRequestedCash)),
+      senderTileIndices: offeredTileIndices || [],
+      receiverTileIndices: requestedTileIndices || [],
       status: 'pending'
     });
   };
@@ -225,7 +237,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           <div className="bg-[#261b3d] p-3 rounded-xl border border-purple-800/40 flex flex-col">
             <span className="text-xs font-bold text-purple-300 mb-2">You Offer:</span>
             
-            {/* Cash offer input */}
+            {/* Cash offer input (no 0 default, clean empty placeholder) */}
             <div className="flex items-center gap-1 mb-3 bg-[#1a122b] p-1.5 rounded-lg border border-purple-900">
               <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
               <input
@@ -233,9 +245,17 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 min="0"
                 max={myPlayer.cash}
                 value={offeredCash}
-                onChange={e => setOfferedCash(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setOfferedCash('');
+                  } else {
+                    const num = parseInt(val, 10);
+                    setOfferedCash(isNaN(num) ? '' : Math.max(0, Math.min(myPlayer.cash, num)));
+                  }
+                }}
                 className="w-full bg-transparent text-xs font-mono font-bold text-white outline-none"
-                placeholder="Cash offer"
+                placeholder=""
               />
             </div>
 
@@ -265,7 +285,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           <div className="bg-[#261b3d] p-3 rounded-xl border border-purple-800/40 flex flex-col">
             <span className="text-xs font-bold text-purple-300 mb-2">You Request:</span>
 
-            {/* Cash request input */}
+            {/* Cash request input (no 0 default, clean empty placeholder) */}
             <div className="flex items-center gap-1 mb-3 bg-[#1a122b] p-1.5 rounded-lg border border-purple-900">
               <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
               <input
@@ -273,9 +293,17 @@ export const TradeModal: React.FC<TradeModalProps> = ({
                 min="0"
                 max={partnerPlayer?.cash || 0}
                 value={requestedCash}
-                onChange={e => setRequestedCash(Math.max(0, parseInt(e.target.value) || 0))}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setRequestedCash('');
+                  } else {
+                    const num = parseInt(val, 10);
+                    setRequestedCash(isNaN(num) ? '' : Math.max(0, Math.min(partnerPlayer?.cash || 0, num)));
+                  }
+                }}
                 className="w-full bg-transparent text-xs font-mono font-bold text-white outline-none"
-                placeholder="Cash request"
+                placeholder=""
               />
             </div>
 
@@ -305,7 +333,13 @@ export const TradeModal: React.FC<TradeModalProps> = ({
         {/* Footer Actions */}
         <button
           onClick={handleSubmit}
-          disabled={!selectedPartnerId || (offeredTileIndices.length === 0 && requestedTileIndices.length === 0 && offeredCash === 0 && requestedCash === 0)}
+          disabled={
+            !selectedPartnerId ||
+            (offeredTileIndices.length === 0 &&
+             requestedTileIndices.length === 0 &&
+             (!offeredCash || offeredCash === 0) &&
+             (!requestedCash || requestedCash === 0))
+          }
           className="w-full py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-40 text-white font-bold text-sm rounded-xl shadow transition-all cursor-pointer"
         >
           Send Trade Proposal

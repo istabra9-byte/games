@@ -85,6 +85,16 @@ export function sanitizeRoom(raw: any): GameRoom {
   if (!room.players) room.players = {};
   if (!room.playerOrder) room.playerOrder = [];
 
+  if (room.activeTrade) {
+    room.activeTrade = {
+      ...room.activeTrade,
+      senderTileIndices: Array.isArray(room.activeTrade.senderTileIndices) ? room.activeTrade.senderTileIndices : [],
+      receiverTileIndices: Array.isArray(room.activeTrade.receiverTileIndices) ? room.activeTrade.receiverTileIndices : [],
+      senderCash: typeof room.activeTrade.senderCash === 'number' ? room.activeTrade.senderCash : 0,
+      receiverCash: typeof room.activeTrade.receiverCash === 'number' ? room.activeTrade.receiverCash : 0
+    };
+  }
+
   return room as GameRoom;
 }
 
