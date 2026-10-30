@@ -18,10 +18,15 @@ export type SoundEventId =
   | 'EARNINGS_TAX'             // Landing on Earnings Tax (Tile 4)
   | 'PREMIUM_TAX'              // Landing on Premium Tax (Tile 38)
   | 'PRISON'                   // Going to prison / landing on Go to Prison
-  | 'PRISON_ESCAPE_FIRST_ROLL' // Escaping prison on the first dice roll (doubles)
+  | 'PRISON_ESCAPE'            // Getting out of prison (doubles, bail, served time)
+  | 'PRISON_ESCAPE_FIRST_ROLL' // Escaping prison on the first dice roll
   | 'VACATION'                 // Landing on Vacation (Tile 20)
   | 'LAND_ON_START'            // Stopping directly on Start (Tile 0)
   | 'CHINA_NEAR_MONOPOLY'      // Buying 2 of 3 properties in China
+  | 'CHINA_FULL_MONOPOLY'      // Acquiring all 3 properties in China
+  | 'CHINA_3_HOUSES'           // Having 3 houses across all 3 China cities
+  | 'ARAB_AIRPORT'             // Buying Emirates or Qatar Airways airport
+  | 'TRADE_ONE_WAY_CASH'       // Giving money in a trade and receiving nothing back
   | 'NEGATIVE_BALANCE'         // Cash drops below $0 (entering debt)
   | 'DEBT_CLEARED'             // Cash recovers from negative to positive (>= $0)
   | 'BAD_SURPRISE'             // Bad card drawn from Surprise / Chance
@@ -58,7 +63,8 @@ export const SOUND_EVENTS_REGISTRY: Record<SoundEventId, SoundEventConfig> = {
     description: 'Triggered when a player lands on Earnings Tax (Tile 4)',
     files: [
       'tax_amoun.mp3',
-      'tax_wallahi.mp3'
+      'tax_wallahi.mp3',
+      'tax_raaaaaah.mp3'
     ],
     volumeMultiplier: 1.15
   },
@@ -68,7 +74,8 @@ export const SOUND_EVENTS_REGISTRY: Record<SoundEventId, SoundEventConfig> = {
     name: 'Premium Tax',
     description: 'Triggered when a player lands on Premium Tax (Tile 38)',
     files: [
-      'tax_premium_ack.mp3'
+      'tax_premium_ack.mp3',
+      'tax_raaaaaah.mp3'
     ],
     volumeMultiplier: 1.15
   },
@@ -85,14 +92,30 @@ export const SOUND_EVENTS_REGISTRY: Record<SoundEventId, SoundEventConfig> = {
     volumeMultiplier: 1.1
   },
 
+  PRISON_ESCAPE: {
+    id: 'PRISON_ESCAPE',
+    name: 'Get Out of Prison',
+    description: 'Triggered when a jailed player is released (doubles, bail, or served 3 turns)',
+    files: [
+      'prison_escape_mbappe.mp3',
+      'prison_escape_byebye.mp3',
+      'oui_slow.mp3',
+      'prison_escape_amogus.mp3'
+    ],
+    volumeMultiplier: 1.15
+  },
+
   PRISON_ESCAPE_FIRST_ROLL: {
     id: 'PRISON_ESCAPE_FIRST_ROLL',
     name: 'Prison Escape On 1st Roll',
     description: 'Triggered when a jailed player throws doubles on their very first attempt and escapes',
     files: [
-      'prison_escape_amogus.mp3'
+      'prison_escape_amogus.mp3',
+      'prison_escape_mbappe.mp3',
+      'prison_escape_byebye.mp3',
+      'oui_slow.mp3'
     ],
-    volumeMultiplier: 1.1
+    volumeMultiplier: 1.15
   },
 
   VACATION: {
@@ -101,9 +124,11 @@ export const SOUND_EVENTS_REGISTRY: Record<SoundEventId, SoundEventConfig> = {
     description: 'Triggered when a player stops on Vacation (Tile 20)',
     files: [
       'vacation_snore.mp3',
-      'prison_vacation_jey.mp3'
+      'prison_vacation_jey.mp3',
+      'vacation_xue_hua.mp3',
+      'oui_slow.mp3'
     ],
-    volumeMultiplier: 1.05
+    volumeMultiplier: 1.1
   },
 
   LAND_ON_START: {
@@ -124,6 +149,46 @@ export const SOUND_EVENTS_REGISTRY: Record<SoundEventId, SoundEventConfig> = {
       'china_chino.mp3'
     ],
     volumeMultiplier: 1.1
+  },
+
+  CHINA_FULL_MONOPOLY: {
+    id: 'CHINA_FULL_MONOPOLY',
+    name: 'China All 3 Countries Owned',
+    description: 'Triggered when a player acquires all 3 properties in China',
+    files: [
+      'china_full_monopoly.mp3'
+    ],
+    volumeMultiplier: 1.2
+  },
+
+  CHINA_3_HOUSES: {
+    id: 'CHINA_3_HOUSES',
+    name: 'China 3 Houses on All 3 Countries',
+    description: 'Triggered when all 3 China properties have 3 houses built',
+    files: [
+      'china_3houses.mp3'
+    ],
+    volumeMultiplier: 1.2
+  },
+
+  ARAB_AIRPORT: {
+    id: 'ARAB_AIRPORT',
+    name: 'Emirates or Qatar Airport Bought',
+    description: 'Triggered when a player buys Emirates (Tile 35) or Qatar Airways (Tile 15)',
+    files: [
+      'airport_arab_apoio.mp3'
+    ],
+    volumeMultiplier: 1.15
+  },
+
+  TRADE_ONE_WAY_CASH: {
+    id: 'TRADE_ONE_WAY_CASH',
+    name: 'Trade One-Way Cash (Let Her Go)',
+    description: 'Triggered when a player gives cash in a trade and receives nothing back',
+    files: [
+      'trade_let_her_go.mp3'
+    ],
+    volumeMultiplier: 1.2
   },
 
   NEGATIVE_BALANCE: {

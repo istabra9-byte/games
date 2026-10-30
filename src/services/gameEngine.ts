@@ -101,6 +101,7 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     if (isDoubles) {
       const wasFirstAttempt = player.jailTurns === 0;
       (player as any).escapedJailFirstRoll = wasFirstAttempt;
+      (player as any).escapedJail = true;
       player.inJail = false;
       player.jailTurns = 0;
       newRoom.logs.push({
@@ -326,7 +327,11 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
         type: 'buy',
         playerId: player.id
       });
-      sound.playMonopoly();
+      if (tile.group === 'red') {
+        sound.playChinaFullMonopoly();
+      } else {
+        sound.playMonopoly();
+      }
     } else if (tile.group === 'red') {
       // China: red group (Shanghai, Beijing, Shenzhen)
       const chinaOwned = groupTiles.filter(t => t.ownerId === playerId).length;
@@ -336,7 +341,11 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
     }
   }
 
-  if (!completedMonopoly) {
+  // Check if Emirates or Qatar airport was bought
+  const isArabAirport = tile.type === 'railroad' && (tile.index === 15 || tile.index === 35 || tile.name.includes('Qatar') || tile.name.includes('Emirates'));
+  if (isArabAirport) {
+    sound.playArabAirport();
+  } else if (!completedMonopoly) {
     sound.playBuy();
   }
   newRoom.turnPhase = newRoom.isDoubles ? 'roll' : 'end';
@@ -393,7 +402,19 @@ export function buildHouse(room: GameRoom, playerId: string, tileIndex: number):
     playerId: player.id
   });
 
-  sound.playUpgrade();
+  // Check if all 3 China cities now have 3 houses built
+  if (tile.group === 'red') {
+    const chinaTiles = newRoom.tiles.filter(t => t.group === 'red');
+    const allHaveAtLeast3 = chinaTiles.every(t => t.houses >= 3);
+    const wasJustCompleted = tile.houses === 3 && chinaTiles.every(t => t.index === tileIndex ? t.houses === 3 : t.houses >= 3);
+    if (allHaveAtLeast3 && wasJustCompleted) {
+      sound.playChina3Houses();
+    } else {
+      sound.playUpgrade();
+    }
+  } else {
+    sound.playUpgrade();
+  }
   updateNetWorths(newRoom);
   return newRoom;
 }

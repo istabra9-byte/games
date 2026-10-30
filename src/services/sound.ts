@@ -412,6 +412,10 @@ class SoundService {
     this.trigger('PRISON', () => this.playPrisonSynth());
   }
 
+  public playPrisonEscape() {
+    this.trigger('PRISON_ESCAPE', () => this.playUpgrade());
+  }
+
   public playPrisonEscapeFirstRoll() {
     this.trigger('PRISON_ESCAPE_FIRST_ROLL', () => this.playUpgrade());
   }
@@ -426,6 +430,22 @@ class SoundService {
 
   public playChinaNearMonopoly() {
     this.trigger('CHINA_NEAR_MONOPOLY', () => this.playBuy());
+  }
+
+  public playChinaFullMonopoly() {
+    this.trigger('CHINA_FULL_MONOPOLY', () => this.playMonopoly());
+  }
+
+  public playChina3Houses() {
+    this.trigger('CHINA_3_HOUSES', () => this.playUpgrade());
+  }
+
+  public playArabAirport() {
+    this.trigger('ARAB_AIRPORT', () => this.playBuy());
+  }
+
+  public playTradeOneWayCash() {
+    this.trigger('TRADE_ONE_WAY_CASH', () => this.playTrade());
   }
 
   public playNegativeBalance() {

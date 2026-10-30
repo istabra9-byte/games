@@ -1,7 +1,7 @@
 // Ultra-Low Data Consumption Service Worker for Monopoly
 // Caches all static assets, images, flags, and sounds locally so subsequent games use 0.00 MB.
 
-const CACHE_NAME = 'monopoly-cache-v16';
+const CACHE_NAME = 'monopoly-cache-v17';
 
 const STATIC_ASSETS = [
   './',
@@ -13,13 +13,22 @@ const STATIC_ASSETS = [
   './sounds/tax_amoun.mp3',
   './sounds/tax_wallahi.mp3',
   './sounds/tax_premium_ack.mp3',
+  './sounds/tax_raaaaaah.mp3',
   './sounds/prison_fbi.mp3',
   './sounds/prison_hnt.mp3',
   './sounds/prison_vacation_jey.mp3',
   './sounds/prison_escape_amogus.mp3',
+  './sounds/prison_escape_mbappe.mp3',
+  './sounds/prison_escape_byebye.mp3',
+  './sounds/oui_slow.mp3',
   './sounds/vacation_snore.mp3',
+  './sounds/vacation_xue_hua.mp3',
   './sounds/land_start_cena.mp3',
   './sounds/china_chino.mp3',
+  './sounds/china_full_monopoly.mp3',
+  './sounds/china_3houses.mp3',
+  './sounds/airport_arab_apoio.mp3',
+  './sounds/trade_let_her_go.mp3',
   './sounds/debt_chawali.mp3',
   './sounds/debt_social_credit.mp3',
   './sounds/debt_cleared_levelup.mp3',

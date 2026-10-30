@@ -158,10 +158,16 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                   return;
                 }
 
-                // 2. Escaped prison on first roll?
+                // 2. Escaped prison on roll?
                 if ((p as any).escapedJailFirstRoll) {
                   (p as any).escapedJailFirstRoll = false;
+                  (p as any).escapedJail = false;
                   sound.playPrisonEscapeFirstRoll();
+                  return;
+                }
+                if ((p as any).escapedJail) {
+                  (p as any).escapedJail = false;
+                  sound.playPrisonEscape();
                   return;
                 }
 

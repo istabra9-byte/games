@@ -448,7 +448,7 @@ export const App: React.FC = () => {
         type: 'jail',
         playerId: p.id
       });
-      sound.playBuy();
+      sound.playPrisonEscape();
       multiplayer.updateRoom(newRoom);
     }
   };
@@ -585,19 +585,27 @@ export const App: React.FC = () => {
       playerId: sender.id
     });
 
+    // Check if one player gave cash and received nothing in trade
+    const senderGaveMoneyGotNothing = trade.senderCash > 0 && trade.receiverCash === 0 && trade.receiverTileIndices.length === 0;
+    const receiverGaveMoneyGotNothing = trade.receiverCash > 0 && trade.senderCash === 0 && trade.senderTileIndices.length === 0;
+
     // Check debt cleared for either player
     if (prevSenderCash < 0 && newRoom.players[trade.senderId].cash >= 0) {
       sound.playDebtCleared();
     } else if (prevReceiverCash < 0 && newRoom.players[trade.receiverId].cash >= 0) {
       sound.playDebtCleared();
+    } else if (senderGaveMoneyGotNothing || receiverGaveMoneyGotNothing) {
+      sound.playTradeOneWayCash();
     } else {
       sound.playTrade();
     }
 
-    // Check if either player now holds 2 of 3 in China (red group)
+    // Check if either player now holds 3 of 3 or 2 of 3 in China (red group)
     const chinaSender = newRoom.tiles.filter(t => t.group === 'red' && t.ownerId === trade.senderId).length;
     const chinaReceiver = newRoom.tiles.filter(t => t.group === 'red' && t.ownerId === trade.receiverId).length;
-    if (chinaSender === 2 || chinaReceiver === 2) {
+    if (chinaSender === 3 || chinaReceiver === 3) {
+      sound.playChinaFullMonopoly();
+    } else if (chinaSender === 2 || chinaReceiver === 2) {
       sound.playChinaNearMonopoly();
     }
     newRoom.activeTrade = null;
