@@ -3,6 +3,7 @@ import { GameRoom, Player, Tile } from '../types/game';
 import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { PlayerAvatar } from './PlayerAvatar';
 import { Crown, Flag, Plus, ArrowLeftRight, ShieldAlert, Home, DollarSign, X } from 'lucide-react';
+import { useCashDeltas } from '../hooks/useCashDeltas';
 
 interface RightSidebarProps {
   room: GameRoom;
@@ -24,6 +25,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const [showBankruptConfirm, setShowBankruptConfirm] = useState(false);
   const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
   const myPlayer = room.players[currentPlayerId];
+
+  // Real-time cash balance change tracker (gain/loss notification to the left of player names)
+  const cashDeltas = useCashDeltas(room.players);
 
   // Current player's owned properties
   const myOwnedTiles = room.tiles.filter(t => t.ownerId === currentPlayerId);
@@ -78,7 +82,23 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   </div>
 
                   <div className="flex flex-col leading-tight min-w-0">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {/* Cash change notification: simple green or red text (no background), stays 3 seconds */}
+                      {cashDeltas[player.id] && (
+                        <span
+                          key={cashDeltas[player.id].key}
+                          className={`text-xs font-black font-mono select-none flex-shrink-0 animate-in fade-in zoom-in-75 duration-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${
+                            cashDeltas[player.id].delta > 0
+                              ? 'text-emerald-400'
+                              : 'text-red-400'
+                          }`}
+                        >
+                          {cashDeltas[player.id].delta > 0
+                            ? `+$${cashDeltas[player.id].delta}`
+                            : `-$${Math.abs(cashDeltas[player.id].delta)}`}
+                        </span>
+                      )}
+
                       <span className="text-xs font-bold text-white truncate">
                         {player.name}
                       </span>

@@ -4,6 +4,7 @@ import { PROPERTY_GROUPS } from '../data/boardTiles';
 import { Trophy, ShieldAlert, ArrowLeftRight, Crown, Bot, X, Palmtree } from 'lucide-react';
 import { PlayerAvatar } from './PlayerAvatar';
 import { TurnClock } from './TurnClock';
+import { useCashDeltas } from '../hooks/useCashDeltas';
 
 interface LeaderboardProps {
   room: GameRoom;
@@ -21,6 +22,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   onClose
 }) => {
   const currentTurnPlayerId = room.playerOrder[room.currentTurnPlayerIndex];
+  const cashDeltas = useCashDeltas(room.players);
 
   // Live timer tick for turn countdown
   const [remainingSec, setRemainingSec] = useState(() =>
@@ -107,10 +109,26 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                   </div>
 
                   <div className="flex flex-col leading-tight overflow-hidden">
-                    <span className="text-xs font-bold flex items-center gap-1 truncate text-white">
-                      {player.name} {isMe ? '(You)' : ''}
-                      {player.isBot && <Bot className="w-3 h-3 text-cyan-400 flex-shrink-0" />}
-                    </span>
+                    <div className="flex items-center gap-1.5 truncate">
+                      {cashDeltas[player.id] && (
+                        <span
+                          key={cashDeltas[player.id].key}
+                          className={`text-xs font-black font-mono select-none flex-shrink-0 animate-in fade-in zoom-in-75 duration-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${
+                            cashDeltas[player.id].delta > 0
+                              ? 'text-emerald-400'
+                              : 'text-red-400'
+                          }`}
+                        >
+                          {cashDeltas[player.id].delta > 0
+                            ? `+$${cashDeltas[player.id].delta}`
+                            : `-$${Math.abs(cashDeltas[player.id].delta)}`}
+                        </span>
+                      )}
+                      <span className="text-xs font-bold flex items-center gap-1 truncate text-white">
+                        {player.name} {isMe ? '(You)' : ''}
+                        {player.isBot && <Bot className="w-3 h-3 text-cyan-400 flex-shrink-0" />}
+                      </span>
+                    </div>
                     <span className="text-[10px] text-gray-400">
                       {ownedTiles.length} deeds
                     </span>
