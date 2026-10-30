@@ -1038,8 +1038,8 @@ export const App: React.FC = () => {
 
       {/* Main Screen 3-Column Area: LeftSidebar (Share & Chat), Board, RightSidebar (Players, Bankrupt, Trades, My Properties) */}
       <div className="flex-1 w-full min-h-0 px-2 sm:px-3 py-1 sm:py-1.5 flex items-center justify-center gap-2.5 sm:gap-3 overflow-hidden relative">
-        {/* Desktop Left Sidebar: Share this game & Permanent Chat (Optimized 240px width) */}
-        <div className="hidden lg:flex w-[240px] max-w-[240px] h-full flex-col flex-shrink-0">
+        {/* Desktop Left Sidebar: Share this game & Permanent Chat */}
+        <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
           <LeftSidebar
             room={room}
             currentPlayer={currentPlayer}
@@ -1074,8 +1074,8 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* Desktop Right Sidebar: Players, Bankrupt, Trades, My Properties (Optimized 240px width) */}
-        <div className="hidden lg:flex w-[240px] max-w-[240px] h-full flex-col flex-shrink-0">
+        {/* Desktop Right Sidebar: Players, Bankrupt, Trades, My Properties */}
+        <div className="hidden lg:flex w-64 xl:w-72 h-full flex-col flex-shrink-0">
           <RightSidebar
             room={room}
             currentPlayerId={currentPlayer.id}

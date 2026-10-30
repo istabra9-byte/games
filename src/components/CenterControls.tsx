@@ -401,7 +401,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   if (!turnPlayer) return null;
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full max-w-xs sm:max-w-sm px-2 py-1 select-none relative overflow-hidden">
+    <div className="flex flex-col items-center justify-between w-full h-full max-w-xs sm:max-w-sm px-2 pt-0.5 pb-4 sm:pb-5 select-none relative">
       {/* 0. Top Header Area (Directly Under Top Row Countries) */}
       <div className="w-full flex flex-col items-center justify-start flex-shrink-0 pt-0.5 mb-1 gap-1.5 z-20">
         {/* Turn Timer Countdown Pill: Positioned directly under top row countries */}
@@ -576,10 +576,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         </div>
       </div>
 
-      {/* 3. Activity Feed Logs (Compact, cleanly centered without causing overflow) */}
+      {/* 3. Activity Feed Logs (Ultra-safe clearance and compact dimensions so it never touches bottom countries or flags) */}
       <div
         ref={logsContainerRef}
-        className="w-[76%] sm:w-[72%] max-w-[240px] h-[60px] sm:h-[68px] min-h-[40px] max-h-[72px] overflow-y-auto px-2 py-0.5 space-y-0.5 text-[10.5px] leading-tight text-gray-400 font-sans bg-black/40 rounded-xl border border-purple-900/40 shadow-inner my-1 flex-shrink-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="w-[74%] sm:w-[70%] max-w-[230px] sm:max-w-[260px] h-[72px] sm:h-[84px] min-h-[48px] max-h-[88px] overflow-y-auto px-2 py-1 space-y-1 text-[10.5px] sm:text-[11px] leading-tight text-gray-400 font-sans bg-black/40 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-2 sm:mb-3 flex-shrink-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {meaningfulLogs.slice(-20).map((log) => {
