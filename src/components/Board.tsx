@@ -318,7 +318,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     <div className="flex flex-col items-center z-10 flex-shrink-0">
                       <span
                         className="font-black text-gray-300 uppercase tracking-tight leading-none pt-0.5"
-                        style={{ fontSize: 'clamp(8.5px, 1.2cqi, 12px)' }}
+                        style={{ fontSize: 'clamp(9.5px, 1.35cqi, 13.5px)' }}
                       >
                         Passing by
                       </span>
@@ -345,12 +345,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       <div className="flex flex-col items-center z-10 -translate-y-2.5">
                         <span
                           className="font-black text-amber-200 uppercase leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] tracking-wide"
-                          style={{ fontSize: 'clamp(9.5px, 1.35cqi, 13.5px)' }}
+                          style={{ fontSize: 'clamp(11px, 1.55cqi, 16px)' }}
                         >
                           In Prison
                         </span>
                         <span
-                          className="text-[7.5px] sm:text-[8.5px] font-bold text-white/95 drop-shadow mt-0.5 tracking-tight font-sans leading-none"
+                          className="text-[8px] sm:text-[9.5px] font-bold text-white/95 drop-shadow mt-0.5 tracking-tight font-sans leading-none"
                         >
                           المرناقية
                         </span>
@@ -374,13 +374,13 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     </div>
                     <span
                       className="font-black text-white uppercase tracking-wider font-heading leading-tight"
-                      style={{ fontSize: 'clamp(11px, 1.6cqi, 18px)' }}
+                      style={{ fontSize: 'clamp(12.5px, 1.8cqi, 20px)' }}
                     >
                       Vacation
                     </span>
                     <span
                       className="font-semibold text-emerald-300 leading-none mt-0.5 font-mono"
-                      style={{ fontSize: 'clamp(9.5px, 1.35cqi, 14px)' }}
+                      style={{ fontSize: 'clamp(10px, 1.45cqi, 15px)' }}
                     >
                       ${room.pot || 0} on hold
                     </span>
@@ -403,7 +403,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                     </div>
                     <span
                       className="font-black text-white uppercase font-heading leading-tight tracking-wider"
-                      style={{ fontSize: 'clamp(9.5px, 1.35cqi, 15px)' }}
+                      style={{ fontSize: 'clamp(11px, 1.55cqi, 17px)' }}
                     >
                       Go to prison
                     </span>
@@ -461,7 +461,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 0.95cqi, 9.5px)' : 'clamp(8px, 1.05cqi, 10.5px)' }}
+                    style={{ fontSize: isHorizontal ? 'clamp(8.5px, 1.15cqi, 11px)' : 'clamp(9px, 1.25cqi, 12px)' }}
                   >
                     {tile.price}$
                   </div>
@@ -474,7 +474,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
                     className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: isHorizontal ? 'clamp(7.5px, 0.95cqi, 9.5px)' : 'clamp(8px, 1.05cqi, 10.5px)' }}
+                    style={{ fontSize: isHorizontal ? 'clamp(8.5px, 1.15cqi, 11px)' : 'clamp(9px, 1.25cqi, 12px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$100'}
                   </div>
@@ -599,7 +599,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             );
           };
 
-          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography)
+          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, highly readable font size)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
@@ -608,29 +608,31 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
             const maxWordLen = Math.max(...words.map(w => w.length));
 
-            // Dynamic font size clamp based on orientation and word length
+            // Generous, prominent font size clamp so players never have to squint or lean forward
             const fontSize = isHorizontal
               ? maxWordLen >= 10
-                ? 'clamp(7.5px, 0.95cqi, 9.5px)'
+                ? 'clamp(10.5px, 1.45cqi, 14px)'
                 : maxWordLen >= 8
-                ? 'clamp(8px, 1.05cqi, 10.5px)'
+                ? 'clamp(11.5px, 1.6cqi, 15.5px)'
                 : maxWordLen >= 6
-                ? 'clamp(8.5px, 1.15cqi, 11px)'
-                : 'clamp(9.5px, 1.25cqi, 12px)'
+                ? 'clamp(12.5px, 1.8cqi, 17px)'
+                : 'clamp(13.5px, 2.0cqi, 19px)'
               : maxWordLen >= 9
-                ? 'clamp(7.5px, 0.95cqi, 9.5px)'
+                ? 'clamp(8.5px, 1.2cqi, 12px)'
                 : maxWordLen >= 7
-                ? 'clamp(8px, 1.05cqi, 10.5px)'
-                : 'clamp(8.5px, 1.15cqi, 11.5px)';
+                ? 'clamp(9.5px, 1.35cqi, 13.5px)'
+                : maxWordLen >= 5
+                ? 'clamp(10.5px, 1.5cqi, 14.5px)'
+                : 'clamp(11.5px, 1.65cqi, 16px)';
 
             return (
               <div className="flex-1 min-h-0 min-w-0 flex flex-col items-center justify-center text-center z-10 px-0.5 max-w-full">
                 <span
-                  className="font-sans font-extrabold text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
+                  className="font-sans font-black text-white select-none text-center leading-[1.08] tracking-tight max-w-full drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    letterSpacing: maxWordLen >= 8 ? '-0.035em' : '-0.015em'
+                    letterSpacing: maxWordLen >= 8 ? '-0.025em' : '-0.01em'
                   }}
                   title={tile.name}
                 >
