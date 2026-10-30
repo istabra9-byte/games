@@ -1,7 +1,7 @@
 // Ultra-Low Data Consumption Service Worker for Monopoly
 // Caches all static assets, images, flags, and sounds locally so subsequent games use 0.00 MB.
 
-const CACHE_NAME = 'monopoly-cache-v38';
+const CACHE_NAME = 'monopoly-cache-v39';
 
 const STATIC_ASSETS = [
   './',

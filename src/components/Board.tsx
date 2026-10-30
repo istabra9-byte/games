@@ -838,7 +838,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
 
         {/* Center Board Stage */}
         <div
-          className="col-start-2 col-end-11 row-start-2 row-end-11 rounded-xl flex flex-col items-center justify-center p-1.5 sm:p-2 pb-0.5 sm:pb-1 relative overflow-hidden shadow-inner transition-colors duration-500"
+          className="col-start-2 col-end-11 row-start-2 row-end-11 rounded-xl flex flex-col items-center justify-center p-1.5 sm:p-2 pb-3 sm:pb-4 relative overflow-hidden shadow-inner transition-colors duration-500"
           style={{ backgroundColor: currentTheme.colors.centerBg }}
         >
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center">

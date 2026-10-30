@@ -401,7 +401,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
   if (!turnPlayer) return null;
 
   return (
-    <div className="flex flex-col items-center justify-between w-full h-full max-w-sm sm:max-w-md px-2 pt-1 pb-0.5 select-none relative">
+    <div className="flex flex-col items-center justify-between w-full h-full max-w-xs sm:max-w-sm px-2 pt-0.5 pb-2.5 sm:pb-3 select-none relative">
       {/* 0. Top Header Area (Directly Under Top Row Countries) */}
       <div className="w-full flex flex-col items-center justify-start flex-shrink-0 pt-0.5 mb-1 gap-1.5 z-20">
         {/* Turn Timer Countdown Pill: Positioned directly under top row countries */}
@@ -576,10 +576,10 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
         </div>
       </div>
 
-      {/* 3. Activity Feed Logs (Clean uniform grey color styling as requested) */}
+      {/* 3. Activity Feed Logs (Narrower width & safe bottom clearance so it never touches bottom countries) */}
       <div
         ref={logsContainerRef}
-        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[90px] max-h-[250px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-400 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="w-[82%] sm:w-[78%] max-w-[260px] sm:max-w-[300px] flex-1 min-h-[50px] max-h-[130px] sm:max-h-[160px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-400 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-1 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {meaningfulLogs.slice(-20).map((log) => {
