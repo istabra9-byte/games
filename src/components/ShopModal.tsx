@@ -228,10 +228,21 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         {/* Coins & Close */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 border border-amber-400/50 rounded-full shadow-inner">
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-amber-500/20 border border-amber-400/50 rounded-full shadow-inner">
             <span className="text-lg leading-none">🪙</span>
             <span className="text-base font-black font-mono text-amber-300">{coins}</span>
             <span className="text-[10px] text-amber-400/80 font-bold uppercase tracking-wider hidden sm:inline">Coins</span>
+            <button
+              onClick={() => {
+                setCoins(prev => prev + 500);
+                sound.playCash();
+                setNotification('💰 Added +500 Free Coins!');
+              }}
+              className="ml-1 px-2 py-0.5 rounded-full bg-amber-400 hover:bg-amber-300 text-purple-950 font-black text-xs leading-none shadow cursor-pointer active:scale-90 transition-transform"
+              title="Click to add +500 coins"
+            >
+              +500
+            </button>
           </div>
 
           <button
