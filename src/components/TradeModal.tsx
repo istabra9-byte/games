@@ -126,11 +126,16 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400 italic">Waiting for {receiver?.name} to respond...</span>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <span className="text-xs text-purple-200 font-semibold">
+                  Waiting for {receiver?.name} to respond...
+                </span>
+              </div>
               <button
                 onClick={onDeclineTrade}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-xs font-bold rounded-xl"
+                className="px-4 py-2 bg-red-900/60 hover:bg-red-800 text-red-200 hover:text-white border border-red-700/50 text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
               >
                 Cancel Proposal
               </button>

@@ -13,12 +13,13 @@ import {
   unmortgageProperty,
   sellPropertyToBank, 
   endTurn,
-  surrenderBankruptcy
+  surrenderBankruptcy,
+  updateNetWorths
 } from './services/gameEngine';
 import { multiplayer } from './services/firebase';
 import { sound } from './services/sound';
 import { INITIAL_BOARD_TILES } from './data/boardTiles';
-import { evaluateBotPropertyPurchase, getBotHouseBuildTileIndex, evaluateBotJailExit } from './services/aiLogic';
+import { evaluateBotPropertyPurchase, getBotHouseBuildTileIndex, evaluateBotJailExit, evaluateBotTrade } from './services/aiLogic';
 import { Home } from './components/Home';
 import { Board } from './components/Board';
 import { CenterControls } from './components/CenterControls';
@@ -92,6 +93,7 @@ export const App: React.FC = () => {
   const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
   const [showTradeModal, setShowTradeModal] = useState<boolean>(false);
   const [selectedTradePartnerId, setSelectedTradePartnerId] = useState<string>('');
+  const [dismissedTradeOfferKey, setDismissedTradeOfferKey] = useState<string | null>(null);
   const [showFirebaseModal, setShowFirebaseModal] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(sound.isMuted());
@@ -307,6 +309,11 @@ export const App: React.FC = () => {
     if (room.hostId !== currentPlayer.id) return;
 
     if (turnPlayer && turnPlayer.isBot && !turnPlayer.isBankrupt) {
+      // If a trade proposal involving this bot is pending, pause bot turn until trade resolves
+      if (room.activeTrade && (room.activeTrade.receiverId === turnPlayer.id || room.activeTrade.senderId === turnPlayer.id)) {
+        return;
+      }
+
       // Allow piece movement animation to finish before bot takes action
       const delay = room.turnPhase === 'action' ? 2000 : 1400;
       const botTimer = setTimeout(() => {
@@ -326,11 +333,13 @@ export const App: React.FC = () => {
                 timestamp: Date.now(),
                 type: 'jail'
               });
+              sound.playDiceRoll();
               const rolled = rollDice(unjailed, turnPlayer.id);
               multiplayer.updateRoom(rolled);
               return;
             }
           }
+          sound.playDiceRoll();
           const nextRoom = rollDice(room, turnPlayer.id);
           multiplayer.updateRoom(nextRoom);
         } else if (room.turnPhase === 'action') {
@@ -367,6 +376,30 @@ export const App: React.FC = () => {
       return () => clearTimeout(botTimer);
     }
   }, [room]);
+
+  // Automated AI Bot Trade Evaluation & Response (Host-only execution)
+  useEffect(() => {
+    if (!room || !room.activeTrade) return;
+    if (room.hostId !== currentPlayer.id) return;
+
+    const trade = room.activeTrade;
+    const receiver = room.players[trade.receiverId];
+    if (receiver && receiver.isBot && !receiver.isBankrupt) {
+      // 1.2s thinking time for realistic interactive feel
+      const botTradeTimer = setTimeout(() => {
+        // Re-check trade is still active and unmodified
+        if (!room.activeTrade || room.activeTrade.senderId !== trade.senderId) return;
+        const decision = evaluateBotTrade(room, receiver.id, trade);
+        if (decision.accept) {
+          handleAcceptTrade();
+        } else {
+          handleDeclineTrade();
+        }
+      }, 1200);
+
+      return () => clearTimeout(botTradeTimer);
+    }
+  }, [room?.activeTrade]);
 
   // Actions
   const handleRoll = () => {
@@ -515,8 +548,10 @@ export const App: React.FC = () => {
       playerId: currentPlayer.id
     });
     sound.playTurnChime();
+    setDismissedTradeOfferKey(null);
     multiplayer.updateRoom(newRoom);
-    setShowTradeModal(false);
+    // Keep modal open so sender sees active waiting spinner with cancel button
+    setShowTradeModal(true);
   };
 
   const handleAcceptTrade = () => {
@@ -566,6 +601,9 @@ export const App: React.FC = () => {
       sound.playChinaNearMonopoly();
     }
     newRoom.activeTrade = null;
+    updateNetWorths(newRoom);
+    setShowTradeModal(false);
+    setDismissedTradeOfferKey(null);
     multiplayer.updateRoom(newRoom);
   };
 
@@ -579,6 +617,8 @@ export const App: React.FC = () => {
       type: 'trade'
     });
     newRoom.activeTrade = null;
+    setShowTradeModal(false);
+    setDismissedTradeOfferKey(null);
     multiplayer.updateRoom(newRoom);
   };
 
@@ -881,17 +921,44 @@ export const App: React.FC = () => {
         />
       )}
 
-      {(showTradeModal || room.activeTrade) && (
-        <TradeModal
-          room={room}
-          currentPlayerId={currentPlayer.id}
-          initialPartnerId={selectedTradePartnerId}
-          onSendTrade={handleSendTrade}
-          onAcceptTrade={handleAcceptTrade}
-          onDeclineTrade={handleDeclineTrade}
-          onClose={() => setShowTradeModal(false)}
-        />
-      )}
+      {(() => {
+        const activeTradeKey = room?.activeTrade
+          ? `${room.activeTrade.senderId}_${room.activeTrade.receiverId}_${room.activeTrade.senderCash}_${room.activeTrade.receiverCash}_${(room.activeTrade.senderTileIndices || []).join('-')}`
+          : null;
+
+        const isIncomingTradeForMe = Boolean(
+          room?.activeTrade &&
+          room.activeTrade.receiverId === currentPlayer.id &&
+          dismissedTradeOfferKey !== activeTradeKey
+        );
+
+        const isPendingOutgoingTrade = Boolean(
+          room?.activeTrade &&
+          room.activeTrade.senderId === currentPlayer.id &&
+          dismissedTradeOfferKey !== activeTradeKey
+        );
+
+        const shouldShow = showTradeModal || isIncomingTradeForMe || isPendingOutgoingTrade;
+
+        if (!shouldShow) return null;
+
+        return (
+          <TradeModal
+            room={room}
+            currentPlayerId={currentPlayer.id}
+            initialPartnerId={selectedTradePartnerId}
+            onSendTrade={handleSendTrade}
+            onAcceptTrade={handleAcceptTrade}
+            onDeclineTrade={handleDeclineTrade}
+            onClose={() => {
+              setShowTradeModal(false);
+              if (activeTradeKey) {
+                setDismissedTradeOfferKey(activeTradeKey);
+              }
+            }}
+          />
+        );
+      })()}
 
       {selectedTile && (
         <PropertyDetailModal

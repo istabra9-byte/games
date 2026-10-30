@@ -1,4 +1,4 @@
-import { GameRoom, Player, Tile } from '../types/game';
+import { GameRoom, Player, Tile, TradeOffer } from '../types/game';
 import { canBuildHouse } from './gameEngine';
 
 export interface BotDecision {
@@ -133,4 +133,82 @@ export function evaluateBotJailExit(room: GameRoom, botId: string): 'bail' | 'wa
 
   // Late game: stay in jail safely to avoid landing on hotels
   return 'wait';
+}
+
+/**
+ * Evaluates incoming trade proposals for AI bots based on fair economic value,
+ * cash safety, and monopoly advantage.
+ */
+export function evaluateBotTrade(room: GameRoom, botId: string, trade: TradeOffer): { accept: boolean; reason: string } {
+  const bot = room.players[botId];
+  const sender = room.players[trade.senderId];
+  if (!bot || !sender) {
+    return { accept: false, reason: 'Invalid players' };
+  }
+
+  // 1. Feasibility validation
+  if (bot.cash < trade.receiverCash) {
+    return { accept: false, reason: 'Bot has insufficient cash' };
+  }
+  if (sender.cash < trade.senderCash) {
+    return { accept: false, reason: 'Sender has insufficient cash' };
+  }
+  for (const idx of trade.receiverTileIndices) {
+    if (room.tiles[idx]?.ownerId !== botId) {
+      return { accept: false, reason: 'Bot does not own property' };
+    }
+  }
+  for (const idx of trade.senderTileIndices) {
+    if (room.tiles[idx]?.ownerId !== trade.senderId) {
+      return { accept: false, reason: 'Sender does not own property' };
+    }
+  }
+
+  // 2. Compute value given by bot
+  let valueGiven = trade.receiverCash;
+  for (const idx of trade.receiverTileIndices) {
+    const tile = room.tiles[idx];
+    if (tile) {
+      valueGiven += tile.price;
+      // High penalty if giving away this tile completes a color monopoly for the sender
+      if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
+        const groupTiles = room.tiles.filter(t => t.group === tile.group);
+        const senderCurrentCount = groupTiles.filter(t => t.ownerId === trade.senderId).length;
+        if (senderCurrentCount === groupTiles.length - 1) {
+          valueGiven += 250; // Opponent monopoly penalty
+        }
+        // Heavy penalty if giving away this tile breaks bot's own monopoly
+        const botCurrentCount = groupTiles.filter(t => t.ownerId === botId).length;
+        if (botCurrentCount === groupTiles.length) {
+          valueGiven += 350; // Don't break completed monopolies
+        }
+      }
+    }
+  }
+
+  // 3. Compute value received by bot
+  let valueReceived = trade.senderCash;
+  for (const idx of trade.senderTileIndices) {
+    const tile = room.tiles[idx];
+    if (tile) {
+      valueReceived += tile.price;
+      // Big bonus if receiving this tile completes a color monopoly for the bot
+      if (tile.group && tile.group !== 'station' && tile.group !== 'utility') {
+        const groupTiles = room.tiles.filter(t => t.group === tile.group);
+        const botCurrentCount = groupTiles.filter(t => t.ownerId === botId).length;
+        if (botCurrentCount === groupTiles.length - 1) {
+          valueReceived += 300; // Monopoly completion bonus!
+        } else if (botCurrentCount === groupTiles.length - 2) {
+          valueReceived += 80; // 2 of 3 progress bonus
+        }
+      }
+    }
+  }
+
+  // Require reasonable fairness (value received >= 88% of value given, or at least breaking even)
+  const isFair = valueReceived >= Math.max(20, valueGiven * 0.88);
+  return {
+    accept: isFair,
+    reason: isFair ? 'Trade considered fair and beneficial' : 'Trade value insufficient'
+  };
 }

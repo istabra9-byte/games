@@ -82,11 +82,6 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                       <span className="text-xs font-bold text-white truncate">
                         {player.name}
                       </span>
-                      {isMe && (
-                        <span className="text-[9px] text-purple-300 font-semibold flex-shrink-0">
-                          (You)
-                        </span>
-                      )}
                     </div>
                     {player.inJail && !player.isBankrupt && (
                       <span className="text-[9px] text-orange-400 font-bold flex items-center gap-0.5">

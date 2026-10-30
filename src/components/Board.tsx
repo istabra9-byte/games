@@ -129,121 +129,126 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
 
               if (isJailFromTile30) {
                 // Stopped strictly on tile 30 "Go to Prison"!
-                sound.playPrison();
                 setTimeout(() => {
-                  setVisualPositions(prev => ({ ...prev, [p.id]: 10 }));
-                  setMovingPlayerIds(prev => {
-                    const next = new Set(prev);
-                    next.delete(p.id);
-                    return next;
-                  });
-                }, 850);
+                  sound.playPrison();
+                  setTimeout(() => {
+                    setVisualPositions(prev => ({ ...prev, [p.id]: 10 }));
+                    setMovingPlayerIds(prev => {
+                      const next = new Set(prev);
+                      next.delete(p.id);
+                      return next;
+                    });
+                  }, 850);
+                }, 220);
                 return;
               }
 
-              setMovingPlayerIds(prev => {
-                const next = new Set(prev);
-                next.delete(p.id);
-                return next;
-              });
+              // Give a smooth 240ms settle delay so the token visibly lands and stops in place before soundboard triggers
+              setTimeout(() => {
+                setMovingPlayerIds(prev => {
+                  const next = new Set(prev);
+                  next.delete(p.id);
+                  return next;
+                });
 
-              // Trigger soundboard memes strictly upon landing in position!
-              // 1. Bankrupt?
-              if (p.isBankrupt) {
-                sound.playBankrupt();
-                return;
-              }
-
-              // 2. Escaped prison on first roll?
-              if ((p as any).escapedJailFirstRoll) {
-                (p as any).escapedJailFirstRoll = false;
-                sound.playPrisonEscapeFirstRoll();
-                return;
-              }
-
-              // 3. Stopped directly on Start (Tile 0)?
-              if (targetPos === 0) {
-                sound.playLandOnStart();
-                return;
-              }
-
-              const landedTile = tiles[targetPos];
-              if (!landedTile) {
-                sound.playSelect();
-                return;
-              }
-
-              // 4. Taxes
-              if (landedTile.type === 'tax') {
-                if (p.cash < 0) {
-                  sound.playNegativeBalance();
-                } else {
-                  let taxAmt = landedTile.price;
-                  if (landedTile.name.toLowerCase().includes('earnings') || targetPos === 4) {
-                    taxAmt = p.cash > 0 ? Math.max(10, Math.floor(p.cash * 0.10)) : 0;
-                  } else if (landedTile.name.toLowerCase().includes('premium') || targetPos === 38) {
-                    taxAmt = 100;
-                  }
-                  if (taxAmt >= 500) {
-                    sound.playBigLoss();
-                  } else if (targetPos === 38 || landedTile.name.toLowerCase().includes('premium')) {
-                    sound.playPremiumTax();
-                  } else {
-                    sound.playEarningsTax();
-                  }
+                // Trigger soundboard memes strictly AFTER stopping and settling
+                // 1. Bankrupt?
+                if (p.isBankrupt) {
+                  sound.playBankrupt();
+                  return;
                 }
-                return;
-              }
 
-              // 5. Vacation
-              if (landedTile.type === 'vacation') {
-                sound.playVacation();
-                return;
-              }
-
-              // 6. Go to Jail
-              if (landedTile.type === 'go_to_jail') {
-                sound.playPrison();
-                return;
-              }
-
-              // 7. Chance & Chest
-              if (landedTile.type === 'chance' || landedTile.type === 'chest') {
-                const latestCard = room.logs?.slice(-3).reverse().find(l => l.type === 'card');
-                if (p.cash < 0) {
-                  sound.playNegativeBalance();
-                } else if (latestCard && (latestCard.text.includes('Pay') || latestCard.text.includes('jail') || latestCard.text.includes('loss') || latestCard.text.includes('paid'))) {
-                  sound.playBadSurprise();
-                } else {
-                  sound.playCash();
+                // 2. Escaped prison on first roll?
+                if ((p as any).escapedJailFirstRoll) {
+                  (p as any).escapedJailFirstRoll = false;
+                  sound.playPrisonEscapeFirstRoll();
+                  return;
                 }
-                return;
-              }
 
-              // 8. Properties / Utilities / Railroads
-              if (landedTile.type === 'property' || landedTile.type === 'utility' || landedTile.type === 'railroad') {
-                if (landedTile.ownerId && landedTile.ownerId !== p.id && !landedTile.isMortgaged) {
-                  const rollTotal = (room.dice?.[0] || 1) + (room.dice?.[1] || 1);
-                  const rentAmount = calculateRent(room, landedTile, rollTotal);
+                // 3. Stopped directly on Start (Tile 0)?
+                if (targetPos === 0) {
+                  sound.playLandOnStart();
+                  return;
+                }
+
+                const landedTile = tiles[targetPos];
+                if (!landedTile) {
+                  sound.playSelect();
+                  return;
+                }
+
+                // 4. Taxes
+                if (landedTile.type === 'tax') {
                   if (p.cash < 0) {
                     sound.playNegativeBalance();
-                  } else if (rentAmount >= 500) {
-                    sound.playBigLoss();
-                  } else if (rentAmount >= 400) {
-                    sound.playBigRentCollect();
                   } else {
-                    sound.playRent();
+                    let taxAmt = landedTile.price;
+                    if (landedTile.name.toLowerCase().includes('earnings') || targetPos === 4) {
+                      taxAmt = p.cash > 0 ? Math.max(10, Math.floor(p.cash * 0.10)) : 0;
+                    } else if (landedTile.name.toLowerCase().includes('premium') || targetPos === 38) {
+                      taxAmt = 100;
+                    }
+                    if (taxAmt >= 500) {
+                      sound.playBigLoss();
+                    } else if (targetPos === 38 || landedTile.name.toLowerCase().includes('premium')) {
+                      sound.playPremiumTax();
+                    } else {
+                      sound.playEarningsTax();
+                    }
                   }
-                } else if (!landedTile.ownerId) {
-                  sound.playSelect();
-                } else {
-                  sound.playSelect();
+                  return;
                 }
-                return;
-              }
 
-              // Default landing click
-              sound.playSelect();
+                // 5. Vacation
+                if (landedTile.type === 'vacation') {
+                  sound.playVacation();
+                  return;
+                }
+
+                // 6. Go to Jail
+                if (landedTile.type === 'go_to_jail') {
+                  sound.playPrison();
+                  return;
+                }
+
+                // 7. Chance & Chest
+                if (landedTile.type === 'chance' || landedTile.type === 'chest') {
+                  const latestCard = room.logs?.slice(-3).reverse().find(l => l.type === 'card');
+                  if (p.cash < 0) {
+                    sound.playNegativeBalance();
+                  } else if (latestCard && (latestCard.text.includes('Pay') || latestCard.text.includes('jail') || latestCard.text.includes('loss') || latestCard.text.includes('paid'))) {
+                    sound.playBadSurprise();
+                  } else {
+                    sound.playCash();
+                  }
+                  return;
+                }
+
+                // 8. Properties / Utilities / Railroads
+                if (landedTile.type === 'property' || landedTile.type === 'utility' || landedTile.type === 'railroad') {
+                  if (landedTile.ownerId && landedTile.ownerId !== p.id && !landedTile.isMortgaged) {
+                    const rollTotal = (room.dice?.[0] || 1) + (room.dice?.[1] || 1);
+                    const rentAmount = calculateRent(room, landedTile, rollTotal);
+                    if (p.cash < 0) {
+                      sound.playNegativeBalance();
+                    } else if (rentAmount >= 500) {
+                      sound.playBigLoss();
+                    } else if (rentAmount >= 400) {
+                      sound.playBigRentCollect();
+                    } else {
+                      sound.playRent();
+                    }
+                  } else if (!landedTile.ownerId) {
+                    sound.playSelect();
+                  } else {
+                    sound.playSelect();
+                  }
+                  return;
+                }
+
+                // Default landing click
+                sound.playSelect();
+              }, 240);
             }
           }, 110);
         }
@@ -273,8 +278,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
         className="w-full h-full gap-[2px] sm:gap-[3px] bg-[#110d1f] rounded-xl p-0.5 sm:p-1 relative"
         style={{
           display: 'grid',
-          gridTemplateColumns: '2.45fr repeat(9, 1fr) 2.45fr',
-          gridTemplateRows: '1.75fr repeat(9, 1fr) 1.75fr'
+          gridTemplateColumns: '2.8fr repeat(9, 1fr) 2.8fr',
+          gridTemplateRows: '1.85fr repeat(9, 1fr) 1.85fr'
         }}
       >
         {tiles.map((tile) => {
@@ -342,15 +347,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                       {/* Prison Bars Overlay */}
                       <div className="absolute inset-0 opacity-25 bg-[repeating-linear-gradient(90deg,transparent,transparent_4px,#cbd5e1_4px,#cbd5e1_6px)]" />
 
-                      <div className="flex flex-col items-center z-10 -translate-y-2.5">
+                      <div className="flex flex-col items-center z-10 -translate-y-4 pb-0.5">
                         <span
                           className="font-black text-amber-200 uppercase leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] tracking-wide"
-                          style={{ fontSize: 'clamp(11px, 1.55cqi, 16px)' }}
+                          style={{ fontSize: 'clamp(11.5px, 1.6cqi, 16.5px)' }}
                         >
                           In Prison
                         </span>
                         <span
-                          className="text-[8px] sm:text-[9.5px] font-bold text-white/95 drop-shadow mt-0.5 tracking-tight font-sans leading-none"
+                          className="text-[8.5px] sm:text-[10px] font-extrabold text-white/95 drop-shadow mt-0.5 tracking-tight font-sans leading-none"
                         >
                           المرناقية
                         </span>
@@ -460,10 +465,10 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm"
-                    style={{ fontSize: isHorizontal ? 'clamp(8.5px, 1.15cqi, 11px)' : 'clamp(9px, 1.25cqi, 12px)' }}
+                    className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm whitespace-nowrap"
+                    style={{ fontSize: isHorizontal ? 'clamp(8px, 1.1cqi, 10.5px)' : 'clamp(8.5px, 1.2cqi, 11px)' }}
                   >
-                    {tile.price}$
+                    ${tile.price}
                   </div>
                 </div>
               );
@@ -473,8 +478,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
               return (
                 <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
                   <div
-                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none"
-                    style={{ fontSize: isHorizontal ? 'clamp(8.5px, 1.15cqi, 11px)' : 'clamp(9px, 1.25cqi, 12px)' }}
+                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap"
+                    style={{ fontSize: isHorizontal ? 'clamp(8px, 1.1cqi, 10.5px)' : 'clamp(8.5px, 1.2cqi, 11px)' }}
                   >
                     {tile.name.includes('Earnings') ? '%10' : '$100'}
                   </div>
@@ -488,8 +493,8 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
           // 2. Circular Flag or Special Space Icon (Inner Edge)
           const renderInnerIcon = () => {
             const iconSizeStyle = {
-              width: isHorizontal ? 'clamp(14px, 1.8cqi, 20px)' : 'clamp(16px, 2.1cqi, 24px)',
-              height: isHorizontal ? 'clamp(14px, 1.8cqi, 20px)' : 'clamp(16px, 2.1cqi, 24px)'
+              width: isHorizontal ? 'clamp(14px, 1.7cqi, 19px)' : 'clamp(16px, 2.1cqi, 24px)',
+              height: isHorizontal ? 'clamp(14px, 1.7cqi, 19px)' : 'clamp(16px, 2.1cqi, 24px)'
             };
 
             return (
@@ -611,12 +616,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             // Generous, prominent font size clamp so players never have to squint or lean forward
             const fontSize = isHorizontal
               ? maxWordLen >= 10
-                ? 'clamp(10.5px, 1.45cqi, 14px)'
+                ? 'clamp(10px, 1.35cqi, 13px)'
                 : maxWordLen >= 8
-                ? 'clamp(11.5px, 1.6cqi, 15.5px)'
+                ? 'clamp(11px, 1.5cqi, 14.5px)'
                 : maxWordLen >= 6
-                ? 'clamp(12.5px, 1.8cqi, 17px)'
-                : 'clamp(13.5px, 2.0cqi, 19px)'
+                ? 'clamp(12px, 1.65cqi, 16px)'
+                : 'clamp(13px, 1.85cqi, 18px)'
               : maxWordLen >= 9
                 ? 'clamp(8.5px, 1.2cqi, 12px)'
                 : maxWordLen >= 7
@@ -632,12 +637,12 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    letterSpacing: maxWordLen >= 8 ? '-0.025em' : '-0.01em'
+                    letterSpacing: maxWordLen >= 9 ? '-0.03em' : maxWordLen >= 7 ? '-0.015em' : 'normal'
                   }}
                   title={tile.name}
                 >
                   {words.map((word, idx) => (
-                    <span key={idx} className="block whitespace-nowrap leading-[1.08] max-w-full">
+                    <span key={idx} className="block whitespace-nowrap leading-[1.08] max-w-full text-center">
                       {word}
                     </span>
                   ))}
@@ -664,14 +669,14 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, onTileClick
             >
               {side === 'left' ? (
                 /* Left Column: Outer edge (price/owner) on left, inner edge (flag) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-1">
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-0.5 sm:gap-1">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   {renderInnerIcon()}
                 </div>
               ) : side === 'right' ? (
                 /* Right Column: Inner edge (flag) on left, outer edge (price/owner) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-1">
+                <div className="w-full h-full flex flex-row items-center justify-between px-1 py-0.5 z-10 gap-0.5 sm:gap-1">
                   {renderInnerIcon()}
                   {renderNameLabel()}
                   {renderOuterEdge()}

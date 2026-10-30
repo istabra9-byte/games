@@ -94,8 +94,6 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
   // Mark log cutoff index so notifications from prior turns disappear the moment roll is triggered
   newRoom.lastRollLogIndex = newRoom.logs ? newRoom.logs.length : 0;
 
-  sound.playDiceRoll();
-
   // (Roll announcement logs are omitted from activity feed per user request)
 
   // Handle player in Jail
@@ -743,7 +741,7 @@ function applyCardEffect(room: GameRoom, player: Player, card: any) {
   }
 }
 
-function updateNetWorths(room: GameRoom) {
+export function updateNetWorths(room: GameRoom) {
   Object.values(room.players).forEach(player => {
     let net = player.cash;
     room.tiles.forEach(t => {

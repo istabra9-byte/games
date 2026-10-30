@@ -158,24 +158,24 @@ const renderNotificationText = (rawText: string, players: Record<string, any>): 
     return renderLogContent(text, false);
   }
 
-  // Create regex matching any player name
+  // Create case-insensitive regex matching any player name
   const escapedNames = playerList.map((p: any) => p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const playerRegex = new RegExp(`(${escapedNames.join('|')})`, 'g');
+  const playerRegex = new RegExp(`(${escapedNames.join('|')})`, 'gi');
 
   const parts = text.split(playerRegex);
 
   return (
     <>
       {parts.map((part, idx) => {
-        const matchedPlayer = playerList.find((p: any) => p.name === part);
+        const matchedPlayer = playerList.find((p: any) => p.name.toLowerCase() === part.toLowerCase());
         if (matchedPlayer) {
           return (
             <span
               key={idx}
-              className="font-black drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] mr-1 flex-shrink-0"
+              className="font-extrabold drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] mr-1 inline-flex items-center flex-shrink-0"
               style={{ color: matchedPlayer.color || '#a855f7' }}
             >
-              {matchedPlayer.name}
+              {part}
             </span>
           );
         }
@@ -471,7 +471,7 @@ export const CenterControls: React.FC<CenterControlsProps> = ({
       {/* 3. Activity Feed Logs (Appears from under the action button down into the border of the bottom tiles) */}
       <div
         ref={logsContainerRef}
-        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[85px] max-h-[175px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0.5 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="w-full max-w-[340px] sm:max-w-[400px] flex-1 min-h-[90px] max-h-[250px] overflow-y-auto px-2.5 py-1.5 space-y-1 text-[11px] leading-tight text-gray-300 font-sans bg-black/35 rounded-xl border border-purple-900/40 shadow-inner mt-1 mb-0 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {meaningfulLogs.slice(-20).map((log) => {
