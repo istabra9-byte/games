@@ -40,9 +40,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   const isTradeForMe = activeTrade && (activeTrade.receiverId === currentPlayerId || activeTrade.senderId === currentPlayerId);
 
   return (
-    <div className="w-full h-full flex flex-col gap-2.5 overflow-hidden select-none">
+    <div className="w-full h-full flex flex-col gap-2.5 overflow-visible select-none relative">
       {/* 1. Players List Card */}
-      <div className="bg-[#1b142c] border border-purple-900/50 rounded-2xl p-2.5 shadow-lg flex flex-col gap-1.5 flex-shrink-0">
+      <div className="bg-[#1b142c] border border-purple-900/50 rounded-2xl p-2.5 shadow-lg flex flex-col gap-1.5 flex-shrink-0 overflow-visible relative">
         <div className="flex items-center justify-between px-1 text-gray-400 text-xs font-bold mb-0.5">
           <span>PLAYERS</span>
           <span className="font-mono text-[10px] bg-[#120c1e] px-1.5 py-0.2 rounded border border-purple-950">
@@ -50,7 +50,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto">
+        <div className="flex flex-col gap-1.5 overflow-visible">
           {room.playerOrder.map((playerId) => {
             const player = room.players[playerId];
             if (!player) return null;
@@ -67,6 +67,26 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     : 'bg-[#150e24] border border-purple-950/60'
                 } ${player.isBankrupt ? 'opacity-40 grayscale' : ''}`}
               >
+                {/* Red/Green Money Notification: Positioned exactly in the empty space between player icon and the game board */}
+                {cashDeltas[player.id] && (
+                  <div
+                    key={cashDeltas[player.id].key}
+                    className="absolute right-full top-1/2 -translate-y-1/2 mr-2.5 sm:mr-3.5 pointer-events-none z-30 flex items-center justify-end whitespace-nowrap"
+                  >
+                    <span
+                      className={`text-xs sm:text-[13px] font-black font-mono select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] animate-in fade-in slide-in-from-right-2 duration-200 ${
+                        cashDeltas[player.id].delta > 0
+                          ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                          : 'text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.7)]'
+                      }`}
+                    >
+                      {cashDeltas[player.id].delta > 0
+                        ? `+$${cashDeltas[player.id].delta}`
+                        : `-$${Math.abs(cashDeltas[player.id].delta)}`}
+                    </span>
+                  </div>
+                )}
+
                 {/* Active turn vertical stripe on left edge (Richup signature design) */}
                 {isTurn && !player.isBankrupt && (
                   <div
@@ -75,23 +95,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                   />
                 )}
 
-                {/* Left: Cash Delta, Avatar & Name */}
-                <div className="flex items-center gap-1.5 min-w-0 pl-1">
-                  {/* Cash change notification: simple green or red text (no background), ON THE LEFT OF PLAYER ICON, stays 5 seconds */}
-                  {cashDeltas[player.id] && (
-                    <span
-                      key={cashDeltas[player.id].key}
-                      className={`text-xs font-black font-mono select-none flex-shrink-0 animate-in fade-in zoom-in-75 duration-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)] ${
-                        cashDeltas[player.id].delta > 0
-                          ? 'text-emerald-400'
-                          : 'text-red-400'
-                      }`}
-                    >
-                      {cashDeltas[player.id].delta > 0
-                        ? `+$${cashDeltas[player.id].delta}`
-                        : `-$${Math.abs(cashDeltas[player.id].delta)}`}
-                    </span>
-                  )}
+                {/* Left: Avatar & Name */}
+                <div className="flex items-center gap-2 min-w-0 pl-0.5">
 
                   <div className="w-7 h-7 relative flex items-center justify-center flex-shrink-0">
                     <PlayerAvatar avatar={player.isBot ? 'navy' : player.avatar} color={player.color} size={28} />
