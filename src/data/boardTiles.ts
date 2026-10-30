@@ -59,10 +59,10 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 30
   },
-  // 4: Earnings Tax (10% of player cash)
+  // 4: Bank (10% of player cash)
   {
     index: 4,
-    name: 'Earnings Tax',
+    name: 'Bank',
     type: 'tax',
     price: 0,
     rent: [0],
@@ -586,12 +586,12 @@ export const INITIAL_BOARD_TILES: Tile[] = [
     isMortgaged: false,
     mortgageValue: 180
   },
-  // 38: Premium Tax ($100)
+  // 38: Poste ($100 fee)
   {
     index: 38,
-    name: 'Premium Tax',
+    name: 'Poste',
     type: 'tax',
-    price: 100,
+    price: 0,
     rent: [100],
     ownerId: null,
     houses: 0,

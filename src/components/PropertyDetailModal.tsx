@@ -10,6 +10,8 @@ import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
 import mornaguiaJailImg from '../assets/mornaguia_jail.png';
+import posteLogo from '../assets/poste.png';
+import bankLogo from '../assets/bank.png';
 
 interface PropertyDetailModalProps {
   tile: Tile | null;
@@ -67,7 +69,8 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
 
   const isCurrentTurnPlayer = room.playerOrder[room.currentTurnPlayerIndex] === currentPlayerId;
   const isLandedHere = myPlayer && myPlayer.position === tile.index;
-  const canBuyNow = !tile.ownerId && isCurrentTurnPlayer && isLandedHere && room.turnPhase === 'action' && myPlayer.cash >= tile.price;
+  const isBuyableType = tile.type === 'property' || tile.type === 'railroad' || tile.type === 'utility';
+  const canBuyNow = !tile.ownerId && isCurrentTurnPlayer && isLandedHere && room.turnPhase === 'action' && myPlayer.cash >= tile.price && isBuyableType;
 
   const sellToBankPrice = tile.isMortgaged ? tile.mortgageValue : Math.floor(tile.price * 0.7);
   const countryDisplayName = tile.country || groupMeta?.name || 'Country';
@@ -101,6 +104,14 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             ) : tile.name.toUpperCase().includes('SONEDE') ? (
               <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/60 shadow p-1 bg-white flex items-center justify-center">
                 <img src={sonedeLogo} alt="SONEDE" className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : tile.index === 38 || tile.name.toLowerCase().includes('poste') ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-white flex-shrink-0">
+                <img src={posteLogo} alt="Poste" className="w-full h-full object-cover" />
+              </div>
+            ) : tile.index === 4 || tile.name.toLowerCase().includes('bank') ? (
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/80 shadow flex items-center justify-center bg-white flex-shrink-0 p-0.5">
+                <img src={bankLogo} alt="Bank" className="w-full h-full object-contain" />
               </div>
             ) : tile.type === 'railroad' ? (
               (() => {
@@ -155,7 +166,7 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
             </h2>
           </div>
           <span className="text-xs uppercase font-bold text-white/90 tracking-widest mt-0.5 block">
-            {countryDisplayName} {tile.price > 0 ? `• $${tile.price}` : ''}
+            {tile.type === 'tax' ? 'Public Institution' : countryDisplayName} {tile.price > 0 ? `• $${tile.price}` : ''}
           </span>
         </div>
 
@@ -165,7 +176,9 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-purple-800/40">
             <span className="text-gray-400">Ownership:</span>
             <span className="font-bold flex items-center gap-1.5">
-              {owner ? (
+              {tile.type === 'tax' ? (
+                <span className="text-amber-400 font-mono font-bold">Public Space (Cannot be owned)</span>
+              ) : owner ? (
                 <>
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: owner.color }} />
                   <span>{owner.name} {isOwner ? '(You)' : ''}</span>
@@ -175,6 +188,24 @@ export const PropertyDetailModal: React.FC<PropertyDetailModalProps> = ({
               )}
             </span>
           </div>
+
+          {/* Public space explanation for Bank and Poste */}
+          {tile.type === 'tax' && (
+            <div className="p-3 bg-amber-950/30 border border-amber-500/40 rounded-xl space-y-1.5 text-xs text-amber-200">
+              <div className="font-bold text-amber-300 flex items-center gap-1.5">
+                <span>🏛️</span>
+                <span>{tile.name} Rules</span>
+              </div>
+              <p className="text-[11px] text-gray-300 leading-relaxed">
+                {tile.index === 4 || tile.name.toLowerCase().includes('bank')
+                  ? 'Landing on Bank charges 10% tax of your current cash balance into the Vacation Pot.'
+                  : 'Landing on Poste charges a flat $100 service fee into the Vacation Pot.'}
+              </p>
+              <div className="text-[10px] text-amber-400 font-mono">
+                * This location cannot be owned, traded, or mortgaged.
+              </div>
+            </div>
+          )}
 
           {/* Quick Buy or Skip buttons if landed here */}
           {canBuyNow && onBuyProperty && (

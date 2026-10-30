@@ -238,12 +238,13 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
       newRoom.turnPhase = isDoubles ? 'roll' : 'end';
     }
   } else if (tile.type === 'tax') {
-    let taxAmount = tile.price;
-    if (tile.name.toLowerCase().includes('earnings') || tile.index === 4) {
-      // Earnings Tax: takes 10% of player cash
+    let taxAmount = 100;
+    const isBank = tile.index === 4 || tile.name.toLowerCase().includes('bank') || tile.name.toLowerCase().includes('earnings');
+    if (isBank) {
+      // Bank: takes 10% of player cash
       taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
-    } else if (tile.name.toLowerCase().includes('premium') || tile.index === 38) {
-      // Premium Tax: takes $100
+    } else {
+      // Poste: takes flat $100 fee
       taxAmount = 100;
     }
 
@@ -252,13 +253,20 @@ export function rollDice(room: GameRoom, playerId: string): GameRoom {
     newRoom.pot += taxAmount;
     newRoom.logs.push({
       id: `tax_${Date.now()}`,
-      text: `💰 ${player.name} paid $${taxAmount} in ${tile.name}!`,
+      text: isBank
+        ? `💰 ${player.name} paid $${taxAmount} tax at Bank!`
+        : `💰 ${player.name} paid $100 fee at Poste!`,
       timestamp: Date.now(),
       type: 'rent',
       playerId: player.id
     });
     if (prevCash >= 0 && player.cash < 0) {
       resolveDebtOrBankruptcy(newRoom, player.id, null);
+    }
+    if (isBank) {
+      sound.playEarningsTax();
+    } else {
+      sound.playPremiumTax();
     }
     newRoom.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (tile.type === 'vacation') {
@@ -319,7 +327,7 @@ export function buyCurrentProperty(room: GameRoom, playerId: string): GameRoom {
   const player = newRoom.players[playerId];
   const tile = newRoom.tiles[player.position];
 
-  if (!tile || Boolean(tile.ownerId) || player.cash < tile.price) return room;
+  if (!tile || Boolean(tile.ownerId) || player.cash < tile.price || (tile.type !== 'property' && tile.type !== 'railroad' && tile.type !== 'utility')) return room;
 
   player.cash -= tile.price;
   tile.ownerId = playerId;
@@ -791,10 +799,11 @@ function handlePlayerRelocation(
       room.turnPhase = isDoubles ? 'roll' : 'end';
     }
   } else if (destTile.type === 'tax') {
-    let taxAmount = destTile.price;
-    if (destTile.name.toLowerCase().includes('earnings') || destTile.index === 4) {
+    let taxAmount = 100;
+    const isBank = destTile.index === 4 || destTile.name.toLowerCase().includes('bank') || destTile.name.toLowerCase().includes('earnings');
+    if (isBank) {
       taxAmount = player.cash > 0 ? Math.max(10, Math.floor(player.cash * 0.10)) : 0;
-    } else if (destTile.name.toLowerCase().includes('premium') || destTile.index === 38) {
+    } else {
       taxAmount = 100;
     }
     const prevCash = player.cash;
@@ -802,13 +811,20 @@ function handlePlayerRelocation(
     room.pot += taxAmount;
     room.logs.push({
       id: `tax_${Date.now()}`,
-      text: `💰 ${player.name} paid $${taxAmount} in ${destTile.name}!`,
+      text: isBank
+        ? `💰 ${player.name} paid $${taxAmount} tax at Bank!`
+        : `💰 ${player.name} paid $100 fee at Poste!`,
       timestamp: Date.now(),
       type: 'rent',
       playerId: player.id
     });
     if (prevCash >= 0 && player.cash < 0) {
       resolveDebtOrBankruptcy(room, player.id, null);
+    }
+    if (isBank) {
+      sound.playEarningsTax();
+    } else {
+      sound.playPremiumTax();
     }
     room.turnPhase = isDoubles ? 'roll' : 'end';
   } else if (destTile.type === 'vacation') {

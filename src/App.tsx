@@ -402,7 +402,7 @@ export const App: React.FC = () => {
         } else if (room.turnPhase === 'action') {
           const landed = room.tiles[turnPlayer.position];
           let actedRoom: GameRoom;
-          if (landed && !landed.ownerId && landed.price > 0) {
+          if (landed && !landed.ownerId && (landed.type === 'property' || landed.type === 'railroad' || landed.type === 'utility') && landed.price > 0) {
             const decision = evaluateBotPropertyPurchase(room, turnPlayer.id, landed);
             if (decision.shouldBuy) {
               actedRoom = buyCurrentProperty(room, turnPlayer.id);

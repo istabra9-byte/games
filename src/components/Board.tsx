@@ -14,6 +14,8 @@ import qatarLogo from '../assets/qatarairways.svg';
 import nouvelairLogo from '../assets/nouvelair.svg';
 import emiratesLogo from '../assets/emirates.svg';
 import mornaguiaJailImg from '../assets/mornaguia_jail.png';
+import posteLogo from '../assets/poste.png';
+import bankLogo from '../assets/bank.png';
 
 interface BoardProps {
   room: GameRoom;
@@ -458,18 +460,23 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
           // Edge Tiles (Top, Right, Bottom, Left)
           // 1. Outer Edge: Solid Owner Colored Bar with Miniature 3D Houses/Hotel OR Translucent Price Pill
           const renderOuterEdge = () => {
+            const isHorizontal = side === 'top' || side === 'bottom';
+            const fixedSlotClass = isHorizontal
+              ? 'h-5 sm:h-5.5 w-full flex items-center justify-center flex-shrink-0 z-20'
+              : 'w-10 sm:w-12 h-full flex items-center justify-center flex-shrink-0 z-20';
+
             if (isOwned && owner) {
               const hasBuildings = tile.houses > 0;
               return (
                 <div
                   className={`flex-shrink-0 flex items-center justify-center z-15 relative overflow-visible ${
                     side === 'top'
-                      ? hasBuildings ? 'w-full h-3 sm:h-3.5 rounded-t-[6px]' : 'w-full h-2.5 sm:h-3 rounded-t-[6px]'
+                      ? hasBuildings ? 'w-full h-3.5 sm:h-4 rounded-t-[6px]' : 'w-full h-2.5 sm:h-3 rounded-t-[6px]'
                       : side === 'bottom'
-                      ? hasBuildings ? 'w-full h-3 sm:h-3.5 rounded-b-[6px]' : 'w-full h-2.5 sm:h-3 rounded-b-[6px]'
+                      ? hasBuildings ? 'w-full h-3.5 sm:h-4 rounded-b-[6px]' : 'w-full h-2.5 sm:h-3 rounded-b-[6px]'
                       : side === 'left'
-                      ? hasBuildings ? 'h-full w-3 sm:w-3.5 rounded-l-[6px]' : 'h-full w-2.5 sm:w-3 rounded-l-[6px]'
-                      : hasBuildings ? 'h-full w-3 sm:w-3.5 rounded-r-[6px]' : 'h-full w-2.5 sm:w-3 rounded-r-[6px]'
+                      ? hasBuildings ? 'h-full w-3.5 sm:w-4 rounded-l-[6px]' : 'h-full w-2.5 sm:w-3 rounded-l-[6px]'
+                      : hasBuildings ? 'h-full w-3.5 sm:w-4 rounded-r-[6px]' : 'h-full w-2.5 sm:w-3 rounded-r-[6px]'
                   }`}
                   style={{ backgroundColor: owner.color }}
                 >
@@ -489,10 +496,25 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               );
             }
 
-            // Unowned: Translucent compact price badge
-            if (tile.price > 0) {
+            // Tax spaces: Bank (10%) or Poste ($100 fee) - cannot be owned
+            if (tile.type === 'tax') {
+              const isBank = tile.index === 4 || tile.name.toLowerCase().includes('bank') || tile.name.toLowerCase().includes('earnings');
               return (
-                <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
+                <div className={fixedSlotClass}>
+                  <div
+                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap shadow-sm"
+                    style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
+                  >
+                    {isBank ? '%10' : '$100'}
+                  </div>
+                </div>
+              );
+            }
+
+            // Unowned purchasable property: translucent compact price badge
+            if (tile.price > 0 && (tile.type === 'property' || tile.type === 'railroad' || tile.type === 'utility')) {
+              return (
+                <div className={fixedSlotClass}>
                   <div
                     className="px-1 py-0.5 rounded bg-white/20 text-white font-mono font-bold leading-none shadow-sm whitespace-nowrap"
                     style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
@@ -503,27 +525,15 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
               );
             }
 
-            if (tile.type === 'tax') {
-              return (
-                <div className="flex items-center justify-center flex-shrink-0 z-20 py-0.5">
-                  <div
-                    className="px-1 py-0.5 rounded bg-amber-500/30 border border-amber-400/40 text-amber-300 font-mono font-bold leading-none whitespace-nowrap"
-                    style={{ fontSize: 'clamp(8px, 1.1cqi, 10.5px)' }}
-                  >
-                    {tile.name.includes('Earnings') ? '%10' : '$100'}
-                  </div>
-                </div>
-              );
-            }
-
-            return <div className="h-2 flex-shrink-0" />;
+            // Places that cannot be owned and have no badge (Treasure, Surprise): reserve exact same fixed slot so all names line up!
+            return <div className={fixedSlotClass} />;
           };
 
           // 2. Circular Flag or Special Space Icon (Inner Edge: sits half in tile, half in center gameboard)
           const renderInnerIcon = () => {
             const iconSizeStyle = {
-              width: 'clamp(18px, 2.5cqi, 27px)',
-              height: 'clamp(18px, 2.5cqi, 27px)'
+              width: 'clamp(23px, 3.2cqi, 34px)',
+              height: 'clamp(23px, 3.2cqi, 34px)'
             };
 
             return (
@@ -617,73 +627,56 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                   </div>
                 ) : tile.type === 'tax' ? (
                   <div
-                    className="rounded-full bg-amber-950/80 border-[1.5px] border-amber-400/70 shadow flex items-center justify-center flex-shrink-0"
+                    className="rounded-full overflow-hidden border-[1.5px] border-white/90 shadow-md flex items-center justify-center flex-shrink-0 bg-white"
                     style={iconSizeStyle}
                   >
-                    {tile.name.includes('Earnings') ? (
-                      <Percent className="w-[58%] h-[58%] text-amber-300" />
+                    {tile.index === 38 || tile.name.toLowerCase().includes('poste') || tile.name.toLowerCase().includes('premium') ? (
+                      <img
+                        src={posteLogo}
+                        alt="Poste"
+                        className="w-full h-full object-cover select-none pointer-events-none"
+                      />
                     ) : (
-                      <Gem className="w-[58%] h-[58%] text-sky-300" />
+                      <img
+                        src={bankLogo}
+                        alt="Bank"
+                        className="w-full h-full object-contain select-none pointer-events-none p-0.5"
+                      />
                     )}
                   </div>
                 ) : tile.flag ? (
-                  <span style={{ fontSize: 'clamp(16px, 2.4cqi, 28px)' }}>{tile.flag}</span>
+                  <span style={{ fontSize: 'clamp(18px, 2.6cqi, 30px)' }}>{tile.flag}</span>
                 ) : null}
               </div>
             );
           };
 
-          // 3. Title / City Name (Never breaks mid-word, full words intact, clean typography, significantly bigger and visible)
+          // 3. Title / City Name (Same font size & same height so all can be lined correctly)
           const renderNameLabel = () => {
             // Split name into logical words preserving hyphens so words never break mid-word
             const words = tile.name.includes('-')
               ? tile.name.split('-').map((w, idx, arr) => (idx < arr.length - 1 ? `${w}-` : w))
               : tile.name.split(' ');
 
-            const maxWordLen = Math.max(...words.map(w => w.length));
             const isTopOrBottom = side === 'top' || side === 'bottom';
-
-            // Now that flags are placed half-in/half-out on the border, name text has ample room to be larger and more visible
             const fontSize = isTopOrBottom
-              ? maxWordLen >= 9
-                ? 'clamp(9.5px, 1.3cqi, 12.5px)'
-                : maxWordLen >= 8
-                ? 'clamp(10px, 1.4cqi, 13.5px)'
-                : maxWordLen >= 7
-                ? 'clamp(11px, 1.5cqi, 14.5px)'
-                : maxWordLen >= 6
-                ? 'clamp(12px, 1.65cqi, 16px)'
-                : 'clamp(13px, 1.85cqi, 17.5px)'
-              : maxWordLen >= 10
-              ? 'clamp(11.5px, 1.55cqi, 15px)'
-              : maxWordLen >= 8
-              ? 'clamp(12.5px, 1.7cqi, 16.5px)'
-              : 'clamp(14px, 1.95cqi, 19px)';
-
-            const letterSpacing = isTopOrBottom
-              ? maxWordLen >= 9
-                ? '-0.03em'
-                : maxWordLen >= 8
-                ? '-0.02em'
-                : 'normal'
-              : maxWordLen >= 9
-              ? '-0.02em'
-              : 'normal';
+              ? 'clamp(10px, 1.35cqi, 13px)'
+              : 'clamp(11.5px, 1.55cqi, 14.5px)';
 
             return (
               <div className="flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center text-center z-10 px-0.5 overflow-visible">
                 <span
-                  className="font-sans font-black text-white select-none text-center leading-[1.06] tracking-tight w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
+                  className="font-sans font-black text-white select-none text-center leading-[1.08] tracking-tight w-full drop-shadow-[0_1px_2px_rgba(0,0,0,0.95)] flex flex-col items-center justify-center"
                   style={{
                     fontSize,
                     textRendering: 'optimizeLegibility',
-                    letterSpacing,
-                    lineHeight: 1.06
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1.08
                   }}
                   title={tile.name}
                 >
                   {words.map((word, idx) => (
-                    <span key={idx} className="block whitespace-nowrap leading-[1.06] max-w-full text-center">
+                    <span key={idx} className="block whitespace-nowrap leading-[1.08] max-w-full text-center">
                       {word}
                     </span>
                   ))}
@@ -720,7 +713,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
             >
               {side === 'left' ? (
                 /* Left Column: Outer edge (price/owner) on left, inner edge (flag) on right border half in/half out */
-                <div className="w-full h-full flex flex-row items-center justify-between pl-1 pr-3 sm:pr-3.5 py-0.5 z-10 gap-1 relative overflow-visible">
+                <div className="w-full h-full flex flex-row items-center justify-between pl-1 pr-3.5 sm:pr-4 py-0.5 z-10 gap-1 relative overflow-visible">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   <div className={getInnerIconPositionClass()}>
@@ -729,7 +722,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : side === 'right' ? (
                 /* Right Column: Inner edge (flag) on left border half in/half out, outer edge (price/owner) on right */
-                <div className="w-full h-full flex flex-row items-center justify-between pl-3 sm:pl-3.5 pr-1 py-0.5 z-10 gap-1 relative overflow-visible">
+                <div className="w-full h-full flex flex-row items-center justify-between pl-3.5 sm:pl-4 pr-1 py-0.5 z-10 gap-1 relative overflow-visible">
                   <div className={getInnerIconPositionClass()}>
                     {renderInnerIcon()}
                   </div>
@@ -738,7 +731,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : side === 'top' ? (
                 /* Top Row: Outer edge (price/owner) at top, inner edge (flag) at bottom border half in/half out */
-                <div className="w-full h-full flex flex-col items-center justify-between pt-0.5 pb-2.5 px-0.5 z-10 relative overflow-visible">
+                <div className="w-full h-full flex flex-col items-center justify-between pt-0.5 pb-3 sm:pb-3.5 px-0.5 z-10 relative overflow-visible">
                   {renderOuterEdge()}
                   {renderNameLabel()}
                   <div className={getInnerIconPositionClass()}>
@@ -747,7 +740,7 @@ export const Board: React.FC<BoardProps> = ({ room, currentPlayerId, boardThemeI
                 </div>
               ) : (
                 /* Bottom Row: Inner edge (flag) at top border half in/half out, outer edge (price/owner) at bottom */
-                <div className="w-full h-full flex flex-col items-center justify-between pt-2.5 pb-0.5 px-0.5 z-10 relative overflow-visible">
+                <div className="w-full h-full flex flex-col items-center justify-between pt-3 sm:pt-3.5 pb-0.5 px-0.5 z-10 relative overflow-visible">
                   <div className={getInnerIconPositionClass()}>
                     {renderInnerIcon()}
                   </div>
